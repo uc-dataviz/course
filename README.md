@@ -39,9 +39,9 @@ If you need any special accommodations, please provide us with a copy of your Ac
 Readings for the course will come primarily from the following books, as well as an assortment of journal articles:
 
 * **TA** - Cairo, Alberto. *The Truthful Art: Data, charts, and maps for communication*. New Riders, 2016.
+* **FA** - Cairo, Alberto. *The Functional Art: An introduction to information graphics and visualization*. New Riders, 2012.
 * **D3** - [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
 * **R4DS** - [Wickham, Hadley and Garrett Grolemund. *R for Data Science*. O'Rielly Media, Inc., 2017.](http://r4ds.had.co.nz/)
-* **FA** - Cairo, Alberto. *The Functional Art: An introduction to information graphics and visualization*. New Riders, 2012.
 
 You are expected to purchase a copy of TA; R4DS and D3 are both available for free online, however you can also purchase a hard-copy if you prefer that medium. I have submitted a purchase request to the UChicago library to obtain an ebook copy of TA and FA, however I do not know if/when these will be obtained. We will only use a few chapters from FA, so you may be able to get by with requesting just the required chapters via interlibrary loan.
 
