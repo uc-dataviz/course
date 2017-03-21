@@ -16,7 +16,7 @@ Social scientists frequently wish to convey information to a broader audience in
 
 ### Prerequisites
 
-Students are expected to have prior programming experience; this is not an introductory programming course and students without this experience will have significant difficulties keeping up with the material. Experience could come from completion of [MACS 30500 - Computing for the Social Sciences](http://cfss.uchicago.edu/), an alternative course on programming at UChicago or undergrad, or self-taught experience using either R or Python. Students should also be familiar with the [Git version tracking system](https://git-scm.com/) and be comfortable with the Git workflow (commit, push, pull, merge, etc.).
+Students are expected to have prior programming experience; this is not an introductory programming course and students without this experience will have significant difficulties keeping up with the material. Experience could come from completion of [MACS 30500 - Computing for the Social Sciences](http://cfss.uchicago.edu/), an alternative course on programming at UChicago or undergrad, or self-taught experience using either R or Python. Students should also be familiar with the [Git version tracking system](https://git-scm.com/) and be comfortable with the Git workflow (commit, push, pull, merge, etc.). Finally, some basic experience with probability/statistical theory (especially regression analysis) will be helpful, though not required.
 
 ## Grades
 
