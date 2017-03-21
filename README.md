@@ -12,7 +12,7 @@
 
 ## Course description
 
-Social scientists frequently wish to convey information to a broader audience in a cohesive and interpretable manner. Visualizations are an excellent method to summarize information and report analysis and conclusions in a compelling format. This course introduces the theory and applications of data visualization. Students will learn about theory of cognition and perception in order to understand how humans process and synthesize information in a visual medium, while also developing techniques and methods for generating rich, informative, and interactive visualizations for both data exploration and explanation. These techniques will be developed using software implementations in [R](https://www.r-project.org/), [`ggplot2`](http://ggplot2.org/), and [D3](https://d3js.org/).
+Social scientists frequently wish to convey information to a broader audience in a cohesive and interpretable manner. Visualizations are an excellent method to summarize information and report analysis and conclusions in a compelling format. This course introduces the theory and applications of data visualization. Students will learn about theory of cognition and perception in order to understand how humans process and synthesize information in a visual medium, while also developing techniques and methods for generating rich, informative, and interactive visualizations for both data exploration and explanation. These techniques will be developed using software implementations in [R](https://www.r-project.org/) and [D3](https://d3js.org/).
 
 ### Prerequisites
 
