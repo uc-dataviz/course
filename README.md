@@ -47,32 +47,64 @@ Readings for the course will come primarily from the following books, as well as
 
 ## Course schedule
 
-| Date | Day | Topic | Readings | Due dates |
-|---------|-----|------------------------------------|------------------------------------------------------------------------------------|---------------|
-| Mar. 27 | M | Basic principles of visualization | TA Ch 1, 2, 5; Munzer Ch 1, 2 |  |
-| Mar. 29 | W | Simple charts | TA Ch 6, 7 |  |
-| Apr. 3 | M | Design and evaluation | TA Ch 2-4; Tufte (any and all) |  |
-| Apr. 5 | W | Grammar of graphics and `ggplot2` | R4DS Ch 1-3 (+ anything else needed to catch up in R); Wickham article |  |
-| Apr. 10 | M | Designers vs. engineers | FA Ch 3 | Assignment 1 |
-| Apr. 12 | W | Multivariate data visualization | TA Ch 8-9 |  |
-| Apr. 17 | M | Graphical perception and cognition | FA Ch 5-7 |  |
-| Apr. 19 | W | Exploratory data analysis |  |  |
-| Apr. 24 | M | Rules of thumb | Munzer Ch 6 | Assignment 2 |
-| Apr. 26 | W | Statistical learning models | ISLR Ch 3 (regression diagnostics) |  |
-| May 1 | M | Interactivity (theory) |  |  |
-| May 3 | W | Interactivity in R | `htmlwidgets`, Shiny, plot.ly |  |
-| May 8 | M | Geospatial visualization | TA Ch 10; Munzer Ch 8, 10 | Assignment 3 |
-| May 10 | W | Introduction to D3 | Murray Ch ??? |  |
-| May 15 | M | Network visualization | Munzer Ch 9 |  |
-| May 17 | W | More D3 | Murray Ch ??? |  |
-| May 22 | M | Text visualization |  | Assignment 4 |
-| May 24 | W | Effective presentations | [Like this](http://datavis.cs.usfca.edu/schedule/lectures/presentation-guidelines) |  |
-| May 29 | M | No class (Memorial Day) |  |  |
-| May 31 | W | Final project presentations |  | Present [final project](assignments/final-project.md) |
-| June 4 | Su |  |  | Submit [final project](assignments/final-project.md) |
+| Date | Day | Topic | Due dates |
+|---------|-----|------------------------------------|-------------------------------------------------------|
+| Mar. 27 | M | Basic principles of visualization |  |
+| Mar. 29 | W | Simple charts |  |
+| Apr. 3 | M | Design and evaluation |  |
+| Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
+| Apr. 10 | M | Designers vs. engineers | Assignment 1 |
+| Apr. 12 | W | Multivariate data visualization |  |
+| Apr. 17 | M | Graphical perception and cognition |  |
+| Apr. 19 | W | Exploratory data analysis |  |
+| Apr. 24 | M | Rules of thumb | Assignment 2 |
+| Apr. 26 | W | Statistical learning models |  |
+| May 1 | M | Interactivity (theory) |  |
+| May 3 | W | Interactivity in R |  |
+| May 8 | M | Geospatial visualization | Assignment 3 |
+| May 10 | W | Introduction to D3 |  |
+| May 15 | M | Network visualization |  |
+| May 17 | W | More D3 |  |
+| May 22 | M | Text visualization | Assignment 4 |
+| May 24 | W | Effective presentations |  |
+| May 29 | M | No class (Memorial Day) |  |
+| May 31 | W | Final project presentations | Present [final project](assignments/final-project.md) |
+| June 4 | Su |  | Submit [final project](assignments/final-project.md) |
 
 ## References and Readings
 
 All readings are required unless otherwise noted. Adjustments can be made throughout the quarter; be sure to check this repository frequently to make sure you know all the assigned readings.
 
-
+1. Basic principles of visualization
+    * TA Ch 1, 2, 5
+1. Simple charts
+    * TA Ch 6, 7
+1. Design and evaluation
+    * TA 2-4
+    * Tufte (any and all)
+1. Grammar of graphics and `ggplot2`
+    * [Wickham, Hadley. "A layered grammar of graphics." *Journal of Computational and Graphical Statistics* 19.1 (2010): 3-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/abs/10.1198/jcgs.2009.07098)
+    * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
+1. Designers vs. engineers
+    * FA Ch 3
+1. Multivariate data visualization
+    * TA Ch 8-9
+1. Graphical perception and cognition
+    * FA Ch 5-7
+1. Exploratory data analysis
+1. Rules of thumb
+1. Statistical learning models
+    * ISLR Ch 3
+1. Interactivity (theory)
+1. Interactivity in R
+1. Geospatial visualization
+    * TA Ch 10
+1. Introduction to D3
+    * Murray TBD
+1. Network visualization
+1. More D3
+    * Murray TBD
+1. Text visualization
+1. Effective presentations
+1. No class (Memorial Day)
+1. Final project presentations
