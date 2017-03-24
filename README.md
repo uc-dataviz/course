@@ -26,7 +26,7 @@ Students are expected to have prior programming experience; this is not an intro
 | Assignment 2 | 15 |
 | Assignment 3 | 15 |
 | Assignment 4 | 15 |
-| Final project | 30 |
+| [Final project](assignments/final-project.md) | 30 |
 | Participation | 10 |
 | **Total Points** | 100 |
 
@@ -45,7 +45,7 @@ Readings for the course will come primarily from the following books, as well as
 
 > I recommend you purchase a copy of TA. R4DS and D3 are both available for free online, however you can also purchase a hard-copy if you prefer that medium. TA and FA are also available as ebooks through the UChicago library (follow the links above, authentication required).
 
-## Course schedule (lite)
+## Course schedule
 
 | Date | Day | Topic | Readings | Due dates |
 |---------|-----|------------------------------------|------------------------------------------------------------------------------------|---------------|
@@ -68,7 +68,8 @@ Readings for the course will come primarily from the following books, as well as
 | May 22 | M | Text visualization |  | Assignment 4 |
 | May 24 | W | Effective presentations | [Like this](http://datavis.cs.usfca.edu/schedule/lectures/presentation-guidelines) |  |
 | May 29 | M | No class (Memorial Day) |  |  |
-| May 31 | W | Final project presentations |  | Final project |
+| May 31 | W | Final project presentations |  | Present [final project](assignments/final-project.md) |
+| June 4 | Su |  |  | Submit [final project](assignments/final-project.md) |
 
 ## References and Readings
 
