@@ -4,7 +4,6 @@ The purpose of the final project is to apply principles of visual design and tec
 
 * A research paper with a substantial visualization component
 * A web site with a substantial (static) visualization component
-* An infographic
 * An interactive web page built using [R Markdown](http://rmarkdown.rstudio.com/), [Shiny](https://shiny.rstudio.com/), or [D3](https://d3js.org/)
 
 ## Deadlines
