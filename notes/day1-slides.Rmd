@@ -1,0 +1,182 @@
+---
+title: "Basic principles of data visualization"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "March 27, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE)
+
+library(tidyverse)
+```
+
+## Me
+
+* [My website](https://www.bensoltoff.com)
+* My background
+* My research interests
+
+## Course website
+
+* [Course website](https://github.com/uc-cfss/dataviz)
+
+## Course objectives
+
+* Understand how the human mind perceives and interprets visual data
+* Distinguish different types of visualizations and identify appropriate use cases
+* Evaluate visualizations' interpretability based on experimental design
+* Apply data visualization methods using a reproducible workflow
+
+## Purpose of visualizations
+
+* Any kind of visual representation of information designed to enable communication, analysis, discovery, exploration, etc.
+* What to communicate
+* How to communicate
+
+## Information visualization
+
+* Information visualization
+    * Scientific visualization
+* Abstract data
+* Data type
+* Goals of info viz
+
+## Information visualization
+
+* [Baby Names Popularity - NameVoyager](http://www.babynamewizard.com/voyager#prefix=&sw=both&exact=false)
+* [The Ebb and Flow of Movies: Box Office Receipts 1986 — 2008](http://www.nytimes.com/interactive/2008/02/23/movies/20080223_REVENUE_GRAPHIC.html?_r=0)
+* [Check your US tax rate for 2012—and every year since 1913](https://qz.com/37639/check-your-us-tax-rate-for-2012-and-every-year-since-1913/)
+
+## Statistical graphics
+
+* Visualize abstract data of a quantitative form
+* Goals
+
+## Scatterplot matricies
+
+![Scatterplot matrix of the `Credit` dataset. Source: *An Introduction to Statistical Learning: With Applications in R*.](images/3.6.png)
+
+## Double-time bar charts
+    
+![Double-time bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/burglary1.png)
+
+## Double-time bar charts
+
+![Double-time bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/small_multiples_small.png)
+
+## Information dashboards
+
+* Business/industry
+* Lots of information
+* Extremely dense
+
+## Student performance
+
+![Dashboard for student performance. Source: [2012 Perceptual Edge Dashboard Design Competition: We Have a Winner!](http://www.perceptualedge.com/blog/?p=1374)](http://www.perceptualedge.com/blog/wp-content/uploads/2012/10/dashboard-competition-winner.png)
+
+## Fitbit
+
+![Fitbit dashboard. Source: me](images/fitbit-dashboard.png)
+
+## Infographics
+
+* Eye-catching
+* Quickly convey information
+* Not always accurate
+
+----
+
+![Extremely sexual sun stroking. Source: [The top 10 worst infographics ever created](https://klientboost.com/ppc/the-top-10-worst-infographics-ever-created/)](https://klientboost.com/wp-content/uploads/2013/05/1.jpg)
+    
+----
+
+![Source: [11 Most Useless And Misleading Infographics On The Internet](http://io9.gizmodo.com/11-most-useless-and-misleading-infographics-on-the-inte-1688239674)](https://i.kinja-img.com/gawker-media/image/upload/b5icpqdsnzsdaezvnrm1.jpg)
+    
+----
+
+![Source: [WTF Visualizations](http://viz.wtf/post/158594346945/from-this-i-glean-1-the-us-has-no-paid)](http://68.media.tumblr.com/fd2be427c6794cc8e25bc23c42da73aa/tumblr_omvcm7m9va1sgh0voo1_1280.jpg)
+
+## Informative art
+
+* Visualizes data in an effort to make visualization ambient or a part of everyday life
+* Aesthetically pleasing
+* Practically not useful
+* [Debussy, Clair de lune (piano music)](https://youtu.be/LlvUepMa31o?t=8s)
+
+## Dr. John Snow
+
+[![Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://upload.wikimedia.org/wikipedia/commons/2/27/Snow-cholera-map-1.jpg)](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)
+
+## Charles Minard
+
+[![Charles Minard's 1869 chart showing the number of men in Napoleon’s 1812 Russian campaign army, their movements, as well as the temperature they encountered on the return path. Source: Wikipedia.](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)](https://en.wikipedia.org/wiki/File:Minard.png)
+
+## Minard's map of Napoleon's march on Russia
+
+[![English translation of Minard's map](https://iaincarstairs.files.wordpress.com/2011/11/napoleons-march-01-red.jpg)](https://iaincarstairs.files.wordpress.com/2011/11/napoleons-march-01-red.jpg)
+
+## NYTimes weather summaries
+
+> [How Much Warmer Was Your City in 2015?](https://www.nytimes.com/interactive/2016/02/19/us/2015-year-in-weather-temperature-precipitation.html#chicago_il)
+
+* What data is related in the visualization? What are the dimensions/variables?
+* Approximately how many data points are recorded in the visualization?
+* What makes this a good/bad visualization?
+* What story is it conveying?
+
+## Basic data structures
+
+* Data type
+* Dataset type
+
+## Data types
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1a.png)
+
+## Dataset types {.scrollable}
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1b.png)
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1c_alt.png)
+
+## Tables
+
+* Flat table
+    * Each row is an item
+    * Each column is an attribute
+    * Each cell is a value fully specified by the combination of row and column
+* Multidimensional table
+
+## Networks
+
+![A small example network with eight vertices and ten edges. Source: [Wikipedia](https://en.wikipedia.org/wiki/Network_theory)](images/small_network.png)
+
+## Trees
+
+![Organization, mission, and functions manual: Civil Rights Division. Source: [U.S. Department of Justice](https://www.justice.gov/jmd/organization-mission-and-functions-manual-civil-rights-division)](images/crt.gif)
+
+## Fields
+
+![Source: [NASA Earth Observatory](https://earthobservatory.nasa.gov/Features/GISSTemperature//giss_temperature3.php)](images/us_stations_urban_map.gif)
+
+## Geometry
+
+* Shape of items with explicit spatial positions
+* 0D
+* 1D
+* 2D
+* 3D
+* Maps
+
+## Attribute types
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.4.png)
+
+## Semantics
+
+* Type vs. semantic
+* Key vs. value
+
