@@ -41,6 +41,7 @@ Readings for the course will come primarily from the following books, as well as
 * **TA** - [Cairo, Alberto. *The Truthful Art: Data, charts, and maps for communication*. New Riders, 2016.](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/databases-and-reporting-tools/9780133440492)
 * **FA** - [Cairo, Alberto. *The Functional Art: An introduction to information graphics and visualization*. New Riders, 2012.](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/graphic-design/9780133041187)
 * **D3** - [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
+* **Munzer** - Munzner, Tamara. *Visualization analysis and design*. CRC Press, 2014.^[Available through the library as an eBook. Not required for the course, but I will draw some lectures from this book.]
 * **R4DS** - [Wickham, Hadley and Garrett Grolemund. *R for Data Science*. O'Rielly Media, Inc., 2017.](http://r4ds.had.co.nz/)
 
 > I recommend you purchase a copy of TA. R4DS and D3 are both available for free online, however you can also purchase a hard-copy if you prefer that medium. TA and FA are also available as ebooks through the UChicago library (follow the links above, authentication required).
