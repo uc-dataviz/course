@@ -21,6 +21,7 @@ library(knitr)
 library(stringr)
 library(broom)
 library(forcats)
+library(plotly)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -493,11 +494,32 @@ ggplot(diamonds, aes(cut, carat)) +
 
 ### Pie chart
 
-![Source: [Pie Chart](https://bl.ocks.org/mbostock/3887235)](images/pie_chart.png)
+```{r get-pie-data}
+pie <- read_csv("age,population
+<5,2704659
+5-13,4499890
+14-17,2159981
+18-24,3853788
+25-44,14106543
+45-64,8819342
+≥65,612463") %>%
+  mutate(age = factor(age))
+```
+
+```{r pie}
+plot_ly(pie, labels = ~age, values = ~population, type = 'pie', sort = FALSE) %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
 
 ### Donut chart
 
-![Source: [Donut Chart](https://bl.ocks.org/mbostock/3887193)](images/donut_chart.png)
+```{r donut}
+plot_ly(pie, labels = ~age, values = ~population, sort = FALSE) %>%
+  add_pie(hole = .6) %>%
+  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
 
 ## Data over time
 
