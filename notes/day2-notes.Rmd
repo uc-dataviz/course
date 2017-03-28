@@ -1,24 +1,38 @@
 ---
 title: "Day 2 - Principles of data visualization"
-date: "March 29, 2017"
 output:
-  github_document:
-    toc: true
-    toc_depth: 3
   html_document:
-    toc: true
-    toc_float: true
-    theme: readable
     highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+  github_document:
+    toc: yes
+    toc_depth: 3
+date: "March 29, 2017"
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(stringr)
+library(broom)
+
+set.seed(1234)
+theme_set(theme_minimal())
 ```
 
 # Objectives
 
 * Define data structures
+* Identify why you should visualize your data using Anscombe's Quartet
+* Define marks and channels
+* Discuss how to identify appropriate graphical forms given the communication goal
+* Demonstrate different types of basic charts and identify their use case
 
 # Basic data structures
 
@@ -107,4 +121,148 @@ A **key** attribute acts as an index that is used to look up the **value** attri
 
 > Munzner defines key attributes as **independent variables**, while value attributes are **dependent variables**. I don't particularly like this definition because depending on the research question, an attribute may serve as a dependent variable or as an independent variable (in statistical terms).
 
+# Why visualize your data
 
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Visual Display of Quantitative Information* by Edward Tufte](https://www.edwardtufte.com/tufte/books_vdqi)]
+
+Consider the following data sets:
+
+```{r misleading, echo = FALSE}
+# input data
+dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
+dat2 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.1, 9.13, 7.26, 4.74))
+dat3 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73))
+dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
+               y = c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89))
+
+# combine data
+dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
+```
+
+```{r misleading_print, dependson = 'misleading', echo = FALSE, results='asis'}
+dat_print <- dat %>%
+  group_by(id) %>%
+  nest(x, y)
+
+for(i in seq_len(nrow(dat_print))){
+  dat_print$data[[i]] %>%
+    kable(caption = str_c("Dataset", i, sep = " ")) %>%
+    print
+}
+```
+
+What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
+
+```{r mislead_stats, dependson = 'misleading', echo = FALSE, results='asis'}
+for(i in seq_len(nrow(dat_print))){
+  dat_print$data[[i]] %>%
+    summarize(n = n(),
+           mean_x = mean(x),
+           mean_y = mean(y),
+           cor = cor(x, y)) %>%
+  kable(col.names = c("$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"),
+        caption = str_c("Dataset", i, sep = " ")) %>%
+  print
+}
+```
+
+If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
+
+```{r mislead_model, dependson = 'misleading', results = 'asis', echo = FALSE}
+# estimate linear model
+dat_model <- dat %>%
+  split(.$id) %>%
+  map(~ lm(y ~ x, data = .x)) %>%
+  map(tidy)
+
+for(i in seq_along(dat_model)){
+  print(kable(dat_model[i],
+              caption = str_c("Dataset", i, sep = " "),
+              col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic", "p-value")))
+}
+```
+
+But what happens if we draw a picture?
+
+```{r mislead_plot, dependson = 'misleading', echo = FALSE}
+# now draw a graph
+dat %>%
+  mutate(id = str_c("Dataset", id, sep = " ")) %>%
+  ggplot(aes(x, y)) +
+  facet_wrap(~id) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  theme_bw()
+```
+
+A good picture tells the reader much more than any table or text can provide.
+
+# Encoding data in visualizations
+
+Visualizations are the process of visually encoding data. There are several different models that define this process, one of which is based on **marks** and **channels**. A mark is a basic graphical element in an image, and is quite primitive.
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig5.2.png)
+
+* A zero-dimensional mark is a **point**
+* A one-dimensional mark is a **line**
+* A two-dimensional mark is an **area**
+* A three-dimensional mark is a **volume**
+
+Visual **channels** control the appearance of marks, independent of the dimensionality of the mark itself. However the dimensionality of the mark can in part determine the types of channels that can be used.
+
+![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig5.3.png)
+
+Channels can be added or combined to encode additional attributes (or variables) inside the graphic. In this first graph, we encode engine displacement size using data from the `mpg` dataset. There is a single continuous attribute to encode, so a histogram is an appropriate chart. In truth, we actually encode two attributes. Histograms bin data into a set number of intervals of equal size and count the frequency of items (or observations) occuring in each interval, so the graph uses a line mark with vertical spatial position channel for the quantitative variable (frequency) and a horizontal spatial position channel for the categorical attribute.
+
+```{r mpg-1}
+ggplot(mpg, aes(x = displ)) +
+  geom_histogram() +
+  labs(title = "mpg")
+```
+
+Now we encode a second attribute, highway mileage. Because we have two quantitative attributes to encode, a histogram is no longer an appropriate choice; instead, we encode these two attributes using a scatterplot with spatial position to distinguish items from one another. Here, we use point marks with horizontal and vertical spatial position channels.
+
+```{r mpg-2}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_point() +
+  labs(title = "mpg")
+```
+
+We can encode a third categorical attribute (type of car, or `class`) by using a color channel to distinguish each type of car.
+
+```{r mpg-3a}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
+  geom_point() +
+  labs(title = "mpg")
+```
+
+> Alternatively, we could have used a shape channel to distinguish each category. However notice that the graph generates a warning message. What does this mean?
+
+```{r mpg-3b}
+ggplot(mpg, aes(x = displ, y = hwy, shape = class)) +
+  geom_point() +
+  labs(title = "mpg")
+```
+
+Finally, we can encode a fourth attribute (number of cylinders) by making use of a size channel.
+
+```{r mpg-4}
+ggplot(mpg, aes(x = displ, y = hwy, color = class, size = cyl)) +
+  geom_point() +
+  labs(title = "mpg")
+```
+
+The important thing to remember is that once a channel has been used to encode information, it cannot be used again in the same visualization. We can combine multiple channels together to encode additional information, but not reuse the same channel. For instance, what if I wanted to encode both car type and number of cylinders using the color channel? This would not work.
+
+Likewise, different marks have inherent constraints on how attributes can be encoded. For instance, a line mark encodes a quantitative attribute using length in a single (usually vertical) direction. We could encode additional information by adjusting the width of the line (the horizontal direction), but not adjusting the height of the line. If we did this, then the original information would be lost.
+
+Different channel types convey information with varying levels of accuracy and perceptivity. Later in the term we will consider in much greater detail why this occurs and how to determine optimal channels for conveying attributes in your own visualizations.
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
