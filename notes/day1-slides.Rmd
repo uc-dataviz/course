@@ -1,5 +1,5 @@
 ---
-title: "Basic principles of data visualization"
+title: "Introduction to data visualization"
 author: |
   | MACS 40700
   | University of Chicago
