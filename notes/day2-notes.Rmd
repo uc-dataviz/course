@@ -261,6 +261,74 @@ Likewise, different marks have inherent constraints on how attributes can be enc
 
 Different channel types convey information with varying levels of accuracy and perceptivity. Later in the term we will consider in much greater detail why this occurs and how to determine optimal channels for conveying attributes in your own visualizations.
 
+# Identifying appropriate graphical forms
+
+Once we learn more about elementary perceptual tasks and why some channels are better than others, choosing appropriate graphical forms will become more complex as we more carefully consider the specific marks and channels used to communicate our data. Here, we will identify at a high-level some suggestions to follow when determining an appropriate graphical form and consider several basic types of charts and their appropriate use cases.
+
+## Cairo's *Truthful Art* suggested approach
+
+1. Think about the task or tasks you want to enable
+1. Try different graphic forms
+1. Arrange the components of the graphic
+1. Test the outcomes
+
+These suggestions are a bit vague, but I really like the last one: **test the outcomes**.^[TA Ch 5] Something that appears intuitive to you may not appear the same way to a different audience. Especially in the context of statistical graphics and presenting academic results, you become steeped in the data so much that you assume everyone else has lots of background knowledge about your dataset. However they do not possess this knowledge: that's why they're reading your visualization.
+
+## What is the story?
+
+Another of Cairo's suggestions is really useful: what is the story you want to tell?
+
+![Source: The Truthful Art: Data, charts, and maps for communication. Alberto Cairo. New Riders, 2016.](images/ta_piketty.jpeg)
+
+Consider the bottom two graphs: which is the better graph? Well, it depends. If our goal is the same as Piketty's, then we want to compare Europe to the rest of the continents. The stacked area chart accomplishes this goal just fine by placing Europe on the bottom, sitting at the baseline. However if the goal is to compare all continents with one another, then this graph does not do a good job. Making comparisons with Africa and America are difficult because their baselines are dependent on Europe's GDP percentage. Instead, we'd rather all continents start at the same baseline to enable easy comparisons, which is what the non-stacked grouped line chart accomplishes. Depending on your story, you want to choose a graph/chart type that best tells that story.
+
+# Basic charts
+
+## One variable
+
+### Continuous
+
+#### Histogram
+
+
+#### Density plot
+
+### Discrete
+
+#### Bar chart
+
+
+## Two variables
+
+### Continuous X, Continuous Y
+
+#### Scatterplot
+
+
+#### Rug plot
+
+
+#### Smoothing line
+
+
+### Discrete X, Continuous Y
+
+#### Boxplot
+
+#### Violin plot
+
+
+### Discrete X, Discrete Y
+
+#### Proportional area chart
+
+
+### Continuous function (temporal)
+
+
+
+
+
 # Session Info {.toc-ignore}
 
 ```{r cache = FALSE}
