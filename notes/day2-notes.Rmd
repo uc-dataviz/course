@@ -6,6 +6,8 @@ output:
     theme: readable
     toc: yes
     toc_float: yes
+    includes:
+      in_header: "extras/header.html"
   github_document:
     toc: yes
     toc_depth: 3
@@ -21,6 +23,7 @@ library(tidyverse)
 library(knitr)
 library(stringr)
 library(broom)
+library(forcats)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -284,23 +287,288 @@ Consider the bottom two graphs: which is the better graph? Well, it depends. If 
 
 # Basic charts
 
+Your graphical form should be selected based on the purpose of your visual communication. Severino Ribecca's [Data Visualization Catalogue](http://www.datavizcatalogue.com/) groups different types of charts based on what you want to show. This could include things like:
+
+* Comparisons
+* Proportions
+* Relationships
+* Location
+* Distribution
+* Patterns
+
+Many charts can be used to show more than one story, so there is substantial overlap. Let's examine a few of the most common graphical forms and the types of stories they communicate.
+
 ## Distribution
 
+**Distribution** graphs visualize frequency, how data is spread out over an interval, or how data is grouped.
+
+### Histogram
+
+```{r infant-data}
+infant <- read_csv("data/infant.csv") %>%
+  # remove non-countries
+  filter(is.na(`Value Footnotes`) | `Value Footnotes` != 1) %>%
+  select(`Country or Area`, Year, Value) %>%
+  rename(country = `Country or Area`,
+         year = Year,
+         mortal = Value)
+```
+
+```{r infant-hist}
+ggplot(infant, aes(mortal)) +
+  geom_histogram(bins = 10, boundary = 0) +
+  labs(title = "Histogram of infant mortality rate for 195 nations",
+       subtitle = "10 bins, origin = 0",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Frequency")
+
+ggplot(infant, aes(mortal)) +
+  geom_histogram(bins = 10, boundary = -5) +
+  labs(title = "Histogram of infant mortality rate for 195 nations",
+       subtitle = "10 bins, origin = -5",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Frequency")
+
+ggplot(infant, aes(mortal)) +
+  geom_histogram(bins = 20, boundary = -5) +
+  labs(title = "Histogram of infant mortality rate for 195 nations",
+       subtitle = "20 bins, origin = -5",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Frequency")
+```
+
+A **histogram** visualizes the distribution of a continuous quantitative attribute by binning the observations into equal-width intervals and using line marks to denote the frequency of observations appearing in each bin. The sum of the height of all the bars is equal to the number of observations/items in the dataset. The shape of a histogram is determined by the **origin** (the starting point of the graph) and the **binwidth** (the width of each interval). Selecting optimal origins and binwidth is somewhat trial-and-error, though there are more complex options to try and optimize these values.
+
+Histograms help estimate where values are concentrated, whether there are usual values (outliers), and establish the general distribution of the variable (attribute).
+
+### Density plot
+
+```{r infant-density}
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "rectangular") +
+  labs(title = "Naive density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "gaussian") +
+  labs(title = "Gaussian density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+
+ggplot(infant, aes(mortal)) +
+  geom_density(aes(color = "Gaussian"), kernel = "gaussian") +
+  geom_density(aes(color = "Epanechnikov"), kernel = "epanechnikov") +
+  geom_density(aes(color = "Rectangular"), kernel = "rectangular") +
+  geom_density(aes(color = "Triangular"), kernel = "triangular") +
+  geom_density(aes(color = "Biweight"), kernel = "biweight") +
+  labs(title = "Density estimators of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density",
+       color = "Kernel") +
+  theme(legend.position = c(0.96, 1),
+        legend.justification = c(1, 1),
+        legend.background = element_rect(fill = "white"))
+```
+
+Alternatively, **density plots** visualize the distribution of data over a continuous interval by using [kernel smoothing](http://cfss.uchicago.edu/persp010_nonparametric.html#density_estimation) to plot values. This method's advantage over histograms is that density plots are not effected by the number of bins used to draw the plot, as it is a continuous function.
+
+### Box-and-whisker plot
+
+```{r boxplot}
+ggplot(diamonds, aes(1, carat)) +
+  geom_boxplot() +
+  labs(title = "Diamonds data",
+       x = NULL,
+       y = "Carat size") +
+  theme(axis.text.x = element_blank())
+
+ggplot(diamonds, aes(carat)) +
+  geom_histogram() +
+  labs(title = "Diamonds data",
+       x = NULL,
+       y = "Carat size")
+```
+
+A **box-and-whisker plot** (or simply a **box plot**) visualizes the distribution of a variable through its **quartiles**. The middle bar identifies the median value of the variable, and the box extends to the 25th and 75th percentiles (or lower and upper quartiles). The lower and upper extremes are defined by the interquartile range (IQR), whereby the whiskers (or lines) extend up to 1.5 x IQR. Outliers are defined as values outside of the range defined by the whiskers and are plotted using point marks.
+
+As a standalone graph depicting the distribution of a single variable, it generally provides less information than a comparable histogram or density plot. It does provide some useful information, such as:
+
+* The key values (median, 25th percentile, 75th percentile, etc.)
+* If any outliers are present
+* Is the data symmetrical
+* Is the data skewed
+
+The main benefit to a box plot is that it is much more compact than a histogram, so if we want to compare the distribution of a variable between groups, then a box plot will take up much less space.
 
 ## Comparisons
 
+### Bar chart
+
+```{r bar}
+ggplot(diamonds, aes(cut)) +
+  geom_bar() +
+  labs(title = "Diamonds data",
+       x = "Cut of diamond",
+       y = "Frequency count")
+
+ggplot(diamonds, aes(fct_rev(cut))) +
+  geom_bar() +
+  coord_flip() +
+  labs(title = "Diamonds data",
+       x = "Cut of diamond",
+       y = "Frequency count")
+```
+
+A **bar chart** uses either vertical or horizontal bars (line marks) to show discrete, quantitative comparisons across categories. The height of the line indicates the number of items, and separate lines are drawn for each category. Bar charts are distinguished from histograms because they do not display continuous attributes over an interval, but instead visualize discrete categories.
+
+#### Grouped bar chart
+
+```{r bar-group}
+ggplot(diamonds, aes(cut, fill = color)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Diamonds data",
+       x = "Cut of diamond",
+       y = "Frequency count",
+       color = "Color")
+```
+
+**Grouped** or **clustered bar charts** are a variation of a bar chart that encode information on an additional channel by drawing separate bars for categories defined by a second attribute. Color is typically used as the channel to distinguish the new categories. This chart allows comparisons between or across the newly defined groups, or to compare the mini histogram-like distributions to each other, so each bar in the group would repreent the significant intervals of the variable. The downside to this graphical form is that as the number of groups increases, the harder the bars become to read and compare.
+
+### Box plot
+
+```{r boxplot-group}
+ggplot(diamonds, aes(cut, carat)) +
+  geom_boxplot() +
+  labs(title = "Diamonds data",
+       x = "Cut",
+       y = "Carat size")
+
+ggplot(diamonds, aes(carat, fill = cut)) +
+  geom_histogram(alpha = .5, position = "identity") +
+  labs(title = "Diamonds data",
+       x = "Carat size",
+       y = "Frequency count",
+       color = "Cut")
+
+ggplot(diamonds, aes(carat, color = cut)) +
+  geom_density() +
+  labs(title = "Diamonds data",
+       x = "Carat size",
+       y = "Frequency count",
+       color = "Cut")
+```
+
+Now the advantages of the box plot come into view. Try comparing the distribution of diamonds' carat size between the different cuts. Which is the easiest to discern any differences?
+
+#### Violin plot
+
+```{r violin}
+ggplot(diamonds, aes(cut, carat)) +
+  geom_violin() +
+  labs(title = "Diamonds data",
+       x = "Cut",
+       y = "Carat size")
+
+ggplot(diamonds, aes(cut, carat)) +
+  geom_violin() +
+  geom_boxplot(width = .1, outlier.shape = NA) +
+  labs(title = "Diamonds data",
+       subtitle = "With overlayed box plot",
+       x = "Cut",
+       y = "Carat size")
+```
+
+**Violin plots** visualize the distribution of the data and its probability density. They are essentially a cross between a box plot and a density plot. The density plot is rotated 90 degrees and mirrored to show the distributional shape of the variable. Violin plots can provide more information about the shape of the distribution of the data, but are also more noisy than a box plot. This is why you might combine the two by overlaying a boxplot on top of the violin plot (omitting the outliers).
 
 ## Relationships
 
 
 ## Proportions
 
+### Stacked bar chart
+
+### Bubble chart
+
+### Proportional area chart
 
 ## Part-to-a-whole
 
+### Pie chart
+
+<style>
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+</style>
+<svg width="960" height="500"></svg>
+<script>
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    radius = Math.min(width, height) / 2,
+    g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var color = d3.scaleOrdinal(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+var pie = d3.pie()
+    .sort(null)
+    .value(function(d) { return d.population; });
+
+var path = d3.arc()
+    .outerRadius(radius - 10)
+    .innerRadius(0);
+
+var label = d3.arc()
+    .outerRadius(radius - 40)
+    .innerRadius(radius - 40);
+
+d3.csv("data/pie.csv", function(d) {
+  d.population = +d.population;
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  var arc = g.selectAll(".arc")
+    .data(pie(data))
+    .enter().append("g")
+      .attr("class", "arc");
+
+  arc.append("path")
+      .attr("d", path)
+      .attr("fill", function(d) { return color(d.data.age); });
+
+  arc.append("text")
+      .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+      .attr("dy", "0.35em")
+      .text(function(d) { return d.data.age; });
+});
+
+</script>
+
+Source: [Pie Chart](https://bl.ocks.org/mbostock/3887235)
+
+### Donut chart
+
+![Source: [Donut Chart](https://bl.ocks.org/mbostock/3887193)](images/donut_chart.png)
 
 ## Data over time
 
+### Line graph
+
+### Area graph
+
+#### Stacked area graph
+
+#### Proportional area graph
 
 # Session Info {.toc-ignore}
 
