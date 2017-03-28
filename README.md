@@ -50,8 +50,8 @@ Readings for the course will come primarily from the following books, as well as
 
 | Date | Day | Topic | Due dates |
 |---------|-----|------------------------------------|-------------------------------------------------------|
-| Mar. 27 | M | Basic principles of visualization |  |
-| Mar. 29 | W | Simple charts |  |
+| Mar. 27 | M | Introduction to data visualization |  |
+| Mar. 29 | W | Principles of data visualization |  |
 | Apr. 3 | M | Design and evaluation |  |
 | Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
 | Apr. 10 | M | Designers vs. engineers | Assignment 1 |
