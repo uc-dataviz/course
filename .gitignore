@@ -24,8 +24,11 @@ vignettes/*.pdf
 # OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
 .httr-oauth
 
+# .Rprofile API keys
+.Rprofile
+
 # knitr and R markdown default cache directories
-/*_cache/
+*_cache/
 /cache/
 
 # Temporary files created by R markdown
@@ -33,4 +36,22 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
+# _site
+_site
+
+# Excel temporary
+~$*.xls*
+
+# .DS_Store
 .DS_Store
+
+# README.html
+README.html
+LICENSE.html
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Spark logs
+*.log
+*spark.log*
