@@ -79,7 +79,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Basic principles of visualization
     * TA Ch 1, 2, 5
 1. Simple charts
-    * TA Ch 6, 7
+    * TA Ch 1, 2, 5
 1. Design and evaluation
     * TA 2-4
     * Tufte (any and all)
@@ -88,11 +88,12 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
 1. Designers vs. engineers
     * FA Ch 3
-1. Multivariate data visualization
-    * TA Ch 8-9
+1. Exploratory data analysis
+    * TA Ch 6-7
 1. Graphical perception and cognition
     * FA Ch 5-7
-1. Exploratory data analysis
+1. Multivariate data visualization
+    * TA Ch 8-9
 1. Rules of thumb
 1. Statistical learning models
     * ISLR Ch 3
