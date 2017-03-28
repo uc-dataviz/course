@@ -1,15 +1,14 @@
 ---
 title: "Day 1 - Introduction to data visualization"
-date: "March 27, 2017"
 output:
-  github_document:
-    toc: true
-    toc_depth: 3
   html_document:
-    toc: true
-    toc_float: true
-    theme: readable
     highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+  github_document:
+    toc: yes
+    toc_depth: 3
 ---
 
 ```{r setup, include = FALSE}

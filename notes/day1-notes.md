@@ -1,6 +1,5 @@
 Day 1 - Introduction to data visualization
 ================
-March 27, 2017
 
 -   [Objectives](#objectives)
 -   [Introduction to the course](#introduction-to-the-course)
@@ -21,15 +20,6 @@ March 27, 2017
     -   [Dr. John Snow and cholera outbreak in London](#dr.-john-snow-and-cholera-outbreak-in-london)
     -   [Minard's map of Napoleon's march on Russia](#minards-map-of-napoleons-march-on-russia)
     -   [NYTimes weather summaries](#nytimes-weather-summaries)
--   [Basic data structures](#basic-data-structures)
-    -   [Data types](#data-types)
-    -   [Dataset types](#dataset-types)
-        -   [Tables](#tables)
-        -   [Networks](#networks)
-        -   [Fields](#fields)
-        -   [Geometry](#geometry)
-    -   [Attribute types](#attribute-types)
-    -   [Semantics](#semantics)
 
 Objectives
 ==========
@@ -39,7 +29,6 @@ Objectives
 -   Identify course logistics
 -   Review the purpose of data visualizations
 -   Examine several historic visualizations for their strengths and weaknesses
--   Define data structures
 
 Introduction to the course
 ==========================
@@ -205,104 +194,8 @@ Split into pairs and assess this graphic.
 -   What makes this a good/bad visualization?
 -   What story is it conveying?
 
-Basic data structures
-=====================
-
-Before determining the type of visualization to draw, one must first consider the type of data and information to visualize.[4] First we identify major types of **data**, then identify how they can be combined to generate a **dataset**.
-
-Data types
-----------
-
-![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1a.png)
-
-There are five major types of data:
-
-1.  **Attribute** - some specific property that can be measured, observed, or logged
-    -   Also known as a **variable** or **dimension**
-
-2.  **Item** - an individual entity that is discrete, such as a row in a table or a node in a network
-    -   Can think of this as the **unit of analysis** - what is being measured?
-
-3.  **Link** - a relationship between items, typically within a network
-4.  **Grid** - specifies the strategy for sampling continuous data in terms of both geometric and topological relationships between cells
-5.  **Position** - spatial data identifying location in two-dimensional (2D) or three-dimensional (3D) space
-
-Dataset types
--------------
-
-Different types of **datasets** will contain different types of **data**.
-
-![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1b.png)
-
-![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.1c_alt.png)
-
-### Tables
-
-**Tables** are the standard dataset type in social science. They resemble spreadsheets, and store data in either a **flat** or **multidimensional** table.
-
-A **flat table** stores data in rows and columns.
-
--   Each row is an item
--   Each column is an attribute
--   Each cell is a value fully specified by the combination of row and column
-
-A **multidimensional table** uses multiple keys to uniquely identify each item. For example, longitudinal data (repeated observations of items) may still be stored in a flat table but use two columns (attributes) to uniquely identify each item. Alternatively, data can be stored in a multidimensional array that preserves the multidimensional structure.
-
-### Networks
-
-**Networks** are used to specify relationships between two or more items.
-
-![A small example network with eight vertices and ten edges. Source: [Wikipedia](https://en.wikipedia.org/wiki/Network_theory)](images/small_network.png)
-
--   **Item** ≡ **Node**
-    -   Also known as a **vertex**
--   **Link** - relationship between nodes
-    -   Also known as an **edge**
--   Nodes can have associated attributes
--   Links can also (independently) have attributes
-
-#### Trees
-
-![Organization, mission, and functions manual: Civil Rights Division. Source: [U.S. Department of Justice](https://www.justice.gov/jmd/organization-mission-and-functions-manual-civil-rights-division)](images/crt.gif)
-
-A **tree** is a network with a hierarchical structure - each child node has only one parent node pointing to it.
-
-### Fields
-
-**Fields** contain attribute values associated with cells. **Cells** contain measurements or calculations from a **continuous** domain: theoretically there are an infinite number of values you could measure, so you select a discrete interval from which to sample.
-
-![Source: [NASA Earth Observatory](https://earthobservatory.nasa.gov/Features/GISSTemperature//giss_temperature3.php)](images/us_stations_urban_map.gif)
-
-For instance, measuring climate change is serious stuff. In order to accurately measure climate change, where do you place your measurement stations?
-
--   Pavement artificially increases the measured temperature on the surface of the Earth, so you cannot place the station too close to paved surfaces
--   Urban regions generate more man-made heat, so stations located near urban regions should report warmer temperatures than rural regions
--   Data collection methods in developing countries could be unreliable, so should we trust those measurements?
-
-### Geometry
-
-**Geometry** datasets specify information about the shape of items with explicit spatial positions. These could be maps, but also include any item like points, one-dimensional lines and curves, two-dimensional surfaces or regions, or three-dimensional volumes. Aside from maps, these types of datasets frequently appear in the physical sciences, but less so in the social sciences.
-
-Attribute types
----------------
-
-![Source: Visualization Analysis and Design. Tamara Munzner, with illustrations by Eamonn Maguire. A K Peters Visualization Series, CRC Press, 2014.](images/fig2.4.png)
-
-**Attribute types** (or **variable types**) define the different types of data encoded in attributes, and will generally be important to determining how to visually depict these attributes.
-
-Semantics
----------
-
-**Semantics** define the real-world meaning of data. Data **type** defines its structural or mathematical interpretation. For instance, numbers are stored in R as **integer** or **doubles**. That is the data's type. However these numbers can have any number of semantic meanings. Are they days of the month? A person's age? A zip code?
-
-A **key** attribute acts as an index that is used to look up the **value** attributes, so the key must uniquely identify each item. Sometimes a single attribute acts as the key, whereas in higher-dimensional data multiple attributes in combination form the key attributes. In the most basic table, the row number acts as the key attribute.
-
-> Munzner defines key attributes as **independent variables**, while value attributes are **dependent variables**. I don't particularly like this definition because depending on the research question, an attribute may serve as a dependent variable or as an independent variable (in statistical terms).
-
 [1] TA Ch 1
 
 [2] Drawn from [John Snow and the Broad Street Pump](http://www.ph.ucla.edu/epi/snow/snowcricketarticle.html)
 
 [3] Source: [Dataviz History: Charles Minard's Flow Map of Napoleon's Russian Campaign of 1812](https://datavizblog.com/2013/05/26/dataviz-history-charles-minards-flow-map-of-napoleons-russian-campaign-of-1812-part-5/)
-
-[4] Munzner Ch 2
