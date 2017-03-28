@@ -284,49 +284,22 @@ Consider the bottom two graphs: which is the better graph? Well, it depends. If 
 
 # Basic charts
 
-## One variable
-
-### Continuous
-
-#### Histogram
+## Distribution
 
 
-#### Density plot
-
-### Discrete
-
-#### Bar chart
+## Comparisons
 
 
-## Two variables
-
-### Continuous X, Continuous Y
-
-#### Scatterplot
+## Relationships
 
 
-#### Rug plot
+## Proportions
 
 
-#### Smoothing line
+## Part-to-a-whole
 
 
-### Discrete X, Continuous Y
-
-#### Boxplot
-
-#### Violin plot
-
-
-### Discrete X, Discrete Y
-
-#### Proportional area chart
-
-
-### Continuous function (temporal)
-
-
-
+## Data over time
 
 
 # Session Info {.toc-ignore}
