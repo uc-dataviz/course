@@ -22,6 +22,14 @@ library(stringr)
 library(broom)
 library(forcats)
 library(plotly)
+library(readxl)
+library(gapminder)
+library(network)
+library(sna)
+library(GGally)
+library(geomnet)
+library(ggnetwork)
+library(igraph)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -480,6 +488,161 @@ ggplot(diamonds, aes(cut, carat)) +
 **Violin plots** visualize the distribution of the data and its probability density. They are essentially a cross between a box plot and a density plot. The density plot is rotated 90 degrees and mirrored to show the distributional shape of the variable. Violin plots can provide more information about the shape of the distribution of the data, but are also more noisy than a box plot. This is why you might combine the two by overlaying a boxplot on top of the violin plot (omitting the outliers).
 
 ## Relationships
+
+### Scatterplot
+
+```{r scatter}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(alpha = .2) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title = "Diamonds data",
+       x = "Carat size",
+       y = "Price")
+```
+
+**Scatterplots** use a collection of points on the Cartesian coordinate plane to display two quantitative variables. These are good for detecting correlations and relationships between two variables.^[But remember, [correlation is not causation!](https://xkcd.com/552/)] Especially with a large number of items (observations), overlaying the plot with a best-fit or trend line is a common method to aid in analysis.
+
+```{r scatter-best-fit}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title = "Diamonds data",
+       x = "Carat size",
+       y = "Price")
+```
+
+### Line graph
+
+```{r state-data}
+state <- read_excel("data/state_ideo.xlsx")
+```
+
+```{r line}
+state %>%
+  group_by(year) %>%
+  summarize(ideo = mean(citi6013, na.rm = TRUE)) %>%
+  ggplot(aes(year, ideo, group = 1)) +
+  geom_line() +
+  labs(title = "US state-level ideology",
+       x = "Year",
+       y = "Citizen ideology\n(Conservative - Liberal)")
+```
+
+**Line graphs** are used to display quantitative attributes over a continuous interval or time span. First the attributes are plotted on a Cartesian coordinate plane using points, then each point is connected using a line between the points. Line charts are preferable in this context because they visually "connect the dots" and encourage the reading of trends and patterns over time. Compare this to a scatterplot or bar chart approach:
+
+```{r line-alt}
+state %>%
+  group_by(year) %>%
+  summarize(ideo = mean(citi6013, na.rm = TRUE)) %>%
+  ggplot(aes(year, ideo, group = 1)) +
+  geom_point() +
+  labs(title = "US state-level ideology",
+       x = "Year",
+       y = "Citizen ideology\n(Conservative - Liberal)")
+
+state %>%
+  group_by(year) %>%
+  summarize(ideo = mean(citi6013, na.rm = TRUE)) %>%
+  ggplot(aes(year, ideo, group = 1)) +
+  geom_col() +
+  labs(title = "US state-level ideology",
+       x = "Year",
+       y = "Citizen ideology\n(Conservative - Liberal)")
+```
+
+Neither of these does as good of a job as indicating a change over time.
+
+#### Grouped line charts
+
+We can also make comparisons between groups by drawing separate lines on the same graph:
+
+```{r line-group}
+gapminder %>%
+  group_by(year) %>%
+  summarize(lifeExp = mean(lifeExp, na.rm = TRUE)) %>%
+  ggplot(aes(year, lifeExp, group = 1)) +
+  geom_line() +
+  labs(title = "Gapminder quality of life measures",
+       subtitle = "Global average",
+       x = "Year",
+       y = "Life expectancy (in years)")
+
+gapminder %>%
+  group_by(continent, year) %>%
+  summarize(lifeExp = mean(lifeExp, na.rm = TRUE)) %>%
+  ggplot(aes(year, lifeExp, color = continent)) +
+  geom_line() +
+  labs(title = "Gapminder quality of life measures",
+       subtitle = "By continent",
+       x = "Year",
+       y = "Life expectancy (in years)",
+       color = "Continent")
+
+gapminder %>%
+  group_by(continent, year) %>%
+  summarize(lifeExp = mean(lifeExp, na.rm = TRUE)) %>%
+  ggplot(aes(year, lifeExp, linetype = continent)) +
+  geom_line() +
+  labs(title = "Gapminder quality of life measures",
+       subtitle = "By continent",
+       x = "Year",
+       y = "Life expectancy (in years)",
+       linetype = "Continent")
+```
+
+### Network diagram
+
+```{r network}
+# make data accessible
+data(blood, package = "geomnet")
+
+# plot with ggnet2 (Figure 2a)
+set.seed(12252016)
+ggnet2(network::network(blood$edges[, 1:2], directed=TRUE), 
+       mode = "circle", size = 15, label = TRUE, 
+       arrow.size = 10, arrow.gap = 0.05, vjust = 0.5,
+       node.color = "darkred", label.color = "grey80") +
+  labs(title = "Blood type donation")
+
+#make data accessible
+data(football, package = 'geomnet')
+rownames(football$vertices) <-
+  football$vertices$label
+# create network 
+fb.net <- network::network(football$edges[, 1:2],
+                  directed = TRUE)
+# create node attribute (what conference is team in?)
+fb.net %v% "conf" <-
+  football$vertices[
+    network.vertex.names(fb.net), "value"
+    ]
+# create edge attribute (between teams in same conference?)
+network::set.edge.attribute(
+  fb.net, "same.conf",
+  football$edges$same.conf)
+set.seed(5232011)
+ggnet2(fb.net, mode = "fruchtermanreingold",
+       color = "conf",  palette = "Paired",
+       color.legend = "Conference",
+       edge.color = c("color", "grey75")) +
+  labs(title = "Network of Division I college football teams",
+       subtitle = "2000 season")
+```
+
+**Network diagrams** (also known as **network graphs**) show how items (nodes) are connected through links.^[Above examples from [Network Visualization Examples with the `ggplot2` Package](https://cran.r-project.org/web/packages/ggCompNet/vignettes/examples-from-paper.html).] Nodes are represented as dots and links connect the nodes based on their relationships to one another. Networks can be **directed** (like the blood type example) or **undirected** (the football example). Directed graphs contain directionality between the nodes, whereas undirected graphs only show relationships. Additional information can be incorportated through different channels, such as color, node size, and link width. Network graphs are good for interpreting the structure of a network, though as the nodes and network complexity increases they become more difficult to interpret.
+
+### Parallel coordinates plot
+
+```{r pcp}
+diamonds.samp <- diamonds[sample(1:dim(diamonds)[1], 100), ]
+
+ggparcoord(select_if(diamonds.samp, is.numeric)) +
+  labs(title = "Parallel coordinates plot",
+       subtitle = "Sample of 100 diamonds")
+```
+
+### Heatmap
 
 
 ## Proportions
