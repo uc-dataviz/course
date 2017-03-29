@@ -632,16 +632,6 @@ ggnet2(fb.net, mode = "fruchtermanreingold",
 
 **Network diagrams** (also known as **network graphs**) show how items (nodes) are connected through links.^[Above examples from [Network Visualization Examples with the `ggplot2` Package](https://cran.r-project.org/web/packages/ggCompNet/vignettes/examples-from-paper.html).] Nodes are represented as dots and links connect the nodes based on their relationships to one another. Networks can be **directed** (like the blood type example) or **undirected** (the football example). Directed graphs contain directionality between the nodes, whereas undirected graphs only show relationships. Additional information can be incorportated through different channels, such as color, node size, and link width. Network graphs are good for interpreting the structure of a network, though as the nodes and network complexity increases they become more difficult to interpret.
 
-### Parallel coordinates plot
-
-```{r pcp}
-diamonds.samp <- diamonds[sample(1:dim(diamonds)[1], 100), ]
-
-ggparcoord(select_if(diamonds.samp, is.numeric)) +
-  labs(title = "Parallel coordinates plot",
-       subtitle = "Sample of 100 diamonds")
-```
-
 ### Heatmap
 
 
