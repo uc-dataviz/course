@@ -9,6 +9,7 @@ output:
   github_document:
     toc: yes
     toc_depth: 3
+always_allow_html: true
 ---
 
 ```{r setup, include = FALSE}
@@ -204,8 +205,7 @@ dat %>%
   ggplot(aes(x, y)) +
   facet_wrap(~id) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  theme_bw()
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE)
 ```
 
 A good picture tells the reader much more than any table or text can provide.
