@@ -681,8 +681,7 @@ Proportional graphs use size or area to show differences and similarities betwee
 
 ```{r stack-bar}
 ggplot(diamonds, aes(cut, fill = color)) +
-  geom_bar(position = "fill") +
-  scale_y_continuous(labels = scales::percent) +
+  geom_bar() +
   labs(title = "Diamonds data",
        subtitle = "Stacked bar chart",
        x = "Cut of diamond",
