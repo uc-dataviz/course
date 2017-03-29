@@ -30,6 +30,7 @@ library(GGally)
 library(geomnet)
 library(ggnetwork)
 library(igraph)
+library(lubridate)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -634,14 +635,99 @@ ggnet2(fb.net, mode = "fruchtermanreingold",
 
 ### Heatmap
 
+```{r heatmap-prep}
+flights <- read_csv("data/flights-departed.csv") %>%
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         day = day(date),
+         weekday = wday(date, label = TRUE),
+         week = week(date),
+         yday = yday(date)) %>%
+  group_by(year) %>%
+  mutate(yday = yday + wday(date)[1] - 2,
+         week = floor(yday / 7)) %>%
+  group_by(year, month) %>%
+  mutate(week_month = week - min(week) + 1)
+
+ggplot(flights, aes(date, value)) +
+  geom_line() +
+  labs(title = "Domestic commercial flight activity",
+       x = "Date",
+       y = "Number of departing flights in the United States")
+```
+
+```{r heatmap, fig.asp = 2}
+ggplot(flights, aes(weekday, week_month, fill = value)) +
+  facet_grid(year ~ month) +
+  geom_tile(color = "black") +
+  scale_fill_continuous(low = "red", high = "green") +
+  scale_x_discrete(labels = NULL) +
+  scale_y_reverse(labels = NULL) +
+  labs(title = "Domestic commercial flight activity",
+       x = NULL,
+       y = NULL,
+       fill = "Number of departing flights") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+**Heatmaps** visualize data through variations in color.^[Source for data from chart above: [U.S. Commercial Flights, 1995-2008](http://mbostock.github.io/d3/talk/20111018/calendar.html).] They can be useful for detecting patterns and variance across multiple variables. Depending on the story you wish to communicate, alternative chart types can be useful (compare the line graph to the heatmap above). Heatmaps are good at providing a general overview of the data, as opposed to identifying attributes for specific items.
 
 ## Proportions
 
+Proportional graphs use size or area to show differences and similarities between values.
+
 ### Stacked bar chart
+
+```{r stack-bar}
+ggplot(diamonds, aes(cut, fill = color)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diamonds data",
+       subtitle = "Stacked bar chart",
+       x = "Cut of diamond",
+       y = "Frequency count",
+       color = "Color")
+
+ggplot(diamonds, aes(cut, fill = color)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "Diamonds data",
+       subtitle = "Proportional bar chart",
+       x = "Cut of diamond",
+       y = "Frequency count",
+       color = "Color")
+```
+
+**Stacked bar charts** display bars stacked on top of one another, as opposed to side by side. A plain stacked bar chart still reports the raw frequency count, whereas a proportional stacked bar chart converts the frequencies into percentages of the whole group. Comparison across groups as identified on the $X$-axis are easier under the proportional method because each set of bars sums to the same total (1 or 100%).
 
 ### Bubble chart
 
+> [The Wealth & Health of Nations](https://bost.ocks.org/mike/nations/)
+
+**Bubble charts** are similar to scatterplots, and add a third channel based on size to communicate another attribute.
+
 ### Proportional area chart
+
+```{r prop-area-chart}
+ggplot(diamonds, aes(cut, color)) +
+  geom_count() +
+  scale_size_continuous(range = c(1, 10)) +
+  labs(title = "Diamonds dataset",
+       x = "Cut",
+       y = "Color",
+       size = "Count")
+
+ggplot(diamonds, aes(cut, color)) +
+  geom_count(shape = 15) +
+  scale_size_continuous(range = c(1, 10)) +
+  labs(title = "Diamonds dataset",
+       x = "Cut",
+       y = "Color",
+       size = "Count")
+```
+
+**Proportional area charts** compare values and proportions to give a quick overview of the relative sizes of the data. These charts are typically drawn with squares or circles. Comparisons are made relative to the **area** of the shape, not the width or radius.
 
 ## Part-to-a-whole
 
@@ -665,6 +751,8 @@ plot_ly(pie, labels = ~age, values = ~population, type = 'pie', sort = FALSE) %>
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 ```
 
+Ahh, the lovely **pie chart**. Pie charts appear extensively in corporate and government communication, much less so in academic work. They help to show proportions and percentages between categories. Each segment of the circle is proportional to the size of the attribute, and all segments' arc lengths should sum to 100%. There are specific instances where pie charts may be useful and we will examine those use cases later in the term, but typically pie charts are avoided in academic visualizations.
+
 ### Donut chart
 
 ```{r donut}
@@ -674,15 +762,7 @@ plot_ly(pie, labels = ~age, values = ~population, sort = FALSE) %>%
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 ```
 
-## Data over time
-
-### Line graph
-
-### Area graph
-
-#### Stacked area graph
-
-#### Proportional area graph
+A **donut chart** is a variant on the pie chart which removes the central portion of the pie. This deemphasizes attention to the area of each segment, instead focusing on the length of the arcs.
 
 # Session Info {.toc-ignore}
 
