@@ -82,6 +82,12 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * TA Ch 1, 2, 5
 1. Design and evaluation
     * TA 2-4
+    * Visualizations to critique in-class on Monday
+        * [Earth Temperature Timeline](https://xkcd.com/1732/)
+        * [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+        * [Marriage](https://xkcd.com/1431/)
+        * [The Paper Mountain](http://www.nature.com/news/the-top-100-papers-1.16224)
+        * [Trump popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/)
 1. Grammar of graphics and `ggplot2`
     * [Wickham, Hadley. "A layered grammar of graphics." *Journal of Computational and Graphical Statistics* 19.1 (2010): 3-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/abs/10.1198/jcgs.2009.07098)
     * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
