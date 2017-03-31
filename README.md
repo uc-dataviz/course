@@ -22,7 +22,7 @@ Students are expected to have prior programming experience; this is not an intro
 
 | Assignment | Points |
 |------------------|--------|
-| Assignment 1 | 15 |
+| [Assignment 1](assignments/assignment-1.md) | 15 |
 | Assignment 2 | 15 |
 | Assignment 3 | 15 |
 | Assignment 4 | 15 |
@@ -54,7 +54,7 @@ Readings for the course will come primarily from the following books, as well as
 | Mar. 29 | W | Principles of data visualization |  |
 | Apr. 3 | M | Design and evaluation |  |
 | Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
-| Apr. 10 | M | Designers vs. engineers | Assignment 1 |
+| Apr. 10 | M | Designers vs. engineers | [Assignment 1](assignments/assignment-1.md) |
 | Apr. 12 | W | Multivariate data visualization |  |
 | Apr. 17 | M | Graphical perception and cognition |  |
 | Apr. 19 | W | Exploratory data analysis |  |
