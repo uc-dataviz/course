@@ -87,10 +87,16 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
 1. Designers vs. engineers
     * FA Ch 3
+    * [Gelman, Andrew, and Antony Unwin. "Infovis and statistical graphics: different goals, different looks." *Journal of Computational and Graphical Statistics* 22.1 (2013): 2-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761137)
+    * [Wickham, Hadley. "Graphical criticism: some historical notes." *Journal of Computational and Graphical Statistics* 22.1 (2013): 38-44.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761140?src=recsys)
 1. Exploratory data analysis
     * TA Ch 6-7
 1. Graphical perception and cognition
     * FA Ch 5-7
+    * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
+    * [Heer, Jeffrey, and Michael Bostock. "Crowdsourcing graphical perception: using mechanical turk to assess visualization design." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://dl.acm.org.proxy.uchicago.edu/citation.cfm?id=1753357&CFID=745610279&CFTOKEN=53601915)
+    * [Spence, Ian, and Stephan Lewandowsky. "Displaying proportions and percentages." *Applied Cognitive Psychology* 5.1 (1991): 61-77.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1002/acp.2350050106/abstract;jsessionid=E21007114F95498B3EA95F35DD6A21BF.f03t04)
+    * [Siegrist, Michael. "The use or misuse of three-dimensional graphs to represent lower-dimensional data." *Behaviour & Information Technology* 15.2 (1996): 96-100.](http://web.b.ebscohost.com.proxy.uchicago.edu/ehost/detail/detail?sid=7f75c721-2db0-4d09-9a39-4c63f8cdae48%40sessionmgr103&vid=0&hid=107&bdata=JnNpdGU9ZWhvc3QtbGl2ZSZzY29wZT1zaXRl#AN=7613951&db=iih)
 1. Multivariate data visualization
     * TA Ch 8-9
 1. Rules of thumb
