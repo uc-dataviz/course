@@ -1,0 +1,128 @@
+---
+title: "Day 3 - Design and evaluation"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+  github_document:
+    toc: yes
+    toc_depth: 3
+always_allow_html: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Objectives
+
+* Review Cairo's definitions of great visualizations
+* Discuss the importance of truth in visualizing data
+* Identify examples of untruth in visualizations
+* Critique visualizations using these definitions
+
+# What makes a good visualization
+
+## The Truthful Art guidelines
+
+### Truthful
+
+
+### Functional
+
+
+### Beautiful
+
+
+### Insightful
+
+
+### Enlightening
+
+
+## Tufte
+
+
+# Truthtelling in visualization
+
+## Examples of un-truths
+
+### Wrong graphical form
+
+![Should have gone with a bar chart](images/age_of_death.jpg)
+
+![Serious story, ruined by amateur graph](images/death_penalty.jpg)
+
+### Missing/misleading baselines
+
+![Baseline of 34, not 0](images/Bush_cuts2.png)
+
+### Bad axes
+
+![Inverted y-axis](images/stand_your_ground.jpg)
+
+![Inconsistent x-axis](images/cost_of_gas.jpg)
+
+![Inconsistent y-axis](images/y_axis.jpg)
+
+![Two y-axes](images/wonk-room-misleading-graph.jpg)
+
+### Incomplete/bad data
+
+![All zeroes](images/all_zeroes.jpg)
+
+![Only have half the year](images/new-haven-ct.jpg)
+
+![Numbers plotted are not even correct](images/unemployment-rate.jpg)
+
+### Incomplete story
+
+![Missing the other part of the story - what happens to those without a 4-year degree?](images/diminishing-return.jpg)
+
+### r/place
+
+* [r/place](https://www.reddit.com/r/place/)
+* [Color distribution of r/place](https://www.reddit.com/r/dataisbeautiful/comments/62z94n/rplace_pixel_color_distribution_over_time_oc/)
+    * [Fully reproducible!](https://github.com/schochastics/rplace)
+
+#### Use of white
+
+![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution.png)
+
+#### Use of other colors minus white
+
+![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution_line.png)
+
+
+### Sources
+
+* [Misleading Graphs: Real Life Examples](http://www.statisticshowto.com/misleading-graphs/)
+* [13 Graphs That Are Clearly Lying](https://www.buzzfeed.com/katienotopoulos/graphs-that-lied-to-us)
+* [r/dataisugly](http://www.reddit.com/r/dataisugly/)
+
+# Visualizations to critique
+
+* [Trump popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/)
+* [Earth Temperature Timeline](https://xkcd.com/1732/)
+* [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+* [The Paper Mountain](http://www.nature.com/news/the-top-100-papers-1.16224)
+* [Marriage](https://xkcd.com/1431/)
+
+* [Cookie ingredient variants](http://flowingdata.com/2014/12/24/cookie-ingredient-variants/)
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
