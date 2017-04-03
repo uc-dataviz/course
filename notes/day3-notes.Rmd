@@ -35,7 +35,9 @@ theme_set(theme_minimal())
 
 ## Truthful
 
-Return to this soon. But probably the most important element of a great visualization, especially in academia. We are supposed to be unbiased pursuers of knowledge and/or "the truth", so how we present our research and findings should be guided by thorough and honest research. Of course this is also true in many other fields.
+Probably the most important element of a great visualization, especially in academia. We are supposed to be unbiased pursuers of knowledge and/or "the truth", so how we present our research and findings should be guided by thorough and honest research. Of course this is also true in many other fields.
+
+But as Cairo points out, truth is not absolute: it is a continuum, a spectrum. We should therefore aim as much as possible to communicate the absolute truth, even if we do not get there. Some of this will come into play as you design our visualizations, but a lot of this is determined before you ever build a graph in R or D3. This is determined by your research design, how you ask the research question, what data you obtain to test your theory/hypothesis, what methods you use to analyze the data, assessing the viability of assumptions inherent in that method as applied to the data, accurately interpreting the results, not overfitting the model, not [p-hacking](https://fivethirtyeight.com/features/science-isnt-broken/#part1) the data to find statistically significant results, etc. And perhaps now you will start to consider how you will design a visualization to communicate these findings.
 
 ### Not truthful
 
@@ -61,8 +63,13 @@ Return to this soon. But probably the most important element of a great visualiz
 
 ![Missing the other part of the story - what happens to those without a 4-year degree?](images/diminishing-return.jpg)
 
+
 ## Functional
 
+* What is the purpose of your graph? This goes back to what is the story?
+* Don't make it difficult for the audience to interpret, but make sure you are still being truthful.
+* Depending on the audience, you may be able to use more advanced/intricate visualizations. For instance, you wouldn't use the same visualization for both an academic journal publication and a mass media article about the article.
+    * This doesn't mean "dumbing it down", but instead recognizing the background and existing knowledge of the audience and communicating at their level.
 
 ### Not functional
 
@@ -75,14 +82,25 @@ Return to this soon. But probably the most important element of a great visualiz
 
 ## Beautiful
 
+* People like aesthetically pleasing visualizations. This helps to explain the popularity of infographics, even if many of them are junk. 
+* **Chart junk** - visual elements in charts and graphs that are not necessary to comprehend information represented on the graph, or distract distract the viewer from this information^[Tufte, Edward R. *The Visual Display of Quantitative Information*. (2001). Graphics Press.] We'll discuss this in far greater detail next week, but chart junk can serve as a crucial distractor in graphs and be used to mislead audiences, or at minimum confuse them.
 
-### Not beautiful
+### Beauty is in the eye of the beholder
+
+![[Eww chart junk](http://iboz.net/largest-fast-food-chain-in-the-world/)](images/Largest-Fast-Food-Chain.jpg)
 
 ![Serious story, ruined by amateur graph](images/death_penalty.jpg)
 
 
 ## Insightful
 
+* Two types
+    * **Spontaneous** - sudden, surprising, and unexpected
+    * **Knowledge-building** - gradual and deliberate process of exploration that generates knowledge, but not necessarily any "wow" moments
+* The story and audience will drive how you incorporate this
+    * Academic audience - knowledge-building
+    * Mass audience - spontaneous/knowledge-building
+    * Incorporating interaction - more exploration, less spontaneity
 
 ### Not insightful
 
@@ -90,22 +108,20 @@ Return to this soon. But probably the most important element of a great visualiz
 
 ![All zeroes](images/all_zeroes.jpg)
 
-#### r/place
+### Insightful
 
-* [r/place](https://www.reddit.com/r/place/)
-* [Color distribution of r/place](https://www.reddit.com/r/dataisbeautiful/comments/62z94n/rplace_pixel_color_distribution_over_time_oc/)
-    * [Fully reproducible!](https://github.com/schochastics/rplace)
-
-##### Use of white
-
-![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution.png)
-
-##### Use of other colors minus white
-
-![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution_line.png)
+* [How Nations Fare in PhDs by Sex [Interactive]](https://www.scientificamerican.com/article/how-nations-fare-in-phds-by-sex-interactive1/)
+* [The Complete History Of MLB](https://projects.fivethirtyeight.com/complete-history-of-mlb/)
+    * Combines elements of both insights
+    * Static elements generate spontaneous insight
+    * Interactive elements build knowledge
 
 ## Enlightening
 
+* Choice of topic - is this important?
+* Somewhat relative, but also somewhat absolute
+* We won't always generate world-impacting visualizations, but it's a nice goal
+* "Do good with data"
 
 ### Enlightenment is in the eye of the beholder
 
@@ -122,13 +138,71 @@ Return to this soon. But probably the most important element of a great visualiz
 
 # Visualizations to critique
 
-* [Trump popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/)
-* [Earth Temperature Timeline](https://xkcd.com/1732/)
-* [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
-* [The Paper Mountain](http://www.nature.com/news/the-top-100-papers-1.16224)
-* [Marriage](https://xkcd.com/1431/)
+## Presidential popularity
 
-* [Cookie ingredient variants](http://flowingdata.com/2014/12/24/cookie-ingredient-variants/)
+> [Trump popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
+
+## Climate change
+
+> [Earth Temperature Timeline](https://xkcd.com/1732/)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
+
+## Gun violence
+
+> [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
+
+## Citation counts in science
+
+> [The Paper Mountain](http://www.nature.com/news/the-top-100-papers-1.16224)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
+
+## Attitudes towards same-sex marriage
+
+> [Marriage](https://xkcd.com/1431/)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
+
+## Making cookies
+
+> [Cookie ingredient variants](http://flowingdata.com/2014/12/24/cookie-ingredient-variants/)
+
+* What is the story?
+* Is it truthful?
+* Is it functional?
+* Is it beautiful?
+* Is it insightful?
+* Is it enlightening?
 
 
 # Session Info {.toc-ignore}
