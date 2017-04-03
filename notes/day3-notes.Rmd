@@ -33,43 +33,13 @@ theme_set(theme_minimal())
 
 # What makes a good visualization
 
-## The Truthful Art guidelines
+## Truthful
 
-### Truthful
+Return to this soon. But probably the most important element of a great visualization, especially in academia. We are supposed to be unbiased pursuers of knowledge and/or "the truth", so how we present our research and findings should be guided by thorough and honest research. Of course this is also true in many other fields.
 
+### Not truthful
 
-### Functional
-
-
-### Beautiful
-
-
-### Insightful
-
-
-### Enlightening
-
-
-## Tufte
-
-
-# Truthtelling in visualization
-
-## Examples of un-truths
-
-### Wrong graphical form
-
-![Should have gone with a bar chart](images/age_of_death.jpg)
-
-![Serious story, ruined by amateur graph](images/death_penalty.jpg)
-
-### Missing/misleading baselines
-
-![Baseline of 34, not 0](images/Bush_cuts2.png)
-
-### Bad axes
-
-![Inverted y-axis](images/stand_your_ground.jpg)
+#### Bad axes
 
 ![Inconsistent x-axis](images/cost_of_gas.jpg)
 
@@ -77,34 +47,74 @@ theme_set(theme_minimal())
 
 ![Two y-axes](images/wonk-room-misleading-graph.jpg)
 
-### Incomplete/bad data
-
-![All zeroes](images/all_zeroes.jpg)
+#### Missing/incorrect data
 
 ![Only have half the year](images/new-haven-ct.jpg)
 
 ![Numbers plotted are not even correct](images/unemployment-rate.jpg)
 
-### Incomplete story
+#### The truth, the whole truth, and nothing but the truth
+
+<iframe width="853" height="480" src="https://www.youtube.com/embed/9FnO3igOkOk?rel=0" frameborder="0" allowfullscreen></iframe>
+
+![[Spurious correlations](http://tylervigen.com/spurious-correlations)](images/drowning_cage.jpeg)
 
 ![Missing the other part of the story - what happens to those without a 4-year degree?](images/diminishing-return.jpg)
 
-### r/place
+## Functional
+
+
+### Not functional
+
+![Baseline of 34, not 0](images/Bush_cuts2.png)
+
+![Inverted y-axis](images/stand_your_ground.jpg)
+
+![Should have gone with a bar chart](images/age_of_death.jpg)
+
+
+## Beautiful
+
+
+### Not beautiful
+
+![Serious story, ruined by amateur graph](images/death_penalty.jpg)
+
+
+## Insightful
+
+
+### Not insightful
+
+![[Self-Description](https://xkcd.com/688/)](images/xkcd_self_description.png)
+
+![All zeroes](images/all_zeroes.jpg)
+
+#### r/place
 
 * [r/place](https://www.reddit.com/r/place/)
 * [Color distribution of r/place](https://www.reddit.com/r/dataisbeautiful/comments/62z94n/rplace_pixel_color_distribution_over_time_oc/)
     * [Fully reproducible!](https://github.com/schochastics/rplace)
 
-#### Use of white
+##### Use of white
 
 ![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution.png)
 
-#### Use of other colors minus white
+##### Use of other colors minus white
 
 ![](https://raw.githubusercontent.com/schochastics/rplace/master/colordistribution_line.png)
 
+## Enlightening
 
-### Sources
+
+### Enlightenment is in the eye of the beholder
+
+![[Movie Narrative Charts](https://xkcd.com/657/large/)](images/xkcd_movie_narrative_charts.png)
+
+![[Child's sleeping pattern](https://www.reddit.com/r/dataisbeautiful/comments/5l39mu/my_daughters_sleeping_patterns_for_the_first_4/)](images/daughter_sleep.jpeg)
+
+
+## Sources
 
 * [Misleading Graphs: Real Life Examples](http://www.statisticshowto.com/misleading-graphs/)
 * [13 Graphs That Are Clearly Lying](https://www.buzzfeed.com/katienotopoulos/graphs-that-lied-to-us)
