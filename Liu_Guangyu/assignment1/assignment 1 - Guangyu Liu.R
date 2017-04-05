@@ -3,3 +3,5 @@
 # author: Guangyu Liu
 # due date: April 10, 2017
 #---
+
+Biden <- read.csv("biden.csv")
