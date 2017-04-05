@@ -396,6 +396,10 @@ plot_polished +
   theme(legend.position = "none")
 ```
 
+# Review data visualization cheat sheet
+
+* [Data Visualization with `ggplot2` Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf)
+
 # Practice generating layered graphics using `ggplot2`
 
 Now let's practice generating layered graphics in R using the data from [Gapminder World](https://www.gapminder.org/data/), which compiles country-level data on quality-of-life measures.
@@ -429,43 +433,27 @@ gapminder
 
 Using the grammar of graphics and your knowledge of the `ggplot2` library, generate a series of graphs that explore the relationships between specific variables.
 
-## Exercises
+## What is the average life expectancy, per continent?
 
-**What is the average life expectancy, per continent?**
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
 ```{r lifeexp}
-ggplot(gapminder, aes(continent, lifeExp)) +
+ggplot(data = gapminder, aes(x = continent, y = lifeExp)) +
   geom_boxplot()
 ```
-  </p>
-</details>
 
-**What is the relationship between GDP and life expectancy?**
+## What is the relationship between GDP and life expectancy?
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
 ```{r gdp_lifeexp}
-ggplot(gapminder, aes(gdpPercap, lifeExp)) +
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
   geom_point() +
   geom_smooth()
 ```
-  </p>
-</details>
 
-**How is this relationship moderated by continent?**
+## How is this relationship moderated by continent?
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
-With the `color` aesthetic:
+### With the `color` aesthetic:
 
 ```{r lifeexp_continent_color}
-ggplot(gapminder, aes(gdpPercap, lifeExp, color = continent)) +
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
   geom_point() +
   geom_smooth()
 ```
@@ -473,28 +461,20 @@ ggplot(gapminder, aes(gdpPercap, lifeExp, color = continent)) +
 With a facet:
 
 ```{r lifeexp_continent_facet}
-ggplot(gapminder, aes(gdpPercap, lifeExp, color = continent)) +
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
   geom_point() +
   geom_smooth() +
   facet_grid(. ~ continent)
 ```
-  </p>
-</details>
 
-**What is causing the outliers in `gdpPercap`?**
+## What is causing the outliers in `gdpPercap`?
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
 ```{r lifeexp_outlier}
-ggplot(gapminder, aes(gdpPercap, lifeExp)) +
+ggplot(data = gapminder, aes(x = gdpPercap, y = lifeExp)) +
   geom_point() +
   geom_smooth() +
   geom_text(aes(label = country))
 ```
-  </p>
-</details>
-
 
 
 # Session Info {.toc-ignore}
