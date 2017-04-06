@@ -20,7 +20,7 @@ Biden$female <- factor(Biden$female, levels = c(0, 1), labels = c("male", "femal
 Biden$party[dem == 1] <- "dem"
 Biden$party[rep == 1] <- "rep"
 Biden$party[dem == 0 & rep == 0] <- "other"
-Biden$party <- factor(Biden$party, levels = c("dem", "rep", "other"))
+Biden$party <- factor(Biden$party, levels = c("dem", "other", "rep"))
 
 # Recode educ
 Biden$educ_cat[educ < 12] <- "less than HS"
@@ -39,11 +39,17 @@ Biden$biden_cat[biden > quantile(biden)[3] & biden <= quantile(biden)[4]] <- "wa
 Biden$biden_cat[biden > quantile(biden)[4]] <- "warmest" 
 Biden$biden_cat <- factor(Biden$biden_cat, 
                           levels = c("coldest", "colder", "warmer", "warmest"))
+
+# Recode age
+Biden$age_cat <- cut(age, 
+                     breaks = c(-Inf, 33, 48, 63, 78, Inf), 
+                     labels = c("18-32", "33-47", "48-62", "63-77", "78+"),
+                     right = FALSE)
 detach(Biden)
 
 # Percentage of attitude within each education category
 biden_perc <- Biden %>%
-  group_by(female, party, educ_cat, biden_cat) %>% 
+  group_by(female, party, age_cat, biden_cat) %>% 
   summarize(freq = n()) %>% 
   mutate(perc = round(freq/sum(freq)*100, 2))
 
@@ -54,15 +60,21 @@ warm <- filter(biden_perc, biden_cat == "warmer" | biden_cat == "warmest")
 # Negate the percentage of cold attitude, reverse order
 cold$perc = -cold$perc
 warm$biden_cat <- ordered(warm$biden_cat, levels = rev(levels(warm$biden_cat)))
-# cold$biden_cat <- ordered(cold$biden_cat, levels = rev(levels(cold$biden_cat)))
+#cold$biden_cat <- ordered(cold$biden_cat, levels = rev(levels(cold$biden_cat)))
 
-# Explore viz
-ggplot() +
+# Visualization
+bar_thermo <- ggplot() +
   aes(x = female, y = perc, fill = biden_cat) +
-  geom_bar(data = cold, stat = "identity") +
-  geom_bar(data = warm, stat = "identity") +
+  geom_bar(data = warm, stat = "identity", width = 0.5) +
+  geom_bar(data = cold, stat = "identity", width = 0.5) +
   geom_hline(yintercept = 0, color = "white") +
-  scale_fill_brewer(palette = "Reds") +
-  scale_y_continuous(name = "Biden") +
-  theme_classic() +
-  facet_grid(party ~ educ_cat)
+  scale_fill_manual(name = "", values = c("warmest" = "orchid4", "warmer" = "orchid1",
+                                                       "colder" = "ivory3", "coldest" = "ivory4")) +
+  labs(x = "", y = "Feeling Thermometer (%)", title = "Attitudes toward Joe Biden by gender, age, and party") +
+  theme(legend.position = "bottom", legend.direction = "horizontal") +
+  facet_grid(party ~ age_cat)
+
+# Export
+png(filename = "Liu_Guangyu/assignment1/bar_thermo.png")
+plot(bar_thermo)
+dev.off()
