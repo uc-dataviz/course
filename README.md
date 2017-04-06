@@ -98,6 +98,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Wickham, Hadley. "Graphical criticism: some historical notes." *Journal of Computational and Graphical Statistics* 22.1 (2013): 38-44.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761140?src=recsys)
 1. Exploratory data analysis
     * TA Ch 6-7
+    * [R4DS Ch 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
 1. Graphical perception and cognition
     * FA Ch 5-7
     * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
