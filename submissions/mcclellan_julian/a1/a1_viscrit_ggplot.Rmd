@@ -1,0 +1,133 @@
+---
+title: "Data Visualization Assignment 1"
+author: "Julian McClellan"
+date: "Due 4/10/17"
+output: github_document
+---
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      echo = FALSE)
+```
+
+# Part 1: Visualization critique (5 points)
+
+I will be critiquing the visualization below from the subreddit /r/changemyview:
+
+![](https://i.redd.it/20mghgkfwppy.png)
+
+This visualization originally appeared in the submission titled: [[OC] Heatmap of the most pixels changes happend on r/place](https://www.reddit.com/r/dataisbeautiful/comments/63kuy6/oc_heatmap_of_the_most_pixels_changes_happend_on/?utm_content=title&utm_medium=hot&utm_source=reddit&utm_name=dataisbeautiful).
+
+For those who aren't familiar, /r/place displayed a 1000x1000 pixel canvas where
+individual Reddit accounts (made before 3/31/17) could change the color of one 
+pixel to one of 16 colors every 10 minutes. Changes were allowed for 72 hours and
+then halted. More information is available
+[here](http://knowyourmeme.com/memes/events/rplace).
+
+## Truthful
+
+The truthfullness of this visualization is somewhat difficult to verify 
+independently or quickly From the OP:  
+
+> I've used python with pandas to create heatmap via matplotlib, using crawled 
+data from r/PlaceDevs"
+
+The OP doesn't provide the raw data, and while presumably one can also scrape the
+information from r/PlaceDevs with some scrapers people in the community have made, 
+one can hack together a rough verification by viewing 
+[a timelapse of /r/place](https://youtu.be/jWzjyL4yAe4). Looking at this video,
+there doesn't seem to be any aggregious area where high or low pixel change 
+activity has been hidden in the original heatmap.
+
+## Functional
+
+As one can glean from the title of the post, the visuzalization is simply trying
+to show where the most pixel changes occurred over the 72 hour creation period. 
+On an intuitive level at least, it accomplishes this, as one can quickly identify
+areas of "high chage" (white, orange) and "low(er) change" (dark red, black). 
+
+However, in other respects, this visualization is less functional. While color 
+serves to differentiate pixel change, a legend mapping color to the exact level
+of change is never revealed.
+
+In my opinion, failing to communicate the quantity of change in the heatmap is 
+the visualization's biggest flaw. One might argue that the choice of time period
+for the change metric is arbitrary, and thus uncessary in the first place. However,
+given the collaborative nature of /r/place, and that a single Redditor could 
+only change one pixel every 10 minutes, a measure of pixel change: "average 
+changes every 10 minutes" can communicate the average level of change during the
+downtime of any lone Redditor.
+
+Further functionality could also be added to a legend by marking the specific 
+color that defines the canvas wide level of change, giving the viewer notions of
+above and below average levels of pixel change.
+
+## Beautiful 
+
+If I were back in my Art 101 class, I would argue that this data visualization is
+beautiful. The very fact that high levels of pixel change are uniquely clustered
+introduces a nice contrast of negative (black) and positive (red to white) space. 
+This visaulization has a more aesthetically pleasing level of contrast (and color 
+pallete) than the one [this Redditor made.](https://i.imgur.com/4awiJnV.png)
+
+Additionally, the visualization's lack of legend and labelling in general seems
+to be in line with a sort of minimalism trend that is present on many original 
+submissions in /r/changemyview.
+
+According to one Redditor, the visualization also hits upon a "Matrix" vibe, 
+prompting the creation of:
+
+![matrix version.](https://i.imgur.com/iSB348l.jpg)
+So then, the visualization seems to compare to other similar visualizations and
+inspires alteration. For my purposes, it is beautiful.
+
+## Insightful
+
+The visualization does not seem to be drawing attention to any particular area, 
+so it seems to be devoid of any "a-ha" insights.  
+
+Even so, a measured inspection of the visualization shows us a number of areas 
+in the canvas have identifiable designs and high numbers of pixel change, 
+indicating that these designs had to contend with a degree of vandalism. (If 
+the designs each other one would expect individual deisngs to be less 
+identifiable/obfuscated with other designs.)
+
+In particular, a viwer might notice that the American Flag (center) and the hammer
+and sickle (center-left) were both subject to high levels of pixel change from 
+this heatmap.
+
+So then, the visualization does offer some insight into "controversial" designs
+of sorts, but there are many more areas of the canvas in which it is difficult or
+impossible to identify the design. One could watch the 
+[timelapse](https://youtu.be/jWzjyL4yAe4) that was mentioned earlier, but the 
+visualization could also be overlayed with the final (cleaned) /r/place canvas
+to offer more insight to a reader.
+
+![overlayed over the final product](http://i.imgur.com/xx9SaHK.png)
+
+With this addition, the visualization still offers the controversial designs insight, 
+but one can now see that in many cases, designs that featured faces of some 
+sort, had high levels of pixel change around the eyes and mouth. Other country flags
+besides the U.S. also seem to be areas subject to high levels of pixel change 
+activity.
+
+## Enlightening
+
+The visualization does some *good* with the data. It doesn't necessarily do any
+offer viewers any social insight, but it offers an enlightening look into the 
+process of collaborative art.  
+
+/r/place did not invent collaborative art or digital collaborative art, but 
+unlike most collaborative art /r/place features both collaboration *and* 
+competition where Redditors can both create and/or destroy. I would think that 
+most viewers can internalize the notion of collobaration in a work of art, but 
+a simultaneously competitive and collaborative process might be more alien. 
+
+By mapping levels of pixel change to color the visualization offers a one image 
+summary of the opposed creative and destructive processes that took place during
+the creation of the canvas. It offers obvious patterns and cryptic ones that 
+entice viewers to investigate the final canvas, and the process by which it was
+created.
+
+# Part 2: `ggplot2` and the grammar of graphics (10 points)
