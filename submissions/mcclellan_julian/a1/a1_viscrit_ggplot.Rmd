@@ -5,10 +5,13 @@ date: "Due 4/10/17"
 output: github_document
 ---
 
-```{r setup, echo = FALSE}
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(message = FALSE,
                       warning = FALSE,
                       echo = FALSE)
+library(tidyverse)
+library(ggplot2)
+theme_set(theme_minimal())
 ```
 
 # Part 1: Visualization critique (5 points)
@@ -19,7 +22,7 @@ I will be critiquing the visualization below from the subreddit /r/changemyview:
 
 This visualization originally appeared in the submission titled: [[OC] Heatmap of the most pixels changes happend on r/place](https://www.reddit.com/r/dataisbeautiful/comments/63kuy6/oc_heatmap_of_the_most_pixels_changes_happend_on/?utm_content=title&utm_medium=hot&utm_source=reddit&utm_name=dataisbeautiful).
 
-For those who aren't familiar, /r/place displayed a 1000x1000 pixel canvas where
+For those who aren"t familiar, /r/place displayed a 1000x1000 pixel canvas where
 individual Reddit accounts (made before 3/31/17) could change the color of one 
 pixel to one of 16 colors every 10 minutes. Changes were allowed for 72 hours and
 then halted. More information is available
@@ -30,14 +33,14 @@ then halted. More information is available
 The truthfullness of this visualization is somewhat difficult to verify 
 independently or quickly From the OP:  
 
-> I've used python with pandas to create heatmap via matplotlib, using crawled 
+> I"ve used python with pandas to create heatmap via matplotlib, using crawled 
 data from r/PlaceDevs"
 
-The OP doesn't provide the raw data, and while presumably one can also scrape the
+The OP doesn"t provide the raw data, and while presumably one can also scrape the
 information from r/PlaceDevs with some scrapers people in the community have made, 
 one can hack together a rough verification by viewing 
 [a timelapse of /r/place](https://youtu.be/jWzjyL4yAe4). Looking at this video,
-there doesn't seem to be any aggregious area where high or low pixel change 
+there doesn"t seem to be any aggregious area where high or low pixel change 
 activity has been hidden in the original heatmap.
 
 ## Functional
@@ -52,7 +55,7 @@ serves to differentiate pixel change, a legend mapping color to the exact level
 of change is never revealed.
 
 In my opinion, failing to communicate the quantity of change in the heatmap is 
-the visualization's biggest flaw. One might argue that the choice of time period
+the visualization"s biggest flaw. One might argue that the choice of time period
 for the change metric is arbitrary, and thus uncessary in the first place. However,
 given the collaborative nature of /r/place, and that a single Redditor could 
 only change one pixel every 10 minutes, a measure of pixel change: "average 
@@ -71,7 +74,7 @@ introduces a nice contrast of negative (black) and positive (red to white) space
 This visaulization has a more aesthetically pleasing level of contrast (and color 
 pallete) than the one [this Redditor made.](https://i.imgur.com/4awiJnV.png)
 
-Additionally, the visualization's lack of legend and labelling in general seems
+Additionally, the visualization"s lack of legend and labelling in general seems
 to be in line with a sort of minimalism trend that is present on many original 
 submissions in /r/changemyview.
 
@@ -114,7 +117,7 @@ activity.
 
 ## Enlightening
 
-The visualization does some *good* with the data. It doesn't necessarily do any
+The visualization does some *good* with the data. It doesn"t necessarily do any
 offer viewers any social insight, but it offers an enlightening look into the 
 process of collaborative art.  
 
@@ -131,3 +134,21 @@ entice viewers to investigate the final canvas, and the process by which it was
 created.
 
 # Part 2: `ggplot2` and the grammar of graphics (10 points)
+
+```{r}
+biden_df <- read_csv("../data/biden.csv") %>%
+  drop_na() %>%
+  mutate(female = factor(female),
+    party = 2 * dem + rep,
+    party = ifelse(party == 2, "dem", 
+                   ifelse(party == 1, "rep", "ind")),
+    age_quant = cut(age, quantile(age), include.lowest = TRUE),
+    educ_quant = cut(educ, quantile(educ, seq(0, 1, .5)), include.lowest = TRUE,
+                     labels = c('0 to 13 years of education', '14 to 17+ years of education')))
+
+biden_df %>%
+  ggplot(aes(female, biden, fill = party)) +
+    geom_violin() +
+    facet_grid(educ_quant ~ age_quant) +
+    labs()
+```
