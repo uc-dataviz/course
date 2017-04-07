@@ -1,0 +1,333 @@
+---
+title: "Day 5 - Science, art, or somewhere inbetween"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+  github_document:
+    toc: yes
+    toc_depth: 3
+always_allow_html: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+```
+
+# Objectives
+
+* Define Tufte's theory of data graphics, data-ink ratio, and chartjunk
+* Present and compare examples of minimalistic graphics to their original form
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+library(broom)
+library(stringr)
+
+options(digits = 3)
+set.seed(1234)
+```
+
+
+# Tufte ch 4 - data-ink ratio
+
+* What's the core purpose of visualizations? Communicate quantitiative information? Art?
+* Tufte's theory of data graphics
+    * "Above all else show the data"
+
+## Data-ink ratio
+
+$$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print the graphic}}$$
+
+* **Data-ink** - non-erasable core of a graphic
+    * This is what Tufte says we should most care about
+    * Minimize all extraneous fluff
+* What should we consider to be part of the "data-ink"?
+    * Is this literally just the data? Don't we need gridlines or axes? What else can be considered integral to the graph?
+* He never offers proof of his hypothesis that less is better
+* When is redundancy better?
+    * Reshow example from first week with cyclical day-night plots
+
+
+# Compare Tufte minimal graphs to traditional graphs using `ggplot2`
+
+* https://github.com/jrnold/ggthemes
+* Compare other themes for the same basic plot
+
+# Tufte ch 5 - chart junk
+
+* Vibrating moire effects
+    * Hard to produce in `ggplot2` - no support for them
+    * Eye junk
+    * Makes the graph harder to decode/interpret
+* The grid
+    * Minimize/reduce the thickness of grid lines to ease interpretation
+    * Less visual clutter to weed through
+    * Add some compare/contrast with `ggplot`
+* The duck
+
+* Tufte concludes that forgoing chartjunk enables functionality and insight (as Cairo would describe it). Do you agree?
+
+# Compare Tufte minimal graphs to traditional graphs using `ggplot2`
+
+* https://github.com/jrnold/ggthemes
+* Compare other themes for the same basic plot
+* http://motioninsocial.com/tufte/
+
+## Minimal line plot
+
+```{r minline}
+x <- 1967:1977
+y <- c(0.5, 1.8, 4.6, 5.3, 5.3, 5.7, 5.4, 5, 5.5, 6, 5)
+d <- data_frame(x, y)
+
+ggplot(d, aes(x, y)) +
+  geom_line() +
+  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
+  labs(title = "Per capita budget expandures",
+       x = "Year",
+       y = "Per capita budget expandures\nin constant dollars")
+
+ggplot(d, aes(x, y)) +
+  geom_line() +
+  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
+  labs(title = "Per capita budget expandures",
+       x = "Year",
+       y = "Per capita budget expandures\nin constant dollars") +
+  theme_excel()
+
+ggplot(d, aes(x, y)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_tufte(base_size = 15) +
+  theme(axis.title = element_blank()) +
+  geom_hline(yintercept = c(5, 6), lty = 2) +
+  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
+  scale_x_continuous(breaks = x, label = x) +
+  annotate(
+    "text",
+    x = c(1977, 1977.2),
+    y = c(1.5, 5.5),
+    adj = 1,
+    family = "serif",
+    label = c("Per capita\nbudget expandures\nin constant dollars", "5%")
+  )
+```
+
+## Minimal boxplot
+
+```{r minbox}
+ggplot(quakes, aes(factor(mag), stations)) +
+  geom_boxplot() +
+  labs(title = "Fiji earthquakes",
+       x = "Richter Magnitude",
+       y = "Number of stations reporting earthquakes")
+
+ggplot(quakes, aes(factor(mag), stations)) +
+  geom_boxplot() +
+  labs(title = "Fiji earthquakes",
+       x = "Richter Magnitude",
+       y = "Number of stations reporting earthquakes") +
+  theme_excel()
+
+ggplot(quakes, aes(factor(mag), stations)) +
+  theme_tufte() +
+  geom_tufteboxplot(outlier.colour = "transparent") +
+  theme(axis.title = element_blank()) +
+  annotate(
+    "text",
+    x = 8,
+    y = 120,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Number of stations \nreporting Richter Magnitude\nof Fiji earthquakes (n=1000)"
+    )
+  )
+```
+
+## Minimal barchart
+
+```{r minbar}
+library(psych)
+library(reshape2)
+
+d <- melt(colMeans(msq[, c(2, 7, 34, 36, 42, 43, 46, 55, 68)], na.rm = T) *
+            10)
+d$trait <- rownames(d)
+
+ggplot(d, aes(x = trait, y = value)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(1, 5, 1)) +
+  labs(title = "Watson et al., 1998",
+       subtitle = "N = 3896",
+       x = "Negative emotion traits",
+       y = "Average score")
+
+ggplot(d, aes(x = trait, y = value)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(1, 5, 1)) +
+  labs(title = "Watson et al., 1998",
+       subtitle = "N = 3896",
+       x = "Negative emotion traits",
+       y = "Average score") +
+  theme_excel()
+
+ggplot(d, aes(x = trait, y = value)) +
+  theme_tufte(base_size = 14, ticks = F) +
+  geom_bar(width = 0.25, fill = "gray", stat = "identity") +
+  theme(axis.title = element_blank()) +
+  scale_y_continuous(breaks = seq(1, 5, 1)) +
+  geom_hline(yintercept = seq(1, 5, 1),
+             col = "white",
+             lwd = 1) +
+  annotate(
+    "text",
+    x = 3.5,
+    y = 5,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Average scores\non negative emotion traits
+from 3896 participants\n(Watson et al., 1988)"
+    )
+  )
+```
+
+## Range-frame scatterplot
+
+```{r range-frame}
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  xlab("Car weight (lb/1000)") +
+  ylab("Miles per gallon of fuel")
+
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  xlab("Car weight (lb/1000)") +
+  ylab("Miles per gallon of fuel") +
+  theme_excel()
+
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  geom_rangeframe() +
+  theme_tufte() +
+  xlab("Car weight (lb/1000)") +
+  ylab("Miles per gallon of fuel") +
+  theme(axis.title.x = element_text(vjust = -0.5),
+        axis.title.y = element_text(vjust = 1.5))
+```
+
+### With a quartile plot
+
+```{r range-frame-quartile}
+library(devtools)
+source_url('https://raw.githubusercontent.com/bearloga/Quartile-frame-Scatterplot/master/qfplot.R')
+
+qfplot(
+  x = mtcars$wt,
+  y = mtcars$mpg,
+  xlab = "Car weight (lb/1000)",
+  ylab = "Miles per gallon of fuel"
+)
+```
+
+# Rethinking Tufte's definition of visual excellence
+
+* Too many of Tufte's claims are based on nothing - no evidence to support his minimalistic approach to graphical design
+* Think of the hockey stick chart vs. xkcd on Earth's temperature
+    * According to Tufte, both probably have a lot of chartjunk (xkcd more so)
+    * But if asked to remember the importance and story of the graph weeks later, whcih one do you think the average reader would recall better?
+    
+# Statistical graphics vs infographics
+
+## Different goals
+
+### Statistical graphics
+
+* Facilitate an understanding of problems in an applied problem
+* Direct readers to specific information
+* Allow readers to see for themselves
+
+### Infographics
+
+* Attractive
+* Grab one's attention
+* Tell a story
+* Encourage viewer to think about a particular dataset
+
+## Assessing the visualization
+
+### Wordles/wordclouds
+
+```{r get-trump}
+library(twitteR)
+library(tidytext)
+
+# setup API authentication
+setup_twitter_oauth(getOption("twitter_api_key"),
+                    getOption("twitter_api_token"))
+
+# get fresh trump tweets
+trump <- userTimeline("realDonaldTrump", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"   # custom regular expression to tokenize tweets
+
+# tokenize
+trump_token <- trump %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+```
+
+```{r trump-wordcloud}
+library(wordcloud)
+library(RColorBrewer)
+
+pal <- brewer.pal(8, "Set1")
+
+trump_token %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, scale = c(2,.5),
+       colors = pal))
+```
+
+* What does this graph do well?
+* How does it advance the goals (or not) of Tufte/Gelman/Unwin?
+* How does it advance the goals (or not) of Nigel Holmes?
+
+### Decision tree: the Obama-Clinton divide
+
+![](http://graphics8.nytimes.com/images/2008/04/16/us/0416-nat-subOBAMA.jpg)
+
+* What does this graph do well?
+* How does it advance the goals (or not) of Tufte/Gelman/Unwin?
+* How does it advance the goals (or not) of Nigel Holmes?
+
+### Health-care spending and life expectancy
+
+* [Original](http://www.oliveruberti.com/infographics/ewpc0ylkniugxuu1gm8o0zy8f4jvft)
+* Revised
+    
+    ![](http://www.tandfonline.com/na101/home/literatum/publisher/tandf/journals/content/ucgs20/2013/ucgs20.v022.i01/10618600.2012.761137/20160819/images/large/ucgs_a_761137_o_f0007g.jpeg)
+    
+* What are the advantages/disadvantages to the first plot?
+* What are the advantages/disadvantages to the second plot?
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
