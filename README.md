@@ -55,9 +55,9 @@ Readings for the course will come primarily from the following books, as well as
 | Apr. 3 | M | Design and evaluation |  |
 | Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
 | Apr. 10 | M | Science, art, or somewhere inbetween | [Assignment 1](assignments/assignment-1.md) |
-| Apr. 12 | W | Multivariate data visualization |  |
+| Apr. 12 | W | Exploratory data analysis |  |
 | Apr. 17 | M | Graphical perception and cognition |  |
-| Apr. 19 | W | Exploratory data analysis |  |
+| Apr. 19 | W | Multivariate data visualization |  |
 | Apr. 24 | M | Rules of thumb | Assignment 2 |
 | Apr. 26 | W | Statistical learning models |  |
 | May 1 | M | Interactivity (theory) |  |
