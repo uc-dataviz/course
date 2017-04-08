@@ -1,0 +1,29 @@
+---
+title: "Androgynous Names Data Visualization Critique"
+author: "Soo Wan Kim"
+date: "April 8, 2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+For this assignment I will critique a visualization of the most popular androgynous names in the US for each decade from the 1910s to the 2010s. 
+https://public.tableau.com/views/AndrogynousNamesoftheDecades/AndrogynousNames?:embed=y&:display_count=yes&:showVizHome=no#5
+
+Lauren Brucato
+created using Tableau
+
+features:
+
+
+
+
+## Data Visualization Critique: Androgynous Names of the Decades
+
+### Is it truthful?
+### Is it functional?
+### Is it beautiful?
+### Is it insightful?
+### Is it enlightening?
