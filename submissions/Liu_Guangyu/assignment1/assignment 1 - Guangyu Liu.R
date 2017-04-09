@@ -8,48 +8,39 @@ library(tidyr)
 library(tidyverse)
 
 # Read data
-Biden <- read.csv(file = "Liu_Guangyu/assignment1/biden.csv")
+Biden <- read.csv(file = "assignments/data/biden.csv")
 
 # Recode categorical variables
-attach(Biden)
-
-# Recode female
+## Recode female
 Biden$female <- factor(Biden$female, levels = c(0, 1), labels = c("male", "female"))
 
-# Recode party
+## Recode party
 Biden$party[dem == 1] <- "Democratic"
 Biden$party[rep == 1] <- "Republican"
 Biden$party[dem == 0 & rep == 0] <- "Other"
 Biden$party <- factor(Biden$party, levels = c("Democratic", "Other", "Republican"))
 
-# Recode educ
-Biden$educ_cat[educ < 12] <- "less than HS"
-Biden$educ_cat[educ == 12] <- "HS degree"
-Biden$educ_cat[educ > 12 & educ < 16] <- "some college"
-Biden$educ_cat[educ == 16] <- "college degree"
-Biden$educ_cat[educ > 16] <- "graduate"
-Biden$educ_cat <- ordered(Biden$educ_cat, 
-                         levels = c("less than HS", "HS degree", "some college",
-                                    "college degree", "graduate"))
+## Recode educ
+Biden$educ_cat <- cut(educ, 
+                      breaks = c(0, 12, 13, 16, 17, Inf),
+                      labels = c("less than HS", "HS degree", "some college", "college degree", "graduate"),
+                      right = FALSE)
 
-# Recode biden
-Biden$biden_cat[biden <= quantile(biden)[2]] <- "coldest" 
-Biden$biden_cat[biden > quantile(biden)[2] & biden <= quantile(biden)[3]] <- "colder"
-Biden$biden_cat[biden > quantile(biden)[3] & biden <= quantile(biden)[4]] <- "warmer"
-Biden$biden_cat[biden > quantile(biden)[4]] <- "warmest" 
-Biden$biden_cat <- factor(Biden$biden_cat, 
-                          levels = c("coldest", "colder", "warmer", "warmest"))
+## Recode biden
+Biden$biden_cat <- cut(biden,
+                       breaks = c(-Inf, 26, 51, 76, Inf),
+                       labels = c("coldest", "colder", "warmer", "warmest"),
+                       right = FALSE)
 
-# Recode age
+## Recode age
 Biden$age_cat <- cut(age, 
                      breaks = c(-Inf, 33, 48, 63, 78, Inf), 
                      labels = c("18-32", "33-47", "48-62", "63-77", "78+"),
                      right = FALSE)
-detach(Biden)
 
-# Percentage of attitude within each education category
+# Percentage of attitude within each category
 biden_perc <- Biden %>%
-  group_by(female, party, age_cat, biden_cat) %>% 
+  group_by(female, party, biden_cat) %>% 
   summarize(freq = n()) %>% 
   mutate(perc = round(freq/sum(freq)*100, 2))
 
@@ -60,7 +51,6 @@ warm <- filter(biden_perc, biden_cat == "warmer" | biden_cat == "warmest")
 # Negate the percentage of cold attitude, reverse order
 cold$perc = -cold$perc
 warm$biden_cat <- ordered(warm$biden_cat, levels = rev(levels(warm$biden_cat)))
-#cold$biden_cat <- ordered(cold$biden_cat, levels = rev(levels(cold$biden_cat)))
 
 # Visualization
 bar_thermo <- ggplot() +
@@ -73,9 +63,9 @@ bar_thermo <- ggplot() +
   scale_y_continuous(breaks = NULL) +
   labs(x = "", y = "Feeling Thermometer", title = "Attitudes toward Joe Biden by gender, age, and party") +
   theme(legend.position = "bottom", legend.direction = "horizontal") +
-  facet_grid(party ~ age_cat)
+  facet_grid(~ party)
 
 # Export
-png(filename = "Liu_Guangyu/assignment1/bar_thermo.png")
+png(filename = "submissions/Liu_Guangyu/assignment1/bar_thermo.png")
 plot(bar_thermo)
 dev.off()
