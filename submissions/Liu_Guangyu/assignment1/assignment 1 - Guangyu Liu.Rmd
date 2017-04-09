@@ -13,10 +13,40 @@ library(knitr)
 ```
 
 ## Part 1: Visualization Critique
-In 2014, Gregor Aisch, Robert Gebeloff, and Kevin Quealy charted [the migration trend of Americans since 1900] (https://www.nytimes.com/interactive/2014/08/13/upshot/where-people-in-each-state-were-born.html?action=click&contentCollection=The%20Upshot&region=Footer&module=WhatsNext&version=WhatsNext&contentID=WhatsNext&moduleDetail=undefined&pgtype=Multimedia#Illinois). This interactive visualization shows how Americans moved between states in the past century.    
+In 2014, Gregor Aisch, Robert Gebeloff, and Kevin Quealy charted [the migration trend of Americans since 1900](https://www.nytimes.com/interactive/2014/08/13/upshot/where-people-in-each-state-were-born.html?action=click&contentCollection=The%20Upshot&region=Footer&module=WhatsNext&version=WhatsNext&contentID=WhatsNext&moduleDetail=undefined&pgtype=Multimedia#Illinois). These interactive graphs incorporate trends of both immigration and migration between states in the past century.      
     
+### Truthful
+To evaluate the truthfulness of the graph, two aspects need to be examined:    
+    
+- Is the data reliable?    
+- Is the visualization reliable?    
+    
+These charts are based on Census microdata obtained from [IPUMS]( https://www.ipums.org/) at the University of Minnesota Population Center. IPUMS provides census and survey data from around the world. It is reasonable to believe that the data source is reliable.    
+    
+At the bottom of the webpage, the authors indicate how foreign born residents and U.S. born residents but without a specific state are categorized in these graphs. Indicating data source and methodology makes these charts reproducible and reduces the probability of misrepresentation. In addition, the x-axis is divided into equal time intervals, the width of the bands are in proportion to the size of each group. The graphs accurately represent the data.     
+    
+### Functional
+In these graphs, the United States is divided into four regions: west, south, Midwest, and northeast, each is denoted by a particular color. The division of regions is clearly showed in the map on the left bottom. Readers can easily choose a state by clicking its position in the map.    
+    
+Each graph contains four types of data:     
+    
+- Time, which is mapped to the x-axis
+- Size of migration, which is showed by the width of each ribbon
+- Destination (or origin) of migration, which is showed by the color of each ribbon
+- Relative rank of each migration destination (or origin), which is indicated by the relative position of each ribbon
+    
+Taking the graph of diaspora out of California as an example, with each ribbon stacking over the other, at the first sight, these graphs reminded me the stacked continental GDP graph we critiqued in class 2. In the GDP chart, it is difficult to compare the size of bands in the middle, since their baselines are different. An essential improvement in the migration graphs is that the ribbons intertwine with each other, with the larger size always on the top. In addition, when mouse hover over a ribbon, the graph shows the accurate percentage of California born residents lived in other regions/states in certain time. It is easy to compare the relative size of ribbons.    
+    
+However, this change has its weakness too. When the migration is mainly within region and changes frequently over time, the graph may be too complex to read. An extreme example is the graph of migration into Wyoming. Too many ribbons make it difficult to differentiate and obscure the main point. For instance, less than 3% Wyoming-born residents lived in Pennsylvania since 1900. It may be more appropriate to merge it into “other states in the northeast” to simplify the graph, and help the audience focus on its main destination. Also, since destination states are represented separately, it is difficult to add up the percentages in each region and tell the general migration trend.    
 
-## Part 2: ggplot2 and the grammar of graphics
+### Beautiful
+Generally speaking, these visualizations graph the trends of migration in an intuitively way. The pattern of ribbons shows whether the trend of migration is steadily over time or changes rapidly. However, as mentioned above, as the number of migration destination / origin increases, the graph gets less concise.
+
+### Insightful
+
+### Enlightening
+
+## Part 2: `ggplot2` and the grammar of graphics
 ### Design
 The dataset `biden.csv` includes six variables. To explore the relationship between characteristics of the respondents and their attitudes toward Joe Biden, `biden`, the feeling thermometer is regarded as the dependent variable, while the other five variables, `female`, `age`, `dem`, `rep`, and `educ` are regarded as independent variables.   
   
@@ -147,7 +177,7 @@ bar_thermo
 ```
 
 
-Finally, to more clearly emphasize the comparison between like and dislike, I changed the filled color. Now, the cold categories are from the same color set, while the warm categories are from another color set. It is easy to tell that for each political party group, female respondents like Biden more than male respondents do. Democratic respondents like Biden most, Republican respondents dislike Biden most, while respondents of other political beliefs are in between. The final visualization and the complete code is as below.     
+Finally, in order to more clearly emphasize the comparison between like and dislike, I changed the filled color. Now, the cold categories are from the same color set, while the warm categories are from another color set. It is easy to tell that for each political party group, female respondents like Biden more than male respondents do. Democratic respondents like Biden most, Republican respondents dislike Biden most, while respondents of other political beliefs are in between. The final visualization and the complete code is as below.     
 
 ### Code and visualization
 ```{r, echo = TRUE}
@@ -202,10 +232,11 @@ warm$biden_cat <- ordered(warm$biden_cat, levels = rev(levels(warm$biden_cat)))
 # Visualization
 bar_thermo <- ggplot() +
   aes(x = female, y = perc, fill = biden_cat) +
-  geom_bar(data = warm, stat = "identity", width = 0.5) +
   geom_bar(data = cold, stat = "identity", width = 0.5) +
+  geom_bar(data = warm, stat = "identity", width = 0.5) +
   geom_hline(yintercept = 0, color = "ivory3") +
-  scale_fill_manual(name = "", values = c("extreme warm" = "indianred4", "moderate warm" = "indianred1", "moderate cold" = "ivory3", "extreme cold" = "ivory4")) +
+  scale_fill_manual(name = "", values = c("extreme warm" = "indianred4", "moderate warm" = "indianred1", "moderate cold" = "ivory3", "extreme cold" = "ivory4"),
+                    breaks = c("extreme warm", "moderate warm", "moderate cold", "extreme cold")) +
   scale_y_continuous(breaks = NULL) +
   labs(x = "", y = "Feeling Thermometer", 
        title = "Final Visualization: Attitudes toward Joe Biden by gender and party") +
