@@ -54,10 +54,10 @@ Readings for the course will come primarily from the following books, as well as
 | Mar. 29 | W | Principles of data visualization |  |
 | Apr. 3 | M | Design and evaluation |  |
 | Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
-| Apr. 10 | M | Designers vs. engineers | [Assignment 1](assignments/assignment-1.md) |
-| Apr. 12 | W | Multivariate data visualization |  |
+| Apr. 10 | M | Science, art, or somewhere inbetween | [Assignment 1](assignments/assignment-1.md) |
+| Apr. 12 | W | Exploratory data analysis |  |
 | Apr. 17 | M | Graphical perception and cognition |  |
-| Apr. 19 | W | Exploratory data analysis |  |
+| Apr. 19 | W | Multivariate data visualization |  |
 | Apr. 24 | M | Rules of thumb | Assignment 2 |
 | Apr. 26 | W | Statistical learning models |  |
 | May 1 | M | Interactivity (theory) |  |
@@ -91,12 +91,14 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Grammar of graphics and `ggplot2`
     * [Wickham, Hadley. "A layered grammar of graphics." *Journal of Computational and Graphical Statistics* 19.1 (2010): 3-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/abs/10.1198/jcgs.2009.07098)
     * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
-1. Designers vs. engineers
-    * FA Ch 3
+1. Science, art, or somewhere inbetween
+    * [Ch 4-5 in *The Visual Display of Quantitative Information* by Edward Tufte.](https://canvas.uchicago.edu/courses/1747/files?preview=257039)
+    * FA Ch 3 - focus on pg. 61-72
     * [Gelman, Andrew, and Antony Unwin. "Infovis and statistical graphics: different goals, different looks." *Journal of Computational and Graphical Statistics* 22.1 (2013): 2-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761137)
     * [Wickham, Hadley. "Graphical criticism: some historical notes." *Journal of Computational and Graphical Statistics* 22.1 (2013): 38-44.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761140?src=recsys)
 1. Exploratory data analysis
     * TA Ch 6-7
+    * [R4DS Ch 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
 1. Graphical perception and cognition
     * FA Ch 5-7
     * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
