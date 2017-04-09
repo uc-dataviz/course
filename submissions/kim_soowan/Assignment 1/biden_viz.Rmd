@@ -8,13 +8,17 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+#load library
 library(tidyverse)
+
+#load data
+biden <- read.csv("data/biden.csv")
 ```
 
-## ghg
+## Static data visualization: Biden warmth, age, party identification & gender
 
 ```{r plot}
-biden <- read.csv("data/biden.csv") %>%
+biden <- biden %>%
   mutate(partyID = ifelse(dem == 1, "Democrat", ifelse(rep == 1, "Republican", "Independent"))) %>%
   transform(partyID = as.factor(partyID)) %>%
   mutate(gender = ifelse(female == 1, "F", "M")) %>%
@@ -39,12 +43,21 @@ ggplot(biden_ageGroup, aes(ageGroup, bidenMean)) +
   labs(title = "Attitudes toward Joe Biden", 
        subtitle = "Average feeling temperature for each age group broken down by party identification and gender",
        x = "Age Group",
-       y = "Avg. Biden Warmth",
+       y = "Avg. Biden Warmth (0-100)",
        caption = "Source: 2008 American National Election Studies",
-       linetype = "Gender") + 
+       linetype = "Gender",
+       fill = "Feeling\temperature") + 
   theme_classic() + 
   theme(axis.text.x = element_text(face = "italic"))
 ```
+
+## Design Description
+
+story
+why I selected the graphical form
+specific channels to encode the data (e.g. spatial position, size, color, scale)
+Why did you make any other data transformations
+How do these decisions facilitate effective communication
 
 ```{r session_info, include=FALSE}
 devtools::session_info()

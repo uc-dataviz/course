@@ -1,15 +1,10 @@
----
-title: "Androgynous Names Data Visualization Critique"
-author: "Soo Wan Kim"
-date: "April 8, 2017"
-output: github_document
----
+Androgynous Names Data Visualization Critique
+================
+Soo Wan Kim
+April 8, 2017
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-## Data Visualization Critique: Androgynous Names of the Decades
+Data Visualization Critique: Androgynous Names of the Decades
+-------------------------------------------------------------
 
 For this assignment I will critique the [*Androgynous Names of the Decades*](https://public.tableau.com/profile/lauren.b7554#!/vizhome/AndrogynousNamesoftheDecades/AndrogynousNames) visualization by Lauren Brucato, found on [r/dataisbeautiful](https://www.reddit.com/r/dataisbeautiful/). This visualization shows breakdowns by gender of the most popular androgynous names in the US for each decade from the 1910s to the 2010s. Below I evaluate Brucato's visualization according to Alberto Cairo's five qualities of a great visualization.
 
@@ -19,7 +14,7 @@ There are no obvious tip-offs that the visualization depicts information untruth
 
 The author cites "Kaggle.com" as a source for the underlying data. The vague citation makes it difficult to verify the quality of the underlying data. Searching "androgynous names kaggle" on Google, it appears the most likely source is the [US Baby Names dataset](https://www.kaggle.com/kaggle/us-baby-names) on Kaggle.com, which sources from the [Baby Names from Social Security Card Applications dataset](https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-data-by-state-and-district-of-) on Data.gov. Government social security records are probably the most reliable and exhaustive source for the names of US residents. Thus, assuming the data ultimately used for the visualization is faithful to the Data.gov data, it is likely reliable as well. However, again, the vague citation elicits some doubt, as the exact underlying source is left unclear.
 
-Secondly, Brucato defines "androgynous names" simply as those where "M/F counts" are "with 25% of each other". To me, this definition is not clear and casts further doubt on the quality of the data. I interpreted the given definition to mean that she defined androgynous names as names for which the percentage difference between the relative frequency of the name for males and females was 25% or less. 
+Secondly, Brucato defines "androgynous names" simply as those where "M/F counts" are "with 25% of each other". To me, this definition is not clear and casts further doubt on the quality of the data. I interpreted the given definition to mean that she defined androgynous names as names for which the percentage difference between the relative frequency of the name for males and females was 25% or less.
 
 Third, there was no explanation of how the gender breakdowns were derived. It was not clear to me whether the data depicted the names of newborns for each year, the names of adult Social Security applicants, or the names of all recorded residents. The first three columns used age-neutral descriptors, "Male" and "Female". However, the fourth column specifically referred to "Men" and "Women", implying the exclusion of minors.
 
@@ -41,7 +36,7 @@ The visualization has a sleek and attractive design overall. The individual grap
 
 ### Is it insightful?
 
-In my opinion, (assuming truthfulness) the visualization is insightful. From the stacked area charts, I can clearly see that some names became more gender-neutral over time and that others were coopted by the other gender over time. By filtering for decade and state, I can also see which androgynous names were popular in different times and places. The main takeaways for me are that 1. androgynous names have been around for quite some time, but 2. have enjoyed varying degrees of popularity across the decades. 
+In my opinion, (assuming truthfulness) the visualization is insightful. From the stacked area charts, I can clearly see that some names became more gender-neutral over time and that others were coopted by the other gender over time. By filtering for decade and state, I can also see which androgynous names were popular in different times and places. The main takeaways for me are that 1. androgynous names have been around for quite some time, but 2. have enjoyed varying degrees of popularity across the decades.
 
 As a possible improvement to the visualization, one thing I would have liked to see is a comparison of the overall popularity of androgynous names across decades, e.g. frequency of androgynous names in aggregate for each decade depicted in a bar plot.
 
