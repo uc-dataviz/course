@@ -21,31 +21,35 @@ To evaluate the truthfulness of the graph, two aspects need to be examined:
 - Is the data reliable?    
 - Is the visualization reliable?    
     
-These charts are based on Census microdata obtained from [IPUMS]( https://www.ipums.org/) at the University of Minnesota Population Center. IPUMS provides census and survey data from around the world. It is reasonable to believe that the data source is reliable.    
+These charts are based on Census microdata obtained from [IPUMS](https://www.ipums.org/) at the University of Minnesota Population Center. IPUMS provides census and survey data from around the world. It is reasonable to believe that the data source is reliable.    
     
 At the bottom of the webpage, the authors indicate how foreign born residents and U.S. born residents but without a specific state are categorized in these graphs. Indicating data source and methodology makes these charts reproducible and reduces the probability of misrepresentation. In addition, the x-axis is divided into equal time intervals, the width of the bands are in proportion to the size of each group. The graphs accurately represent the data.     
     
 ### Functional
-In these graphs, the United States is divided into four regions: west, south, Midwest, and northeast, each is denoted by a particular color. The division of regions is clearly showed in the map on the left bottom. Readers can easily choose a state by clicking its position in the map.    
+In these graphs, the United States is divided into four regions: West, South, Midwest, and Northeast, each is denoted by a particular color. The division of regions is clearly showed in the map on the left bottom. Readers can easily choose a state by clicking its position in the map.    
     
 Each graph contains four types of data:     
     
 - Time, which is mapped to the x-axis
 - Size of migration, which is showed by the width of each ribbon
 - Destination (or origin) of migration, which is showed by the color of each ribbon
-- Relative rank of each migration destination (or origin), which is indicated by the relative position of each ribbon
+- Relative rank of each migration destination (or origin), which is indicated by the relative position of the ribbons    
     
-Taking the graph of diaspora out of California as an example, with each ribbon stacking over the other, at the first sight, these graphs reminded me the stacked continental GDP graph we critiqued in class 2. In the GDP chart, it is difficult to compare the size of bands in the middle, since their baselines are different. An essential improvement in the migration graphs is that the ribbons intertwine with each other, with the larger size always on the top. In addition, when mouse hover over a ribbon, the graph shows the accurate percentage of California born residents lived in other regions/states in certain time. It is easy to compare the relative size of ribbons.    
+Taking the graph of diaspora out of California as an example. With each ribbon stacking over the other, at the first sight, these graphs reminded me the stacked continental GDP graph we critiqued in class 2. In the GDP chart, it is difficult to compare the size of bands in the middle, since their baselines are different. An essential improvement in the migration graphs is that the ribbons intertwine with each other, with the larger size always on the top. In addition, when mouse hovers over a ribbon, the graph shows the accurate percentage of California born residents lived in other regions/states. It is easy to compare the relative size of ribbons.    
     
-However, this change has its weakness too. When the migration is mainly within region and changes frequently over time, the graph may be too complex to read. An extreme example is the graph of migration into Wyoming. Too many ribbons make it difficult to differentiate and obscure the main point. For instance, less than 3% Wyoming-born residents lived in Pennsylvania since 1900. It may be more appropriate to merge it into “other states in the northeast” to simplify the graph, and help the audience focus on its main destination. Also, since destination states are represented separately, it is difficult to add up the percentages in each region and tell the general migration trend.    
+However, these graphs have their weaknesses too. When the migration is mainly within region and changes frequently over time, the graph may be too complex to read. An extreme example is the graph of migration into Wyoming. Too many ribbons make it difficult to differentiate and obscure the main point. For instance, less than 3% Wyoming-born residents lived in Pennsylvania since 1900. It may be more appropriate to merge it into “other states in the Northeast” to simplify the graph, and help the audience focus on its main destination. Also, since destination states are represented separately, it is difficult to add up the percentages in each region and tell the general migration trend.    
 
 ### Beautiful
-Generally speaking, these visualizations graph the trends of migration in an intuitively way. The pattern of ribbons shows whether the trend of migration is steadily over time or changes rapidly. However, as mentioned above, as the number of migration destination / origin increases, the graph gets less concise.
+Generally speaking, these visualizations graph the trends of migration in an intuitively way. The pattern of ribbons shows whether the trend of migration is steady over time or changes rapidly. However, as mentioned above, as the number of migration destination / origin increases, the graph gets less concise.
 
 ### Insightful
-
+These graphs plot the migration trend and the variation of destinations/origins in the past century, and reveal some patterns that are otherwise difficult to see. California, for instance, has long been the destination of American residents from other states, but this situation has changed since 1980s. The percentage of domestic transplants has shrunk significantly and was replaced by immigrants from other countries. Washington, D. C., the nation’s capital, provides another astonishing example that only 17% native residents stay in the nation’s capital and more than half of the residents in the past century were born outside of the capital. The graphs also show the interrelationship between moving in and moving out. For states with large percentage of moving in migration, native residents are more likely to stay in states as well.     
+    
+Again, since the graphs provide too much detail at the state level, it fails to show the general trend at the country level, which, in my opinion, might provide more insightful information. In addition, migration usually closely relates to the relative position of the origin and the destination. Holding other variables constant, people are more likely to move to a place near their origin. Mapping states to ribbons loses their spatial information and makes it difficult to show the effect of distance on migration.
+    
 ### Enlightening
-
+These graphs tend to show patterns of migration, which is an important issue nowadays. The change of population not only has great influence on a state’s economy, politics, and culture, but also influences the development of a country. As the authors mentioned, “the Western expansion, the movement of Southern blacks to Northern cities and the migration from the Rust Belt” are telling examples. These graphs provide a picture of where people came from and where people went, usually this is the first step to understand the historical change in a place.    
+    
 ## Part 2: `ggplot2` and the grammar of graphics
 ### Design
 The dataset `biden.csv` includes six variables. To explore the relationship between characteristics of the respondents and their attitudes toward Joe Biden, `biden`, the feeling thermometer is regarded as the dependent variable, while the other five variables, `female`, `age`, `dem`, `rep`, and `educ` are regarded as independent variables.   
