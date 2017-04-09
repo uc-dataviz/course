@@ -20,10 +20,14 @@ biden <- read.csv("data/biden.csv") %>%
   mutate(gender = ifelse(female == 1, "F", "M")) %>%
   mutate(ageGroup = ifelse(age < 31, 1, ifelse(age < 51, 2, ifelse(age < 66, 3, 4))))
 
+biden_ageGroup <- biden %>%
+  group_by(ageGroup, gender, partyID) %>%
+  summarize(bidenMean = mean(biden))
+
 ggplot(biden_ageGroup, aes(ageGroup, bidenMean)) + 
   geom_line(aes(color = partyID, linetype = gender), size = 1.3) + 
   geom_point(aes(color = partyID), size = 1.3) + 
-  geom_hline(aes(yintercept = 0), alpha = 0.5) + 
+  geom_hline(aes(yintercept = 50), alpha = 0.5) + 
   scale_color_manual(name = "Party ID",
                      labels = c("Democrat",
                                 "Independent",
