@@ -1,0 +1,47 @@
+---
+title: "Biden Visualization"
+author: "Soo Wan Kim"
+date: "April 8, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+## ghg
+
+```{r plot}
+biden <- read.csv("data/biden.csv") %>%
+  mutate(partyID = ifelse(dem == 1, "Democrat", ifelse(rep == 1, "Republican", "Independent"))) %>%
+  transform(partyID = as.factor(partyID)) %>%
+  mutate(gender = ifelse(female == 1, "F", "M")) %>%
+  mutate(ageGroup = ifelse(age < 31, 1, ifelse(age < 51, 2, ifelse(age < 66, 3, 4))))
+
+ggplot(biden_ageGroup, aes(ageGroup, bidenMean)) + 
+  geom_line(aes(color = partyID, linetype = gender), size = 1.3) + 
+  geom_point(aes(color = partyID), size = 1.3) + 
+  geom_hline(aes(yintercept = 0), alpha = 0.5) + 
+  scale_color_manual(name = "Party ID",
+                     labels = c("Democrat",
+                                "Independent",
+                                "Republican"),
+                     values = c("Democrat" = "blue",
+                                "Independent" = "green",
+                                "Republican" = "red")) + 
+  scale_x_continuous(breaks = c(1, 2, 3, 4), labels = c("18 - 35", "36 - 50", "51 - 65", "65+")) + 
+  labs(title = "Attitudes toward Joe Biden", 
+       subtitle = "Average feeling temperature for each age group broken down by party identification and gender",
+       x = "Age Group",
+       y = "Avg. Biden Warmth",
+       caption = "Source: 2008 American National Election Studies",
+       linetype = "Gender") + 
+  theme_classic() + 
+  theme(axis.text.x = element_text(face = "italic"))
+```
+
+```{r session_info, include=FALSE}
+devtools::session_info()
+```
