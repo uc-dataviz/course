@@ -2,7 +2,7 @@
 title: "Biden Visualization"
 author: "Soo Wan Kim"
 date: "April 8, 2017"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
