@@ -4,13 +4,16 @@
 # Camacho Jonathan E.
 ###############################################################
 # This script accomplish the following tasks:
-  # Gets "nes" data. 
+  # Gets "nes" data.
+  # Transforms data.
+  # Plots data.
 ###############################################################
 
 # Libraries necessary for the script to run. 
 library(tidyverse)
 library(haven)
 library(grid)
+library(ggplot2)
 
 # Gets nes data.
 nes <- read_dta("nes2008.dta")
@@ -46,14 +49,15 @@ biden <- nes %>%
 # Graph.
 # Theme configuration.
 
+
 # Configure Theme
 gen_theme <- function() {
   theme(
     plot.background = element_rect(fill = "#E2E2E3", colour = "#E2E2E3"),
     panel.background = element_rect(fill = "#E2E2E3"),
     axis.text = element_text(colour = "#E7A922", family = "Impact"),
-    plot.title = element_text(colour = "#6699CC", face = "bold", size = 15, vjust = 1, family = "Impact"),
-    axis.title = element_text(colour = "#6699CC", face = "bold", size = 12, family = "Impact"),
+    plot.title = element_text(colour = "#6699CC", face = "bold", size = 13, vjust = 1, family = "Impact"),
+    axis.title = element_text(colour = "#6699CC", face = "bold", size = 11, family = "Impact"),
     panel.grid.major.x = element_line(colour = "#E7A922"),
     panel.grid.minor.x = element_blank(),
     panel.grid.major.y = element_blank(),
@@ -69,7 +73,7 @@ graph_1 <- ggplot(data = biden, stat = "prop") +
   facet_grid(age_intervals ~ gender_factor) +
   geom_bar(aes(x = party_factor, fill = biden_interval), position = "fill") + 
   coord_flip() + 
-  ylab("Feelings Range") + xlab("Political Party") + 
+  ylab("Feelings Count") + xlab("Political Party") + 
   ggtitle("Feelings about Joe Biden by gender, political party, and age") + 
   scale_fill_manual(values=c("#6699CC", "#99CCFF", "#FFCC66", "#FF6600")) +
   gen_theme()
@@ -81,7 +85,7 @@ graph_2 <- ggplot(data = biden, stat = "prop") +
   facet_grid(age_intervals ~ gender_factor) +
   geom_bar(aes(x = educ_years, fill = biden_interval), position = "fill") + 
   coord_flip() + 
-  ylab("Feelings Range") + xlab("Years of Education") + 
+  ylab("Feelings Count") + xlab("Years of Education") + 
   ggtitle("Feelings about Joe Biden by gender, years of education, and age") + 
   scale_fill_manual(values=c("#6699CC", "#99CCFF", "#FFCC66", "#FF6600")) +
   gen_theme()

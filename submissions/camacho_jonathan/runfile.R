@@ -20,6 +20,4 @@ for (path in paths) {
 }
 
 source("01_processing.R")
-# source("02_exploratory_analysis.R")
-# source("03_models.R")
-# rmarkdown::render("04_report.Rmd", output_dir = "output")
+rmarkdown::render("02_report.Rmd", output_dir = "output")
