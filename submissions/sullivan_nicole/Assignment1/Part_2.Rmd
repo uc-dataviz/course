@@ -40,5 +40,28 @@ ggplot(biden_tidy, aes(Party, biden, color = Sex)) +
         legend.position = "bottom")
 
 ggplot(biden_tidy, aes(age, biden, color = Party)) +
-  geom_point()
+  geom_point() +
+  facet_wrap(~Sex) +
+labs(title = "Thermometer Ratings Towards Joe Biden",
+       subtitle = "By Age, Party, and Sex",
+       x = "Age",
+       y = "Thermometer Ratings",
+       color = "") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "bottom")
+
+ggplot(biden_tidy, aes(educ, biden, color = Party)) +
+  geom_point(position = "jitter") +
+  facet_wrap(~Sex) +
+labs(title = "Thermometer Ratings Towards Joe Biden",
+       subtitle = "By Age, Party, and Sex",
+       x = "Education",
+       y = "Thermometer Ratings",
+       color = "") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "bottom")
 ```
+
+The plot above shows that thermometer ratings of Joe Biden are mainly driven by party.  Despite different ages and sexes, Democrats consistently have higher ratings of warmth towards 
