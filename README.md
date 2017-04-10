@@ -96,6 +96,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * FA Ch 3 - focus on pg. 61-72
     * [Gelman, Andrew, and Antony Unwin. "Infovis and statistical graphics: different goals, different looks." *Journal of Computational and Graphical Statistics* 22.1 (2013): 2-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761137)
     * [Wickham, Hadley. "Graphical criticism: some historical notes." *Journal of Computational and Graphical Statistics* 22.1 (2013): 38-44.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761140?src=recsys)
+    * [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)
 1. Exploratory data analysis
     * TA Ch 6-7
     * [R4DS Ch 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
