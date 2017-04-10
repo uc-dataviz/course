@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 
 * Define Tufte's theory of data graphics, data-ink ratio, and chartjunk
 * Present and compare examples of minimalistic graphics to their original form
+* Assess visualizations under the engineer/designers philosophy
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
@@ -33,16 +34,14 @@ options(digits = 3)
 set.seed(1234)
 ```
 
+# Tufte's world
 
-# Tufte ch 4 - data-ink ratio
-
-* What's the core purpose of visualizations? Communicate quantitiative information? Art?
-* Tufte's theory of data graphics
+* Core purpose of visualization is to communicate quantitative information
+    * Art is secondary
     * "Above all else show the data"
+* Goal is to maximize the data-ink ratio
 
-## Data-ink ratio
-
-$$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print the graphic}}$$
+    $$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print the graphic}}$$
 
 * **Data-ink** - non-erasable core of a graphic
     * This is what Tufte says we should most care about
@@ -50,16 +49,8 @@ $$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print t
 * What should we consider to be part of the "data-ink"?
     * Is this literally just the data? Don't we need gridlines or axes? What else can be considered integral to the graph?
 * He never offers proof of his hypothesis that less is better
-* When is redundancy better?
-    * Reshow example from first week with cyclical day-night plots
 
-
-# Compare Tufte minimal graphs to traditional graphs using `ggplot2`
-
-* https://github.com/jrnold/ggthemes
-* Compare other themes for the same basic plot
-
-# Tufte ch 5 - chart junk
+## Chart junk
 
 * Vibrating moire effects
     * Hard to produce in `ggplot2` - no support for them
@@ -75,32 +66,35 @@ $$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print t
 
 # Compare Tufte minimal graphs to traditional graphs using `ggplot2`
 
-* https://github.com/jrnold/ggthemes
-* Compare other themes for the same basic plot
-* http://motioninsocial.com/tufte/
+* [`ggthemes`](https://github.com/jrnold/ggthemes)
+* Compare other themes for the same basic plot^[Source for examples: [Tufte in R](http://motioninsocial.com/tufte/)]
+
+The goal of Tufte's minimalism is to maximize the data-ink ratio, so we want to modify traditional or default graphs in R and `ggplot2` to minimize use of extraneous ink.
 
 ## Minimal line plot
 
-```{r minline}
+```{r line}
 x <- 1967:1977
 y <- c(0.5, 1.8, 4.6, 5.3, 5.3, 5.7, 5.4, 5, 5.5, 6, 5)
 d <- data_frame(x, y)
 
 ggplot(d, aes(x, y)) +
   geom_line() +
+  geom_point() +
   scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
   labs(title = "Per capita budget expandures",
        x = "Year",
        y = "Per capita budget expandures\nin constant dollars")
+```
 
-ggplot(d, aes(x, y)) +
-  geom_line() +
-  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
-  labs(title = "Per capita budget expandures",
-       x = "Year",
-       y = "Per capita budget expandures\nin constant dollars") +
-  theme_excel()
+* We use `geom_point()` to draw the data points and `geom_line()` to connect the points
+* What is the extraneous ink on this graph?
+    * Background
+    * Title of graph and y-axis labels - redundant
+    * x-axis label - year is obvious/self-explanatory
+* Missing context - how is this expansion meaningful over time?
 
+```{r minline}
 ggplot(d, aes(x, y)) +
   geom_line() +
   geom_point(size = 3) +
@@ -119,22 +113,35 @@ ggplot(d, aes(x, y)) +
   )
 ```
 
+* Remove axis and graph titles
+* Adds text annotation within graph
+* Highlights a 5% increase in per capital expandures
+* Changes font to be more aesthetically pleasing, not so blockish
+
 ## Minimal boxplot
 
-```{r minbox}
+```{r boxplot}
 ggplot(quakes, aes(factor(mag), stations)) +
   geom_boxplot() +
   labs(title = "Fiji earthquakes",
        x = "Richter Magnitude",
        y = "Number of stations reporting earthquakes")
+```
 
-ggplot(quakes, aes(factor(mag), stations)) +
-  geom_boxplot() +
-  labs(title = "Fiji earthquakes",
-       x = "Richter Magnitude",
-       y = "Number of stations reporting earthquakes") +
-  theme_excel()
+* Key features of a boxplot
+    * Lines to indicate:
+        * Maximum of IQR
+        * 3rd quartile
+        * Median
+        * 1st quartile
+        * Minimum of IQR
+    * Dots for outliers
+* How many different line strokes do we use?
+    * 8 for each graph
+    * $8 \times 22 = 176$
+* This is extraneous ink
 
+```{r minboxplot}
 ggplot(quakes, aes(factor(mag), stations)) +
   theme_tufte() +
   geom_tufteboxplot(outlier.colour = "transparent") +
@@ -151,9 +158,33 @@ ggplot(quakes, aes(factor(mag), stations)) +
   )
 ```
 
+* Now we use only 22 verticals to show the same data. It could easily be drawn by hand with a single vertical for each category on the x-axis
+* Doesn't show outlier info, but is this really necessary?
+* Also removes the background color and gridlines
+
+```{r offset-boxplot}
+ggplot(quakes, aes(factor(mag), stations)) +
+  theme_tufte() +
+  geom_tufteboxplot(median.type = "line") +
+  theme(axis.title = element_blank()) +
+  annotate(
+    "text",
+    x = 8,
+    y = 120,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Number of stations \nreporting Richter Magnitude\nof Fiji earthquakes (n=1000)"
+    )
+  )
+```
+
+* Here we use offsetting lines to indicate the middle half of the data rather than using a gap
+* Is this prettier? Easier to interpret?
+
 ## Minimal barchart
 
-```{r minbar}
+```{r bar}
 library(psych)
 library(reshape2)
 
@@ -161,23 +192,27 @@ d <- melt(colMeans(msq[, c(2, 7, 34, 36, 42, 43, 46, 55, 68)], na.rm = T) *
             10)
 d$trait <- rownames(d)
 
-ggplot(d, aes(x = trait, y = value)) +
+p <- ggplot(d, aes(x = trait, y = value)) +
   geom_bar(stat = "identity") +
   scale_y_continuous(breaks = seq(1, 5, 1)) +
   labs(title = "Watson et al., 1998",
        subtitle = "N = 3896",
        x = "Negative emotion traits",
        y = "Average score")
+p
+```
 
-ggplot(d, aes(x = trait, y = value)) +
-  geom_bar(stat = "identity") +
-  scale_y_continuous(breaks = seq(1, 5, 1)) +
-  labs(title = "Watson et al., 1998",
-       subtitle = "N = 3896",
-       x = "Negative emotion traits",
-       y = "Average score") +
-  theme_excel()
+* Again, the background is the main culprit - though `ggplot2` offers other default backgrounds
 
+```{r default-themes, dependson="bar"}
+p + theme_bw()
+p + theme_dark()
+p + theme_classic()
+p + theme_minimal()
+p + theme_void()
+```
+
+```{r minbar}
 ggplot(d, aes(x = trait, y = value)) +
   theme_tufte(base_size = 14, ticks = F) +
   geom_bar(width = 0.25, fill = "gray", stat = "identity") +
@@ -199,20 +234,23 @@ from 3896 participants\n(Watson et al., 1988)"
   )
 ```
 
+* Erases the box/grid background
+* Removes vertical axis
+* Use a **white grid** to show coordinate lines through the absence of ink, rather than adding ink
+    * Allows us to remove tick marks as well
+
 ## Range-frame scatterplot
 
-```{r range-frame}
+```{r scatterplot}
 ggplot(mtcars, aes(wt, mpg)) +
   geom_point() +
   xlab("Car weight (lb/1000)") +
   ylab("Miles per gallon of fuel")
+```
 
-ggplot(mtcars, aes(wt, mpg)) +
-  geom_point() +
-  xlab("Car weight (lb/1000)") +
-  ylab("Miles per gallon of fuel") +
-  theme_excel()
+* A standard bivariate scatterplot
 
+```{r range-frame}
 ggplot(mtcars, aes(wt, mpg)) +
   geom_point() +
   geom_rangeframe() +
@@ -222,6 +260,10 @@ ggplot(mtcars, aes(wt, mpg)) +
   theme(axis.title.x = element_text(vjust = -0.5),
         axis.title.y = element_text(vjust = 1.5))
 ```
+
+* Use the frame/axis lines of the graph to communicate important information
+    * Extends only to minimum/maximum values in the data, rather than arbitrary points
+    * Explicitly identifies the minimum and maximum values
 
 ### With a quartile plot
 
@@ -237,13 +279,47 @@ qfplot(
 )
 ```
 
-# Rethinking Tufte's definition of visual excellence
+* Combine with info on the quartiles of the data to show case this info as well
+* Thicker bar indicates inner two quartiles
+* Median is explicitly labeled
+
+# Reconsidering Tufte
+
+## When is redundancy better?
+
+![Traditional bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/sk_time_chart1.png)
+
+![Double-time bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/burglary1.png)
+    
+* Each set of 24 bars show the same data. The top bars run from midnight to 11pm. The bottom bars run from noon to 11am.
+* Highlighted regions represent 6-5 (6am-5pm; 6pm-5am)
+* Colors represent (roughly) day and night (yellow for day, blue for night)
+* Enables representing trends over a 24 hour period without breaking arbitrarily at midnight
+
+* The second graph is incredibly redundant, but which is easier to interpret?
+    * Does it pass Tufte's test?
+    * What does it mean to be "integral"?
+
+## Does minimalism really help here?
+
+![Chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b7c8b60cd9970b-pi)
+
+![Redesigned chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b8d23fe1c7970c-pi)
+
+## Experimental tests of Tufte's claims
+
+
+
+## Rethinking Tufte's definition of visual excellence
 
 * Too many of Tufte's claims are based on nothing - no evidence to support his minimalistic approach to graphical design
 * Think of the hockey stick chart vs. xkcd on Earth's temperature
     * According to Tufte, both probably have a lot of chartjunk (xkcd more so)
     * But if asked to remember the importance and story of the graph weeks later, whcih one do you think the average reader would recall better?
     
+
+
+
 # Statistical graphics vs infographics
 
 ## Different goals
