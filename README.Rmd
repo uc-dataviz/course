@@ -1,0 +1,6 @@
+---
+title: "README"
+output: html_document
+---
+
+This is Assignment 1 of David. It includese 2 questions in to seperate files.
