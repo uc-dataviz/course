@@ -17,11 +17,28 @@ biden <- read_csv("biden.csv")
 ## Part 2:  `ggplot2` and the grammar of graphics
 
 ```{r}
+#Tidy data
 biden_tidy <- biden %>%
   gather(dem, rep, key = "Party", value = "Value") %>%
   filter(Value != 0) %>%
-  select(-Value)
+  select(-Value) %>%
+  mutate(female = as.factor(female)) %>%
+  mutate(female = ifelse(female == 0, "Male", "Female")) %>%
+  rename(Sex = female) %>%
+  mutate(Party = ifelse(Party == "dem", "Democrat", "Republican"))
 
-ggplot(biden, aes(educ, biden, color = female)) +
+#Plot data
+ggplot(biden_tidy, aes(Party, biden, color = Sex)) +
+  geom_boxplot() +
+  labs(title = "Thermometer Ratings Towards Joe Biden",
+       subtitle = "By Party and Sex",
+       x = "",
+       y = "Thermometer Ratings",
+       color = "") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5),
+        legend.position = "bottom")
+
+ggplot(biden_tidy, aes(age, biden, color = Party)) +
   geom_point()
 ```
