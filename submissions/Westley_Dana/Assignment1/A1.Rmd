@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Part 2: `ggplot2` and the grammar of graphics (10 points)
 
 
-My visualization:My visualization:
+My visualization:
 ``` {r}
 biden <- read.csv("/Users/Dana/Desktop/biden.csv")
 library(ggplot2)
@@ -109,15 +109,37 @@ test11 <- ggplot(biden, aes(warmth, fill = party)) +
 test11
 
 #trying to make it percentage PER PARTY rather than of total respondants
-test12 <- ggplot(biden, aes(warmth, fill = party)) + 
-  geom_bar(if(biden$party == 0) aes(y = (..count..)/1027)) + 
-  geom_bar(if(biden$party == 1) aes(y = (..count..)/780), position = "dodge") + 
-  scale_y_continuous(labels=percent) + 
-  labs(title = "Feelings of Warmth Toward Joe Biden by Political Party", y = "Percent", x = "Feelings toward Biden")
-test12
+#test12 <- ggplot(biden, aes(warmth, fill = party)) + 
+ # geom_bar(if(biden$party == 0) aes(y = (..count..)/1027)) + 
+  #geom_bar(if(biden$party == 1) aes(y = (..count..)/780), position = "dodge") + 
+  #scale_y_continuous(labels=percent) + 
+  #labs(title = "Feelings of Warmth Toward Joe Biden by Political Party", y = #"Percent", x = "Feelings toward Biden")
+#test12
+
+library(dplyr)
+biden %>% count(warmth = factor(warmth), party = factor(party)) %>% 
+    mutate(pct = prop.table(n) * 100) %>% 
+    ggplot(aes(x = warmth, y = n, fill = party)) + 
+    geom_bar(stat = 'identity', position = 'dodge') + 
+    geom_text(aes(y = n + .2,    # nudge above top of bar
+                  label = paste0(round(pct, 2), '%')),    # prettify
+              position = position_dodge(width = .9), 
+              size = 3)
 
 
+biden %>% count(party = factor(party), warmth = factor(warmth)) %>% 
+    mutate(pct = prop.table(n) * 100) %>% 
+    ggplot(aes(x = party, y = n, fill = warmth)) + 
+    geom_bar(stat = 'identity', position = 'dodge') + 
+    geom_text(aes(y = n + 15,    # nudge above top of bar
+                  label = paste0(round(pct, 2), '%')),    # prettify
+              position = position_dodge(width = .9), 
+              size = 3)
 ```
+
+
+fixing percentages by group (http://stackoverflow.com/revisions/40250493/2)
+
 
 
 
