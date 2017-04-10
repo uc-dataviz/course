@@ -13,7 +13,7 @@ library(haven)
 library(grid)
 
 # Gets nes data.
-nes <- read_dta("data/nes2008.dta")
+nes <- read_dta("nes2008.dta")
 
 # Prep biden related variables
 # Vectors for variables factorization.

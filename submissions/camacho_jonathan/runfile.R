@@ -19,7 +19,7 @@ for (path in paths) {
     dir.create(path)
 }
 
-# source("01_tidying_data.R")
+source("01_processing.R")
 # source("02_exploratory_analysis.R")
 # source("03_models.R")
 # rmarkdown::render("04_report.Rmd", output_dir = "output")
