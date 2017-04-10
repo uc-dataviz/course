@@ -1,0 +1,41 @@
+---
+title: "Assignment 1"
+author: "Nicole Sullivan"
+date: "4/8/2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 1:  Visualization Critique
+
+![Butler's interactive shot chart](~/dataviz/butler_shots.png)
+
+Plotted above is the a spatial representation of Jimmy Butler's 2016-2017 shot density (as of Apr 8, 2017).  The visualizaiton is actually an interactive one from [PointAfter by Graphiq](http://basketball-players.pointafter.com/l/379/Jimmy-Butler#Shot%20Chart&s=33AFDV), a software company that combines aesthetics and engineering to create beautiful, minimalistic graphics.   Graphiq uses their data not only to power their own [research sites](https://www.graphiq.com/researcher-solutions), but also to design visualizations for third-parties, such as [Time, The Huffington Post, AOL., Market Watch, and Sports Illustrated](https://www.graphiq.com/enterprise-solutions), which they boast has led to ["40% increase in time on page"](https://www.graphiq.com/enterprise-solutions) with their content.  (While their data on this doesn't appear to be open source, admittedly, I came to know of the company because one of their graphics was incorporated in an CNN article online that I was reading.  As the article was on Federal Reserve rates and hikes, incorporation of visualizations is not surprising - but I've found that graphs dealing with economic data tend to render data in ways that are less appealing, comprehensible, and consummable to the layman than simple text interpretations.  However, the beauty and the clarity of Graphiq's plot was attractive and immediately drew my attention to the information they were presenting.)
+
+### Is it truthful?
+
+> "The more adequately a model fits whatever it stands for without being needlessly complex, and the easier it is for its intended audience to interpret it correctly, the better it will be." *TA, Cairo*
+
+I love this interactive chart (and most of Graphiq's work) because it accomplishes Cairo's first requisite - eradicating needless complexity - flawlessly.  There is one variable - court coordinates for each shot (used to create density) - for one player (in this case, Jimmmy Butler).  Because the intended audience is probably those with some sports background and knowledge, the chart also meets the second objective in being truthful - that is, that Butler's highest shot density this year is in close proximity to the net.
+
+### Is it functional?
+
+Shading/saturation is high on "enabling general estimates" in Cleveland and McGill's *Scale of elementary perceptual tasks*, which is highly appropriate for the story PointAfter is conveying with this graphic.  The viewer is able to make judgments about a player's tendency to take and/or make shots in certain locations on the court - very few individuals are  interested in the player's exact shot or scoring density at exact locations on the court because basketball is a highly fluid game and highly dependent on the distribution of player's *in that exact play*.  Thus, a statistician, coach, or fan is more interested in Jimmy Butler's scoring or shot density outside the paint vs. in the paint, in the left field vs. right field, etc.
+
+### Is it beautiful?
+
+
+
+### Is it insightful?
+### Is it enlightening?
+
+
+![Steph Curry's shot chart by Scheider](http://toddwschneider.com/data/ballr/stephen-curry-2015-16-shot-chart-hexagonal.png).  
+*Visualization from http://toddwschneider.com/data/ballr/stephen-curry-2015-16-shot-chart-hexagonal.png*
+
+![Ray Allen's shot chart by Goldsberry](https://assets.wired.com/photos/w_1032/wp-content/uploads/2014/09/ff_mccluskyexcerptgallery_f.jpg)
+
+*Visualization from https://assets.wired.com/photos/w_1032/wp-content/uploads/2014/09/ff_mccluskyexcerptgallery_f.jpg.*
