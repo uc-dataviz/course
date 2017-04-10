@@ -131,7 +131,7 @@ biden %>% count(party = factor(party), warmth = factor(warmth)) %>%
     ggplot(aes(x = party, y = pct, fill = warmth)) + 
     geom_bar(stat = 'identity', position = 'dodge') + 
   labs(title = "Feelings of Warmth Toward Joe Biden by Political Party", y = "Count", x = "Political Party") +
-    geom_text(aes(y = n + 15,    # nudge above top of bar
+    geom_text(aes(y = pct + 1,    # nudge above top of bar
                   label = paste0(round(pct, 2), '%')),    # prettify
               position = position_dodge(width = .9), 
               size = 3)
