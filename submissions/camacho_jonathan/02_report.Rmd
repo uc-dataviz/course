@@ -16,7 +16,7 @@ library(tidyverse)
 
 ## Part 1: Visualization critique (5 points)
 
-![](./screenshot.png)
+![](./graphics/screenshot.png)
 
 I selected this plot for several reasons. First, it seems similar to the visualization I created for the second part of this assignment. Secondly, I thought the topic of the visualization seems interesting. The plot tells the story about the democratic turnout after 2016 by the political party in two states Delaware and Iowa and compares the result to the total registration and the 2014 and 2016 turn out. In general, the partisan composition of the electorate was similar to the composition in 2016, and Democrats won the race. In Iowa, Democratic turnout was far higher than Republican turnout, improving the Democratic share of the electorate by 14 points since the last midterm election.
 

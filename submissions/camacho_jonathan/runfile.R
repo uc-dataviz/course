@@ -15,7 +15,7 @@ paths <- c("./data/", "./graphics")
 #, "output"
 
 for (path in paths) {
-    unlink(path, recursive = TRUE) 
+    #unlink(path, recursive = TRUE) 
     dir.create(path)
 }
 
