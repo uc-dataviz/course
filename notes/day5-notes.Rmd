@@ -302,23 +302,73 @@ qfplot(
 
 ## Does minimalism really help here?
 
+* Accompanying an article declaring that student progress on NAEP tests has come to a virtual standstill
+
 ![Chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b7c8b60cd9970b-pi)
+
+* What is the comparison we should make?
+* Is this too much color?
+* Meets Tufte's minimalist standards, probably has a decent data-ink ratio
+* Note Grade 4 math scores for whites in 2009-2015 - does this mean no progress or unknown scores?
 
 ![Redesigned chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b8d23fe1c7970c-pi)
 
+* This version is much clearer - specifically tells us how to compare the scores
+* Removes color as a channel, using linetype instead
+    * In this situation, is that better or worse?
+* Title for the graph makes clear the point tryingg to be made
+
 ## Experimental tests of Tufte's claims
 
+* How do we know Tufte's claims are true? We can test them with experiments!
 
+![Source: Figure 2 from [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)](images/tufte_experiment.png)
+
+### Protocol
+
+* Compared chartjunk versions of graphs to standard/minimalist versions of graphs
+* Tested individuals on chart description and recall
+* 20 subjects split into short and long-term recall groups
+    * Quite a small sample of convenience (university population)
+* Collected measures
+    * Response scores - did the individual correctly read/interpret the chart?
+    * Preferences - which type of chart did the individual prefer? Standard or embellished?
+    * Gaze data - where did the subject look during the experiment? At data regions or embellishment regions?
+
+### Results
+
+![Source: Figures 4-6 from [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)](images/tufte_experiment_results.png)
+
+* No difference for description
+* No difference for immediate recall
+* Embellished images slightly better for long-term recall (12-22 days after treatment)
+
+### Discussing the results
+
+* Why did the chartjunk not lead to worse description and recall?
+    * Chartjunk was related to the topic of the chart
+    * "Gets to the point quicker"
+* Why would the embellished images produce better long-term recall?
+    * Very vivid image
+    * Value message - individual believes author is trying to communicate a set of values
+    * Embellished images produced more value messages
+* Should visualizations be "objective"?
+    * Tufte seems to think so: minimalism leads to the data speaking for itself - do we buy this?
 
 ## Rethinking Tufte's definition of visual excellence
 
 * Too many of Tufte's claims are based on nothing - no evidence to support his minimalistic approach to graphical design
 * Think of the hockey stick chart vs. xkcd on Earth's temperature
     * According to Tufte, both probably have a lot of chartjunk (xkcd more so)
-    * But if asked to remember the importance and story of the graph weeks later, whcih one do you think the average reader would recall better?
+    * But if asked to remember the importance and story of the graph weeks later, which one do you think the average reader would recall better?
     
+## Testing this theory
 
-
+* Design an experiment to test the impact/effectiveness of chartjunk vs. minimalism
+* What protocols/features could we use? How could we deploy the experiment?
+    * If deployed on a platform such as Amazon MTurk, what are the benefits and drawbacks?
+    
+    
 
 # Statistical graphics vs infographics
 
