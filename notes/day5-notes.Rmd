@@ -555,7 +555,8 @@ bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
   count(word, person) %>%
   spread(person, n, fill = 0) %>%
   ggplot(aes(Pope, Trump, label = word)) +
-  geom_text()
+  geom_text() +
+  geom_abline(slope = 1, linetype = 2)
 ```
 
 ### Health-care spending and life expectancy
