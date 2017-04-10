@@ -1,0 +1,14 @@
+---
+title: "Part_2"
+author: "Nicole Sullivan"
+date: "4/10/2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Part 2:  `ggplot2` and the grammar of graphics
+
+
