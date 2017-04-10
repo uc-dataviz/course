@@ -70,7 +70,7 @@ The story I wanted to tell through this graph is threefold:
 
 1.  **Party identification plays a major role (possibly the most important) in Americans' atttitudes toward Biden.** Regardless of gender and age group, Democrats are significantly more warmly disposed toward Joe Biden than non-Democrats, and Republicans are significantly less warmly disposed than non-Republicans.
 2.  **Biden is popular among women.** Across age groups and party lines, women are more warmly disposed to Biden than men.
-3.  **Biden is popular.** Even though Republicans are less warm toward Biden compared to non-Republicans, the difference between the middle value of 50 and the low extreme is significantly less than the difference between 50 and the high extreme.
+3.  **Biden is popular.** Even though Republicans are less warm toward Biden compared to non-Republicans, the difference between the middle value of 50 and the low extreme is significantly less than the difference between 50 and the high extreme. .
 
 The intended audience of my visualization is the general public. As such, I wanted to create a relatively simple graph that is intuitive and easy to draw insights from while still being truthful.
 
