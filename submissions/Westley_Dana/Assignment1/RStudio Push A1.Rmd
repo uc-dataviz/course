@@ -115,10 +115,6 @@ test12 <- ggplot(biden, aes(warmth, fill = party)) +
   labs(title = "Feelings of Warmth Toward Joe Biden by Political Party", y = "Percent", x = "Feelings toward Biden")
 test12
 
-#AHHH
-
-
-
 
 ```
 
