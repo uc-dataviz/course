@@ -1,0 +1,10 @@
+---
+title: "README"
+output: html_document
+---
+
+This is Assignment 1 of David. It includese 2 questions in to seperate files:
+
+[Q1: Visualization critique](https://github.com/xiaorancheng/dataviz/blob/b125bd3e34d36d1ea3415586bf2c3217add1e66a/submissions/David_Cheng/Assignment%201/Q1__Visualization_critique.md)
+
+[Q2: Biden](https://github.com/xiaorancheng/dataviz/blob/b125bd3e34d36d1ea3415586bf2c3217add1e66a/submissions/David_Cheng/Assignment%201/Biden.md)
