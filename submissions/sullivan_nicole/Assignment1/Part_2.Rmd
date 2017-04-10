@@ -9,6 +9,19 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+biden <- read_csv("biden.csv")
+```
+
 ## Part 2:  `ggplot2` and the grammar of graphics
 
+```{r}
+biden_tidy <- biden %>%
+  gather(dem, rep, key = "Party", value = "Value") %>%
+  filter(Value != 0) %>%
+  select(-Value)
 
+ggplot(biden, aes(educ, biden, color = female)) +
+  geom_point()
+```
