@@ -1,0 +1,160 @@
+---
+title: "Exploratory data analysis"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "April 12, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(ggthemes)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 18
+
+theme_set(theme_gray(base_size = base_size))
+```
+
+## Exploratory data analysis
+
+1. Generate questions about your data.
+1. Search for answers by visualising, transforming, and modeling your data.
+1. Use what you learn to refine your questions and or generate new questions.
+1. Rinse and repeat until you publish a paper.
+
+## Exploratory data analysis
+
+1. What type of variation occurs within my variables?
+1. What type of covariation occurs between my variables?
+1. Are there outliers in the data?
+1. Do I have missingness? Are there patterns to it?
+1. How much variation/error exists in my statistical estimates? Is there a pattern to it?
+
+## Differences between EDA and modeling
+
+Tips dataset
+
+Variable | Explanation
+---------|-------------
+`obs` | Observation number
+`totbill` | Total bill (cost of the meal), including tax, in US dollars
+`tip` | Tip (gratuity) in US dollars
+`sex` | Sex of person paying for the meal (0=male, 1=female)
+`smoker` | Smoker in party? (0=No, 1=Yes)
+`day` | 3=Thur, 4=Fri, 5=Sat, 6=Sun
+`time` | 0=Day, 1=Night
+`size` | Size of the party
+
+```{r get-tips, include = FALSE}
+tips <- read_csv("data/tips.csv")
+str(tips)
+```
+
+## Tips regression
+
+```{r tips-lm}
+tips <- tips %>%
+  mutate(tiprate = tip / totbill)
+
+tips_lm <- lm(tiprate ~ sex + smoker + day + time + size, data = tips)
+tidy(tips_lm)
+```
+
+```{r tips-rsq}
+glance(tips_lm)
+```
+
+## Exploring `tips`
+
+```{r tips-hist}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = 1)
+```
+
+## Exploring `tips`
+
+```{r tips-round}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = .1)
+```
+
+## Exploring `tips`
+
+```{r tips-scatter}
+ggplot(tips, aes(totbill, tip)) +
+  geom_point() +
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  geom_text(data = tips %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
+```
+
+## Exploring `tips`
+
+```{r tips-scatter-many}
+ggplot(tips, aes(totbill, tip)) +
+  geom_point() +
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  facet_grid(smoker ~ sex, labeller = "label_both") +
+  geom_text(data = tips %>%
+              group_by(smoker, sex) %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
+```
+
+## EDA vs. CDA
+
+* Exploratory data analysis
+* Confirmatory data analysis
+
+## EDA in R
+
+![Source: [R for Data Science](http://r4ds.had.co.nz/introduction.html)](http://r4ds.had.co.nz/diagrams/data-science.png)
+
+## Tidy data
+
+![Figure 12.1 from [*R for Data Science*](r4ds.had.co.nz)](http://r4ds.had.co.nz/images/tidy-1.png)
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+## Functions for tidy data {.scrollable}
+
+```{r example-tidy-graphs, echo = TRUE}
+ggplot(gapminder::gapminder, aes(lifeExp)) +
+  geom_histogram()
+
+ggplot(diamonds, aes(carat)) +
+  geom_histogram()
+
+ggplot(mpg, aes(hwy)) +
+  geom_histogram()
+
+ggplot(rcfss::scorecard, aes(admrate)) +
+  geom_histogram()
+```
+
+## Keeping a record of exploration
+
+* Importance of keeping a record
+* Programmatic approach
+* Where to store records
+    * GitHub
+    * R Markdown documents
+    * Jupyter notebooks
