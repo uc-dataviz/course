@@ -45,3 +45,15 @@ scorecard %>%
          x = "State",
          y = "Count") + 
     facet_grid(type ~ .)
+
+scorecard %>%
+  filter(type == "Public") %>%
+  group_by(state) %>%
+  summarise(avg_cost = mean(cost)) %>%
+  ggplot(aes(state, avg_cost)) + 
+    geom_col() +
+    labs(title = "Average Cost of Public Institutions by State",
+         x = "State",
+         y = "Average Yearly Cost") + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
