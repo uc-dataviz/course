@@ -1,0 +1,61 @@
+---
+title: "EDA Participation Assignment"
+author: "Dana Westley"
+date: "04/12/2017"
+output: github_document
+---
+
+```{r}
+library(rcfss)
+data("scorecard")
+
+summary(scorecard)
+?scorecard
+
+library(ggplot2)
+
+sat_comprate <- ggplot(scorecard, aes(satavg, comprate)) + 
+  geom_point() + 
+  geom_smooth()
+sat_comprate
+
+#histogram type of school
+
+type <- ggplot(scorecard, aes(type)) +
+  geom_bar()
+
+
+price <- ggplot(scorecard, aes(cost, debt)) +
+  geom_point()
+
+price
+
+
+#factor type of school
+scorecard$type_factor [scorecard$type == "Private, nonprofit"] = 1
+scorecard$type_factor [scorecard$type == "Private, for-profit"] = 2
+scorecard$type_factor [scorecard$type == "Public"] = 3
+scorecard$type_factor = factor(scorecard$type_factor, levels = c(1,2,3), labels = c("Private Non", "Private For", "Public"))
+
+cost_type <- ggplot(scorecard, aes(type_factor, cost)) +
+  geom_bar(stat = "identity")
+cost_type
+
+sat_comprate <- ggplot(scorecard, aes(satavg, comprate)) + 
+  geom_point() + 
+  geom_smooth()
+sat_comprate
+
+scorecard$comp_split [scorecard$comprate <= .5] = 1
+scorecard$comp_split [scorecard$comprate > .5] = 2
+scorecard$comp_split = factor(scorecard$comp_split, levels = c(1,2), labels = c("Under 50%", "Over 50%"))
+
+#debt by completion and type of school
+
+plot1 <- ggplot(scorecard, aes(comp_split, debt, fill = type)) + 
+  geom_bar(stat = 'identity', position = 'dodge') + 
+  labs(title = "Post-Grad Debt By Type of School and Completion Rate", y = "Debt", x = "Completion Rate")
+
+plot1
+
+```
