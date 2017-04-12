@@ -1,0 +1,51 @@
+---
+title: "Scorecard"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rcfss)
+library(tidyverse)
+data("scorecard")
+
+```
+
+
+```{r}
+ggplot(data = scorecard)+
+  geom_bar(mapping = aes(x=type))
+```
+
+In thie dataset, most schools are Private, Nonprofit. Then it follows the Public and Private, for-profit schools.
+
+```{r}
+ggplot(data = scorecard)+
+  geom_smooth(mapping=aes(x=satavg, y=admrate))
+```
+
+From the plot above, the higher average SAT scroe comes with the lower admission rate.
+
+```{r}
+admrate_satavg <- lm(data=scorecard, admrate~satavg)
+admrate_satavg
+```
+
+Using Linear model, we have the rusults above.
+
+```{r}
+ggplot(data = scorecard)+
+  geom_density(aes(admrate, color=type ))
+```
+
+The admission rate of Private, for-profit schools is the highest. Private, nonprofit schools have the lowest admission rate.
+
+```{r}
+ggplot(data=scorecard)+
+  geom_point(mapping = aes(x=avgfacsal, y=cost))+
+  geom_smooth(mapping = aes(x=avgfacsal, y=cost))+
+  facet_wrap(~type)
+```
+
+The faculties in private nonprofit schools get the highest pay. Also, those schools have the highest costs.
+
