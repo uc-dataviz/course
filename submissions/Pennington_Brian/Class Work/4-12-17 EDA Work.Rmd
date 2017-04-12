@@ -1,0 +1,84 @@
+---
+title: "Class Work 4-12-17"
+author: "Brian Pennington"
+date: "April 12, 2017"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+library(rcfss)
+library(tidyverse)
+library(knitr)
+data("scorecard")
+
+
+colnames(scorecard)
+```
+
+```{r, echo=FALSE}
+scorecard %>%
+  count(type) %>%
+  kable()
+
+scorecard %>%
+  count(state) %>%
+  mutate(percent = n/sum(n)) %>%
+  ggplot(aes(state, percent)) +
+  geom_bar(stat= "identity")
+
+scorecard %>%
+  ggplot(aes(cost)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(admrate)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(satavg)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(avgfacsal)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(pctpell)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(comprate)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(firstgen)) +
+  geom_histogram()
+
+scorecard %>%
+  ggplot(aes(debt)) +
+  geom_histogram()
+
+scorecard %>%
+  summary()
+```
+
+The first thing we do is simply take a look under the hood and examine what are simple univaraite relationships of this data. The first thing that we notice is that there is an overrepresentaion of non-forprofit private institutions that we might think about weighting. The proportion of states represented seems roughly representative. From here we need to focus on part of the narrative. If we still do not have a narrative, we could construct further bivariate distributions that could help.
+
+
+```{r, echo=FALSE}
+scorecard %>%
+  ggplot(aes(comprate, pctpell, color=type))+
+  geom_point()+
+  geom_smooth()
+```
+
+From this visualization, we can see that those who receive higher percentage of Pell Grant are less likely to complete university within six years. 
+
+```{r, echo = false}
+scorecard %>%
+  ggplot(aes(state, pctpell, fill = type))+
+  geom_bar(stat = "identity", na.rm = FALSE)
+```
+
+
+We begin to see that those states with higher representation of institutions also have higher percentage of students with pell grants 
