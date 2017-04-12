@@ -1,0 +1,216 @@
+---
+title: "Day 6 - Exploratory data analysis"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+  github_document:
+    toc: yes
+    toc_depth: 3
+always_allow_html: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Define exploratory data analysis
+* Review key principles of tidy data and `dplyr`/`ggplot2` for EDA
+* Practice exploring data from Scorecard
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+library(broom)
+library(stringr)
+
+options(digits = 3)
+set.seed(1234)
+```
+
+# Exploratory data analysis
+
+1. Generate questions about your data.
+1. Search for answers by visualising, transforming, and modeling your data.
+1. Use what you learn to refine your questions and or generate new questions.
+* Rinse and repeat until you publish a paper.
+
+EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. A lot of questions can be answered using EDA:
+
+1. What type of variation occurs within my variables?
+1. What type of covariation occurs between my variables?
+1. Are there outliers in the data?
+1. Do I have missingness? Are there patterns to it?
+1. How much variation/error exists in my statistical estimates? Is there a pattern to it?
+
+**R for Data Science** does a good job explaining the mechanics of EDA in R, while **The Truthful Art** provides a clear primer for some of the statistical principles involved in basic data description and exploration.^[In fact, you may recognize that many of Cairo's graphs are generated in R using `ggplot2` (note the default background grid).]
+
+## Differences between EDA and modeling
+
+EDA is not the same thing as statistical modeling. Statistical modeling attempts to explain and summarize relationships between variables through a low-dimensional approach. For instance, in regression analysis we try to summarize the relationship between an outcome of interest and a predictor by estimating a parameter that summarizes the monotonic, linear relationship. Whereas in exploratory data analysis we are not limited to a strict functional form, or even focused on explaining relationships between variables (covariation).
+
+Consider a dataset on tips given to a single waiter over a three-month period in a restaurant with the following variables:^[Source: [Interactive and Dynamic Graphics for Data Analysis: With R and Ggobi](https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-0-387-71762-3). Data obtained from: [The GGobi Book](http://www.ggobi.org/book/).] 
+
+Variable | Explanation
+---------|-------------
+`obs` | Observation number
+`totbill` | Total bill (cost of the meal), including tax, in US dollars
+`tip` | Tip (gratuity) in US dollars
+`sex` | Sex of person paying for the meal (0=male, 1=female)
+`smoker` | Smoker in party? (0=No, 1=Yes)
+`day` | 3=Thur, 4=Fri, 5=Sat, 6=Sun
+`time` | 0=Day, 1=Night
+`size` | Size of the party
+
+```{r get-tips}
+tips <- read_csv("data/tips.csv")
+str(tips)
+```
+
+If our primary question is "what are the factors that affect tipping behavior?", then we can quickly fit a linear regression model to explain this outcome:^[Note we calculate a new variable `tiprate`, which is $\frac{\text{tip}}{\text{totbill}}$]
+
+```{r tips-lm}
+tips <- tips %>%
+  mutate(tiprate = tip / totbill)
+
+tips_lm <- lm(tiprate ~ sex + smoker + day + time + size, data = tips)
+tidy(tips_lm)
+```
+
+Based on this analysis, `size` is the only significant predictor. Quick answer to our original question. But is this sufficient?
+
+```{r tips-rsq}
+glance(tips_lm)
+```
+
+Our $R^2$ is just `r modelr::rsquare(tips_lm, tips)`. That's a pretty crappy model. And it misses a lot of other interesting aspects of the data.
+
+```{r tips-hist}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = 1)
+```
+
+The histogram of tip amounts (binwidth = \$1) shows the distribution is skewed right and unimodal. Overall the tips are not that large.
+
+```{r tips-round}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = .1)
+```
+
+By shrinking the binwidth to \$.10, we see a new phenomenon. Peaks occur at whole and half-dollar amounts, likely caused by customers picking round numbers for tips. We see this a lot too at the gas pump.
+
+```{r tips-scatter}
+ggplot(tips, aes(totbill, tip)) +
+  geom_point() +
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  geom_text(data = tips %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
+```
+
+By generating a scatterplot with a line representing a generous tipper (defined as a tip of 18%), we see that the majority of patrons are cheap tippers. The $R^2$ is decent for the observations, suggesting a moderate to strong correlation between the variables. But this correlation is not consistent across all observations in the data: there is more variation from the line as the total bill increases.
+
+Of course we are also frequently interested in multiple variables and their covariation with one another, such as smoker and sex:
+
+```{r tips-scatter-many}
+ggplot(tips, aes(totbill, tip)) +
+  geom_point() +
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  facet_grid(smoker ~ sex, labeller = "label_both") +
+  geom_text(data = tips %>%
+              group_by(smoker, sex) %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
+```
+
+With the faceted scatterplot (with $R^2$ in the top-left of each facet), we can draw several comparisons and conclusions. For instance, non-smokers have a stronger correlation between total bill amount and tip size than smokers. Additionally for non-smokers, men tend to pay larger bills than women.
+
+Without EDA, we would have missed these nuances to the data.
+
+## EDA vs. CDA
+
+EDA is heavily graphics-based and distinct from traditional confirmatory data analysis (CDA) techniques. CDA is the typical approach to quantitative research: identify a question of interest, develop a theory/hypothesis, collect data, and finally analyze it to confirm or refute your hypothesis. EDA is a distinct approach that could be called atheoretical, data snooping, inductive, etc. Given computational tools now available, there's no reason to avoid EDA. EDA can be used to inform CDA by guiding our question selection and assessing the data for any violations of assumptions required for valid statistical inference.
+
+# EDA in R
+
+EDA is part of a larger workflow:
+
+![Source: [R for Data Science](http://r4ds.had.co.nz/introduction.html)](http://r4ds.had.co.nz/diagrams/data-science.png)
+
+Visualization is a key step in this process, though not the only one. At this point, we will focus on visualization during the exploration process, not as an explanation (aka communication). These visualization approaches will be different, as you may iterate through hundreds of visualizations while you explore the data and refine your model, but present just a handful of visualizations in your final product that summarize and communicate your findings (e.g. article, book, website).
+
+## Tidy data
+
+**Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
+
+There are three rules which make a dataset tidy:
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+![Figure 12.1 from [*R for Data Science*](r4ds.had.co.nz)](http://r4ds.had.co.nz/images/tidy-1.png)
+
+Tidy data is also known as **tabular data** or **flat data**. This is one of the primary types of datasets identified by [Munzner](day2-notes.html). Of course not all data should be stored as tidy data, and many functions and packages in R do not handle data in a tidy fashion. However for much of the core operations of EDA, the `tidyverse` set of packages assumes all data is tidy. This makes basic exploration tasks trivially easy because you don't have to write custom functions to generate each graph. Because we have a specific grammar of graphics and structure to our data, we just plug in the different datasets and variables and are able to generate the same type of graph regardless of the source of the data:
+
+```{r example-tidy-graphs}
+ggplot(gapminder::gapminder, aes(lifeExp)) +
+  geom_histogram()
+
+ggplot(diamonds, aes(carat)) +
+  geom_histogram()
+
+ggplot(mpg, aes(hwy)) +
+  geom_histogram()
+
+ggplot(rcfss::scorecard, aes(admrate)) +
+  geom_histogram()
+```
+
+## Keeping a record of exploration
+
+> For more on this topic, read [chapter 30 in R for Data Science.](http://r4ds.had.co.nz/r-markdown-workflow.html)
+
+During the exploration process, you will want to keep a record of your work. This is important as it provides a history of the questions you've already asked and the answers you've obtained, but it also allows you enhance your thinking and build off your analysis. By approaching EDA (and visualizations in general) through a programmatic approach, you have a built-in record of your work: your scripts. You can use a few different methods to store this code:
+
+* GitHub
+* R Markdown documents
+* Jupyter notebooks
+
+# Exploring college education
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r get-scorecard}
+library(rcfss)
+data("scorecard")
+scorecard
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of `dplyr` and `ggplot2` functions to explore the data.
+
+1. Generate questions about your data.
+1. Search for answers by visualising and transforming your data.
+1. Use what you learn to refine your questions and/or generate new questions.
+
+Keep a record of your activity in an R Markdown document (or plain R script). Store it in a folder under your personal `submissions/` folder called `in-class-EDA`. Submit the PR before you leave class.
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
