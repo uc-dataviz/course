@@ -1,0 +1,31 @@
+---
+title: "in-class-EDA"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Question: How does share of first generation students map onto debt?
+
+> ggplot(data = scorecard) + geom_point(mapping = aes(x = firstgen, y = debt))
+
+Question: What schools are represented in the data?
+
+> ggplot(data = scorecard) + geom_bar(mapping = aes(x = type))
+
+Okay, so mostly private colleges.
+
+Let's see what categories show up where.
+
+>scorecard$firstgen[scorecard$firstgen>0 & scorecard$firstgen<.20] <- ("0-20%")
+> scorecard$firstgen[scorecard$firstgen>.20 & scorecard$firstgen<.40] <- ("20-40%")
+> scorecard$firstgen[scorecard$firstgen>.40 & scorecard$firstgen<.60] <- ("40-60%")
+> scorecard$firstgen[scorecard$firstgen>.60 & scorecard$firstgen<.80] <- ("60-80%")
+> scorecard$firstgen[scorecard$firstgen>.80 & scorecard$firstgen<.1] <- ("80-100%")
+> ggplot(data = scorecard) + geom_bar(mapping = aes(x = firstgen))
+
+```{r}
+messyplot
+```
+SOrry I'm slow at this
