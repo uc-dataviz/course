@@ -36,7 +36,7 @@ admrate_satavg
     ## (Intercept)       satavg  
     ##   1.2028314   -0.0005267
 
-Using Linear model, we have the rusults above.
+Using Linear model, we have the rusults above. It proves the previous conclusion
 
 ``` r
 ggplot(data = scorecard)+
@@ -62,4 +62,4 @@ ggplot(data=scorecard)+
 
 ![](Apr.12_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
-The faculties in private nonprofit schools get the highest pay. Also, those schools have the highest costs.
+The faculties in private nonprofit schools get the highest pay. Also, those schools have the highest costs. There is a positive-relation between this two variables.

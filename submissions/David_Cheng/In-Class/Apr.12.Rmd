@@ -31,7 +31,7 @@ admrate_satavg <- lm(data=scorecard, admrate~satavg)
 admrate_satavg
 ```
 
-Using Linear model, we have the rusults above.
+Using Linear model, we have the rusults above. It proves the previous conclusion
 
 ```{r}
 ggplot(data = scorecard)+
@@ -47,5 +47,5 @@ ggplot(data=scorecard)+
   facet_wrap(~type)
 ```
 
-The faculties in private nonprofit schools get the highest pay. Also, those schools have the highest costs.
+The faculties in private nonprofit schools get the highest pay. Also, those schools have the highest costs. There is a positive-relation between this two variables.
 
