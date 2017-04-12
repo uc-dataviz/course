@@ -33,7 +33,7 @@ ggplot(scorecard, mapping = aes(x = cost, y = avgfacsal, color = type)) +
 - Public schools have the strongest correlation between cost and faculty salary, private for-profit schools have the weakest correlation
 - Private for-profit schools have more variation from the fitted line
 
-# 3. Good universities (with higher SAT score) are more difficult to get in?
+### 3. Good universities (with higher SAT score) are more difficult to get in?
 ```{r}
 ggplot(scorecard, mapping = aes(satavg, admrate)) +
   geom_point() +
@@ -46,24 +46,10 @@ For private non-profit schools, there seems to be a negative correlation between
     
 The same trend works for public schools whose SAT scores were above 900.
 
-# 4. First generation student rely more on debt?
+### 4. First generation student rely more on debt?
 ```{r}
 ggplot(scorecard, mapping = aes(x = firstgen, y = debt)) +
   geom_boxplot(aes(group = cut_width(firstgen, 0.1)))
 ```
-School of larger share of first generation students have students left school with fewer debt. 
-    
-*Is that because the type of schools?*    
-    
-```{r}
-ggplot(scorecard) +
-  geom_histogram(mapping = aes(x = cost))
-scorecard$cost <- cut(scorecard$cost, 
-                     breaks = c(-Inf, 10000, 20000, 30000, 40000, 50000, 60000, Inf), 
-                     right = FALSE)
-ggplot(scorecard, mapping = aes(x = firstgen, y = debt)) +
-  geom_boxplot(aes(group = cut_width(firstgen, 0.1))) + 
-  facet_grid(~ cost) +
-  coord_flip()
-```
+School of larger share of first generation students have students left school with fewer debt. That might because schools with larger share of first generation students also have low cost -- needs more exploration
 
