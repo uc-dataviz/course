@@ -5,10 +5,9 @@ date: "04/12/2017"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
+```{r}
 library(rcfss)
 data("scorecard")
-scorecard
 
 summary(scorecard)
 ?scorecard
