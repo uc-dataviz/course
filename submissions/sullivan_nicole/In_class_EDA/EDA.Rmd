@@ -1,0 +1,110 @@
+---
+title: "EDA"
+author: "Nicole Sullivan"
+date: "4/12/2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(rcfss)
+library(tidyverse)
+
+View(scorecard)
+
+#Default distribution
+ggplot(scorecard, aes(debt)) +
+  geom_histogram()
+```
+
+Looks normal!
+
+```{r}
+ggplot(scorecard, aes(debt)) +
+  geom_histogram(binwidth = 200)
+```
+
+Using $200 as binwidth (about the average monthly payment), distribution is much flatter.
+
+```{r}
+ggplot(scorecard, aes(debt)) +
+  geom_histogram(binwidth = 50)
+```
+
+Plotting every 50 dollars gives about the same distribution as 100 dollars, but the lines are more difficult to distinguish now.  So the distribution for every 200 tells about the same story.
+
+```{r}
+ggplot(scorecard, aes(debt, fill = type)) +
+  geom_histogram(binwidth = 200)
+```
+
+Using color to encode type of schools makes it difficult to see if distribution is affect by type.  Increase binwidth or facet?
+
+```{r}
+ggplot(scorecard, aes(debt, fill = type)) +
+  geom_histogram(binwidth = 200) +
+  facet_wrap(~type) +
+  theme(legend.position = "none")
+```
+
+Ok, maybe change the binwidth as well.
+
+```{r}
+ggplot(scorecard, aes(debt, fill = type)) +
+  geom_histogram(binwidth = 500) +
+  facet_wrap(~type) +
+  theme(legend.position = "none")
+```
+There we go.  Distributions are pretty normal for all three.  Interestingly, distribution of "Private, for-profit" schools seems clustered below the medians of "Private, non-profit schools".
+
+What if we look at how much debt students leave these type of schools with, vs. the cost of the school (minus scholarships/grants)?
+
+```{r}
+ggplot(scorecard, aes(cost, debt, color = type)) +
+  geom_point(alpha = 0.5)
+```
+
+There are too many points.  Let's facet.
+
+```{r}
+ggplot(scorecard, aes(cost, debt, color = type)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~type) +
+  theme(legend.position = "none")
+```
+
+Trend appears much steeper for Public schools than Private, non-profit.  This means that the debt:cost ratio for students leaving public schools is way larger than for those leaving Private, non-profit schools.  Interesting.  There's not a lot of data for private for-profit so I won't focus on that too much.  Subset analyses?
+
+```{r}
+private_nonprof <- scorecard %>%
+  filter(type == "Private, nonprofit")
+  
+pub <- scorecard %>%
+  filter(type == "Public")
+
+private_nonprofit <- lm(debt~cost, data = private_nonprof)
+public <- lm(debt~cost, data = pub)
+
+summary(private_nonprofit)
+summary(public)
+```
+
+While $\beta_1$ differs somewhat in the two different models, the $R_^2$ is unimpressively low.  Strikeout.
+
+```{r}
+ggplot(scorecard, aes(firstgen, admrate)) +
+  geom_point()
+```
+
+Hmm.  Too much to disentangle here.  What about state's firstgen proportion?
+
+```{r}
+ggplot(scorecard, aes(state, firstgen)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+Would love to split by region/do a strip plot like Cairo.  I think it'd be really interesting to delve further into this.  No time!
