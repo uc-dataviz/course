@@ -58,4 +58,5 @@ plot1 <- ggplot(scorecard, aes(comp_split, debt, fill = type)) +
   labs(title = "Post-Grad Debt By Type of School and Completion Rate", y = "Debt", x = "Completion Rate")
 
 plot1
+
 ```
