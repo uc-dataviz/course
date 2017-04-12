@@ -99,7 +99,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)
 1. Exploratory data analysis
     * TA Ch 6-7
-    * [R4DS Ch 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
+    * [R4DS Ch 5, 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
 1. Graphical perception and cognition
     * FA Ch 5-7
     * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
