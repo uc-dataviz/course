@@ -8,16 +8,33 @@ Part 2
 
 Source code
 ---
-> data <- read.csv("biden.csv", stringsAsFactors=TRUE)
-> bidenset <- data
-> bidenset$polcategory[bidenset$dem==1] <- "Democrat"
-> bidenset$polcategory[bidenset$rep==1] <- "Republican"
-> bidenset$polcategory[bidenset$rep==0, bidenset$dem==0] <- "Independent"
-> bidenset$female[bidenset$female==1] <- "Female"
-> bidenset$female[bidenset$female==0] <- "Male"
-> ggplot(data = bidenset) + geom_point(mapping = aes(x = educ, y = biden, color = female, size = age), position = 'jitter', alpha = .5) + facet_wrap(~ polcategory, nrow = 1) + geom_smooth(mapping = aes(x = educ, y = biden))
-> bidenplot <- ggplot(data = bidenset) + geom_point(mapping = aes(x = educ, y = biden, color = female, size = age), position = 'jitter', alpha = .5) + facet_wrap(~ polcategory, nrow = 1) + geom_smooth(mapping = aes(x = educ, y = biden))
-> bidenplot + xlab("Years of education completed") + ylab("Perceived warmth of Joe Biden") + ggtitle("Evaluations of Joe Biden by Amount of Education \n and Political Affiliation ")
+
+```{r}
+library(tidyverse)
+
+data <- read.csv("data/biden.csv", stringsAsFactors=TRUE)
+bidenset <- data
+bidenset$polcategory[bidenset$dem==1] <- "Democrat"
+bidenset$polcategory[bidenset$rep==1] <- "Republican"
+bidenset$polcategory[bidenset$rep==0 & bidenset$dem==0] <- "Independent"
+bidenset$female[bidenset$female==1] <- "Female"
+bidenset$female[bidenset$female==0] <- "Male"
+
+ggplot(data = bidenset) +
+  geom_point(mapping = aes(x = educ, y = biden, color = female, size = age), position = 'jitter', alpha = .5) +
+  facet_wrap(~ polcategory, nrow = 1) +
+  geom_smooth(mapping = aes(x = educ, y = biden))
+
+bidenplot <- ggplot(data = bidenset) +
+  geom_point(mapping = aes(x = educ, y = biden, color = female, size = age), position = 'jitter', alpha = .5) +
+  facet_wrap(~ polcategory, nrow = 1) +
+  geom_smooth(mapping = aes(x = educ, y = biden))
+
+bidenplot +
+  xlab("Years of education completed") +
+  ylab("Perceived warmth of Joe Biden") +
+  ggtitle("Evaluations of Joe Biden by Amount of Education \n and Political Affiliation ")
+```
 
 ```{r bidenplot}
 plot(bidenplot)
