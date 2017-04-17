@@ -1,12 +1,12 @@
 ---
-title: "Day 7 - Graphical perception and cognition"
+title: "Day 6 - Exploratory data analysis"
 output:
   html_document:
     highlight: pygments
     theme: readable
     toc: yes
     toc_float: yes
-    code_folding: hide
+    code_folding: show
   github_document:
     toc: yes
     toc_depth: 3
@@ -19,9 +19,9 @@ knitr::opts_chunk$set(cache = TRUE)
 
 # Objectives
 
-* Define elementary perceptual tasks
-* Review hierarchy of perceptual tasks and how this was developed
-* Design experiments to test theories of percepual tasks and Tufte's data-ink ratio
+* Define exploratory data analysis
+* Review key principles of tidy data and `dplyr`/`ggplot2` for EDA
+* Practice exploring data from Scorecard
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
@@ -29,297 +29,187 @@ library(ggthemes)
 library(knitr)
 library(broom)
 library(stringr)
-library(plotly)
 
 options(digits = 3)
 set.seed(1234)
-theme_set(theme_minimal())
 ```
 
-```{r theme_void2}
-theme_void2 <- function (base_size = 11, base_family = "") 
-{
-  theme(line = element_blank(),
-        rect = element_blank(),
-        text = element_text(family = base_family, 
-                            face = "plain", colour = "black", size = base_size,
-                            lineheight = 0.9, hjust = 0.5, vjust = 0.5, angle = 0,
-                            margin = margin(), debug = FALSE),
-        axis.text.y = element_blank(),
-        axis.title = element_blank(), 
-        legend.text = element_text(size = rel(0.8)),
-        legend.title = element_text(hjust = 0), 
-        strip.text = element_text(size = rel(0.8)),
-        plot.margin = unit(c(0, 0, 0, 0), "lines"), complete = TRUE)
-}
+# Exploratory data analysis
+
+1. Generate questions about your data.
+1. Search for answers by visualising, transforming, and modeling your data.
+1. Use what you learn to refine your questions and or generate new questions.
+* Rinse and repeat until you publish a paper.
+
+EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. A lot of questions can be answered using EDA:
+
+1. What type of variation occurs within my variables?
+1. What type of covariation occurs between my variables?
+1. Are there outliers in the data?
+1. Do I have missingness? Are there patterns to it?
+1. How much variation/error exists in my statistical estimates? Is there a pattern to it?
+
+**R for Data Science** does a good job explaining the mechanics of EDA in R, while **The Truthful Art** provides a clear primer for some of the statistical principles involved in basic data description and exploration.^[In fact, you may recognize that many of Cairo's graphs are generated in R using `ggplot2` (note the default background grid).]
+
+## Differences between EDA and modeling
+
+EDA is not the same thing as statistical modeling. Statistical modeling attempts to explain and summarize relationships between variables through a low-dimensional approach. For instance, in regression analysis we try to summarize the relationship between an outcome of interest and a predictor by estimating a parameter that summarizes the monotonic, linear relationship. Whereas in exploratory data analysis we are not limited to a strict functional form, or even focused on explaining relationships between variables (covariation).
+
+Consider a dataset on tips given to a single waiter over a three-month period in a restaurant with the following variables:^[Source: [Interactive and Dynamic Graphics for Data Analysis: With R and Ggobi](https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-0-387-71762-3). Data obtained from: [The GGobi Book](http://www.ggobi.org/book/).] 
+
+Variable | Explanation
+---------|-------------
+`obs` | Observation number
+`totbill` | Total bill (cost of the meal), including tax, in US dollars
+`tip` | Tip (gratuity) in US dollars
+`sex` | Sex of person paying for the meal (0=male, 1=female)
+`smoker` | Smoker in party? (0=No, 1=Yes)
+`day` | 3=Thur, 4=Fri, 5=Sat, 6=Sun
+`time` | 0=Day, 1=Night
+`size` | Size of the party
+
+```{r get-tips}
+tips <- read_csv("data/tips.csv")
+str(tips)
 ```
 
-# Cleveland and McGill
+If our primary question is "what are the factors that affect tipping behavior?", then we can quickly fit a linear regression model to explain this outcome:^[Note we calculate a new variable `tiprate`, which is $\frac{\text{tip}}{\text{totbill}}$]
 
-* What makes a graph more accurate?
+```{r tips-lm}
+tips <- tips %>%
+  mutate(tiprate = tip / totbill)
 
-> A graphical form that involves elementary perceptual tasks that lead to more accurate judgments than another graphical form (with the same quantitiative information) will result in better organization and increase hte chances of a correct perception of patterns and behavior.
-
-![Figure 6.12 from *The Functional Art*](images/fa.6.12.jpeg)
-
-## Basic perceptual tasks on graphs
-
-### Bar chart
-
-```{r bar}
-diamonds_sum <- diamonds %>%
-  group_by(cut) %>%
-  summarize(n = n()) %>%
-  ungroup %>%
-  mutate(pct = n / sum(n))
-
-ggplot(diamonds_sum, aes(cut, pct)) +
-  geom_col() +
-  scale_y_continuous(labels = scales::percent) +
-  labs(title = "Diamonds data",
-       x = "Cut of diamond",
-       y = "Percentage of sample")
+tips_lm <- lm(tiprate ~ sex + smoker + day + time + size, data = tips)
+tidy(tips_lm)
 ```
 
-### Pie chart
+Based on this analysis, `size` is the only significant predictor. Quick answer to our original question. But is this sufficient?
 
-```{r pie}
-ggplot(diamonds_sum, aes(x = factor(1), y = pct, fill = cut)) +
-  geom_col(width = 1) +
-  coord_polar(theta = "y", direction = -1) +
-  theme_void()
+```{r tips-rsq}
+glance(tips_lm)
 ```
 
-### Statistical maps with color
+Our $R^2$ is just `r modelr::rsquare(tips_lm, tips)`. That's a pretty crappy model. And it misses a lot of other interesting aspects of the data.
 
-```{r maps}
-library(fiftystater)
-
-data("fifty_states") # this line is optional due to lazy data loading
-
-crimes <- data.frame(state = tolower(rownames(USArrests)), USArrests)
-
-# map_id creates the aesthetic mapping to the state name column in your data
-p <- ggplot(crimes, aes(map_id = state)) + 
-  # map points to the fifty_states shape data
-  geom_map(aes(fill = Assault), map = fifty_states) + 
-  expand_limits(x = fifty_states$long, y = fifty_states$lat) +
-  coord_map() +
-  scale_x_continuous(breaks = NULL) + 
-  scale_y_continuous(breaks = NULL) +
-  labs(x = "", y = "") +
-  theme(legend.position = "bottom", 
-        panel.background = element_blank()) +
-  fifty_states_inset_boxes()
-
-# default colors
-p
+```{r tips-hist}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = 1)
 ```
 
-### Scatterplot
+The histogram of tip amounts (binwidth = \$1) shows the distribution is skewed right and unimodal. Overall the tips are not that large.
 
-```{r scatter}
-# generate correlated data
-xy <- ecodist::corgen(len = 20, r = .95) %>%
-  bind_cols
-
-ggplot(xy, aes(x, y)) +
-  geom_point()
-
-xy %>%
-  mutate(id = row_number()) %>%
-  gather(var, value, -id) %>%
-  ggplot(aes(id, value, fill = var)) +
-  geom_col(position = "dodge")
+```{r tips-round}
+ggplot(tips, aes(tip)) +
+  geom_histogram(binwidth = .1)
 ```
 
-### Curvature
+By shrinking the binwidth to \$.10, we see a new phenomenon. Peaks occur at whole and half-dollar amounts, likely caused by customers picking round numbers for tips. We see this a lot too at the gas pump.
 
-```{r curve-diff}
-polls <- read_csv("data/538.csv")
-polls_data <- polls %>%
-  separate("Dates", into = c("Date", "etc"), sep = "-") %>%
-  select(-etc) %>%
-  mutate(Date = str_c(Date, ", 2017")) %>%
-  mutate(Date = lubridate::mdy(Date)) %>%
-  mutate_at(vars(Approve:Disapprove.adj), parse_number) %>%
-  select(Date, Approve.adj, Disapprove.adj) %>%
-  mutate_at(vars(Approve.adj, Disapprove.adj), funs(. / 100))
-
-
-polls_data %>%
-  gather(var, value, -Date) %>%
-  mutate(var = factor(var, levels = c("Approve.adj", "Disapprove.adj"),
-                      labels = c("Approve", "Disapprove"))) %>%
-  ggplot(aes(Date, value, color = var)) +
-  geom_point(alpha = .2) +
-  geom_smooth() +
-  scale_y_continuous(label = scales::percent) +
-  labs(title = "How popular/unpopular is Donald Trump?",
-       y = NULL,
-       color = NULL,
-       caption = "Source: FiveThirtyEight") +
-  theme(legend.position = "bottom")
-
-polls_data %>%
-  mutate(diff = Approve.adj - Disapprove.adj) %>%
-  ggplot(aes(Date, diff)) +
-  geom_point(alpha = .2) +
-  geom_smooth() +
-  scale_y_continuous(label = scales::percent) +
-  labs(title = "How popular/unpopular is Donald Trump?",
-       y = NULL,
-       caption = "Source: FiveThirtyEight")
-```
-
-## Experimental design
-
-* $N = 55$
-* Used bar charts and pie charts
-* Experiment 1 - asked to make assessments of length and position along a common scale
-* Experiment 2 - asked to make judgments of position and angle (pie vs bar chart)
-* Make visual assessments of what percentage one value was of a larger value
-
-## Cairo - applying perceptual task scale
-
-![A proportional symbol map. Source: *The Functional Art*](images/fa.6.16.jpeg)
-
-![Chloropeth map. Source: *The Functional Art*](images/fa.6.17.jpeg)
-
-![Dot chart. Source: *The Functional Art*](images/fa.6.18.jpeg)
-
-![Scatterplot. Source: *The Functional Art*](images/fa.6.19.jpeg)
-
-![Slopegraph. Source: *The Functional Art*](images/fa.6.20.jpeg)
-
-## What we learn
-
-* Use theory and experiments to develop rules for data visualization (not Tufte's assertion approach)
-* Different perceptual tasks (i.e. different channels) are easier or harder to decode and accurately interpret
-* Pick the highest-level encoding task possible given the data structure/purpose of the visualization
-
-# Crowdsourcing Graphical Perception
-
-## Amazon Mechanical Turk
-
-![](http://www.theweeklybleep.com/wordpress/wp-content/uploads/turk.jpg)
-
-* Describe [Amazon MTurk](https://www.mturk.com/mturk/welcome)
-
-## Transparency of gridlines
-
-* Recall that Tufte hates gridlines
-* Experiment 2 crowdsources the optimal transparency for the gridlines and data points in a scatterplot
-
-```{r test-alpha}
-ggplot(mpg, aes(cty, hwy)) +
-  geom_point()
-
-ggplot(mpg, aes(cty, hwy)) +
+```{r tips-scatter}
+ggplot(tips, aes(totbill, tip)) +
   geom_point() +
-  theme(panel.grid.major = element_line("grey70"),
-        panel.grid.minor = element_line("grey70"))
-
-ggplot(mpg, aes(cty, hwy)) +
-  geom_point() +
-  theme(panel.grid.major = element_line("grey50"),
-        panel.grid.minor = element_line("grey50"))
-
-ggplot(mpg, aes(cty, hwy)) +
-  geom_point() +
-  theme(panel.grid.major = element_line("grey20"),
-        panel.grid.minor = element_line("grey20"))
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  geom_text(data = tips %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
 ```
 
-* Individuals prefer lighter (more transparent backgrounds)
-* Could be run using a Shiny app integrated into an MTurk experiment
+By generating a scatterplot with a line representing a generous tipper (defined as a tip of 18%), we see that the majority of patrons are cheap tippers. The $R^2$ is decent for the observations, suggesting a moderate to strong correlation between the variables. But this correlation is not consistent across all observations in the data: there is more variation from the line as the total bill increases.
 
-# In defense of pie charts
+Of course we are also frequently interested in multiple variables and their covariation with one another, such as smoker and sex:
 
-* Which is easier to distinguish: line length or area, angle, and arc length?
-* Psychophysical theory of perception. Function of relationship between perceived areas of circles and their physical areas
-
-    $$\text{Subjective area} = \text{Area}^.86$$
-    
-    * People misjudge/misestimate area
-    * This function is not derived from rigorous science
-    * Focus more on the subarea (area/size of individual slices rather than the entire circle)
-    * People also do not generally use pie charts to estimate precise magnitudes (if so, use a table instead)
-
-```{r pie-data}
-pie <- data_frame(label = c("A", "B", "C", "D"),
-                  value = c(10, 20, 40, 30))
-
-# bar chart
-ggplot(pie, aes(label, value)) +
-  geom_col(color = "black", fill = "white") +
-  theme_void2()
-
-# proportional area chart
-pie_prop <- pie %>%
-  mutate(ymin = 0,
-         ymax = 1,
-         xmax = cumsum(value),
-         xmin = xmax - value,
-         x = (xmax - xmin) / 2 + xmin)
-
-ggplot(pie_prop, aes(xmin = xmin, xmax = xmax,
-             ymin = ymin, ymax = ymax)) +
-  geom_rect(fill = "white", color = "black") +
-  scale_x_continuous(breaks = pie_prop$x, labels = pie_prop$label) +
-  theme_void2()
-
-# pie chart
-ggplot(pie, aes(x = factor(1), y = value)) +
-  geom_col(width = 1, color = "black", fill = "white") +
-  geom_text(aes(label = label), position = position_stack(vjust = .5), size = 4) +
-  coord_polar(theta = "y", direction = 1) +
-  theme_void() +
-  theme(legend.position = "none")
-
-# table
-pie %>%
-  select(value) %>%
-  t %>%
-  knitr::kable(col.names = pie$label,
-               row.names = FALSE)
+```{r tips-scatter-many}
+ggplot(tips, aes(totbill, tip)) +
+  geom_point() +
+  geom_abline(slope = .18, linetype = 2) +
+  expand_limits(x = c(0, NA),
+                y = c(0, NA)) +
+  facet_grid(smoker ~ sex, labeller = "label_both") +
+  geom_text(data = tips %>%
+              group_by(smoker, sex) %>%
+              summarize(rsq = format(cor(totbill, tip), digits = 3)),
+            aes(x = 2, y = 9, label = rsq))
 ```
 
-## Experiment 1
+With the faceted scatterplot (with $R^2$ in the top-left of each facet), we can draw several comparisons and conclusions. For instance, non-smokers have a stronger correlation between total bill amount and tip size than smokers. Additionally for non-smokers, men tend to pay larger bills than women.
 
-* Compare speed at processing and making comparisons between bar charts and pie charts
-* **No substantial difference in processing time or accuracy of interpretations** - see Figures 2 and 3
+Without EDA, we would have missed these nuances to the data.
 
-## Experiment 2
+## EDA vs. CDA
 
-* Ordering of the bars/slices didn't really effect interpretation speed or accuracy - ordering apparently is not a major perceptual strategy
+EDA is heavily graphics-based and distinct from traditional confirmatory data analysis (CDA) techniques. CDA is the typical approach to quantitative research: identify a question of interest, develop a theory/hypothesis, collect data, and finally analyze it to confirm or refute your hypothesis. EDA is a distinct approach that could be called atheoretical, data snooping, inductive, etc. Given computational tools now available, there's no reason to avoid EDA. EDA can be used to inform CDA by guiding our question selection and assessing the data for any violations of assumptions required for valid statistical inference.
 
-## Experiment 3
+# EDA in R
 
-* Pie charts better for A + B vs. C + D comparisons
-* Hypothesis: in pie charts, adjacent slices were easier to visually combine together
-* In truth, this didn't matter - but for bar charts, adjacency actually helped
+EDA is part of a larger workflow:
 
-## Takeaways
+![Source: [R for Data Science](http://r4ds.had.co.nz/introduction.html)](http://r4ds.had.co.nz/diagrams/data-science.png)
 
-* For pure magnitude identification, bar charts are superior
-* For comparing percentages, either chart is acceptable
-* To compare combinations of groupings, pie charts are slightly superior
-* Tables are only useful if you want to report exact percentages
+Visualization is a key step in this process, though not the only one. At this point, we will focus on visualization during the exploration process, not as an explanation (aka communication). These visualization approaches will be different, as you may iterate through hundreds of visualizations while you explore the data and refine your model, but present just a handful of visualizations in your final product that summarize and communicate your findings (e.g. article, book, website).
 
-# Design a data visualization experiment
+## Tidy data
 
-* Work with someone next to you (or a group of three)
-* Develop a research question applicable to visual design that can be answered experimentally
-    * Replicate something from Cleveland and McGill
-    * Extend to additional question
-    * Tufte minimalism
-* How will you design two (or more) graphs to obtain an accurate and unbiased estimate?
+**Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
+
+There are three rules which make a dataset tidy:
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+![Figure 12.1 from [*R for Data Science*](r4ds.had.co.nz)](http://r4ds.had.co.nz/images/tidy-1.png)
+
+Tidy data is also known as **tabular data** or **flat data**. This is one of the primary types of datasets identified by [Munzner](day2-notes.html). Of course not all data should be stored as tidy data, and many functions and packages in R do not handle data in a tidy fashion. However for much of the core operations of EDA, the `tidyverse` set of packages assumes all data is tidy. This makes basic exploration tasks trivially easy because you don't have to write custom functions to generate each graph. Because we have a specific grammar of graphics and structure to our data, we just plug in the different datasets and variables and are able to generate the same type of graph regardless of the source of the data:
+
+```{r example-tidy-graphs}
+ggplot(gapminder::gapminder, aes(lifeExp)) +
+  geom_histogram()
+
+ggplot(diamonds, aes(carat)) +
+  geom_histogram()
+
+ggplot(mpg, aes(hwy)) +
+  geom_histogram()
+
+ggplot(rcfss::scorecard, aes(admrate)) +
+  geom_histogram()
+```
+
+## Keeping a record of exploration
+
+> For more on this topic, read [chapter 30 in R for Data Science.](http://r4ds.had.co.nz/r-markdown-workflow.html)
+
+During the exploration process, you will want to keep a record of your work. This is important as it provides a history of the questions you've already asked and the answers you've obtained, but it also allows you enhance your thinking and build off your analysis. By approaching EDA (and visualizations in general) through a programmatic approach, you have a built-in record of your work: your scripts. You can use a few different methods to store this code:
+
+* GitHub
+* R Markdown documents
+* Jupyter notebooks
+
+# Exploring college education
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r get-scorecard}
+library(rcfss)
+data("scorecard")
+scorecard
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of `dplyr` and `ggplot2` functions to explore the data.
+
+1. Generate questions about your data.
+1. Search for answers by visualising and transforming your data.
+1. Use what you learn to refine your questions and/or generate new questions.
+
+Keep a record of your activity in an R Markdown document (or plain R script). Store it in a folder under your personal `submissions/` folder called `in-class-EDA`. Submit the PR before you leave class.
 
 # Session Info {.toc-ignore}
 
 ```{r cache = FALSE}
 devtools::session_info()
 ```
-
 
