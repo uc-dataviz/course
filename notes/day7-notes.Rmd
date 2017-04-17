@@ -29,7 +29,6 @@ library(ggthemes)
 library(knitr)
 library(broom)
 library(stringr)
-library(plotly)
 
 options(digits = 3)
 set.seed(1234)
