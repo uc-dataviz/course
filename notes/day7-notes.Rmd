@@ -182,6 +182,8 @@ polls_data %>%
 
 ## Cairo - applying perceptual task scale
 
+![A screenshot of data. Source: *The Functional Art*](images/fa.6.15.jpeg)
+
 ![A proportional symbol map. Source: *The Functional Art*](images/fa.6.16.jpeg)
 
 ![Chloropeth map. Source: *The Functional Art*](images/fa.6.17.jpeg)
