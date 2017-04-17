@@ -58,7 +58,7 @@ theme_void2 <- function (base_size = 11, base_family = "")
 
 * What makes a graph more accurate?
 
-> A graphical form that involves elementary perceptual tasks that lead to more accurate judgments than another graphical form (with the same quantitiative information) will result in better organization and increase hte chances of a correct perception of patterns and behavior.
+> A graphical form that involves elementary perceptual tasks that lead to more accurate judgments than another graphical form (with the same quantitiative information) will result in better organization and increase the chances of a correct perception of patterns and behavior.
 
 ![Figure 6.12 from *The Functional Art*](images/fa.6.12.jpeg)
 
