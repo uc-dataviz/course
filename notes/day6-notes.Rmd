@@ -216,6 +216,59 @@ ggplot(mpg, aes(cty, hwy)) +
     * Focus more on the subarea (area/size of individual slices rather than the entire circle)
     * People also do not generally use pie charts to estimate precise magnitudes (if so, use a table instead)
 
+```{r theme_void2}
+theme_void2 <- function (base_size = 11, base_family = "") 
+{
+  theme(line = element_blank(),
+        rect = element_blank(),
+        text = element_text(family = base_family, 
+                            face = "plain", colour = "black", size = base_size,
+                            lineheight = 0.9, hjust = 0.5, vjust = 0.5, angle = 0,
+                            margin = margin(), debug = FALSE),
+        axis.text.y = element_blank(),
+        axis.title = element_blank(), 
+        legend.text = element_text(size = rel(0.8)),
+        legend.title = element_text(hjust = 0), 
+        strip.text = element_text(size = rel(0.8)),
+        plot.margin = unit(c(0, 0, 0, 0), "lines"), complete = TRUE)
+}
+```
+
+```{r pie-data}
+pie <- data_frame(label = c("A", "B", "C", "D"),
+                  value = c(10, 20, 40, 30))
+
+# bar chart
+ggplot(pie, aes(label, value)) +
+  geom_col(color = "black", fill = "white") +
+  theme_void2()
+
+# proportional area chart
+pie_prop <- pie %>%
+  mutate(ymin = 0,
+         ymax = 1,
+         xmax = cumsum(value),
+         xmin = xmax - value,
+         x = (xmax - xmin) / 2 + xmin)
+
+ggplot(pie_prop, aes(xmin = xmin, xmax = xmax,
+             ymin = ymin, ymax = ymax)) +
+  geom_rect(fill = "white", color = "black") +
+  scale_x_continuous(breaks = pie_prop$x, labels = pie_prop$label) +
+  theme_void2()
+
+# pie chart
+ggplot(pie, aes(x = factor(1), y = value)) +
+  geom_col(width = 1, color = "black", fill = "white") +
+  geom_text(aes(label = label), position = position_stack(vjust = .5), size = 5) +
+  coord_polar(theta = "y", direction = 1) +
+  theme_void() +
+  theme(legend.position = "none")
+
+# table
+knitr::kable(pie, col.names = c("", ""))
+```
+
 ## Experiment 1
 
 * Compare speed at processing and making comparisons between bar charts and pie charts
