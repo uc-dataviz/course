@@ -260,7 +260,7 @@ ggplot(pie_prop, aes(xmin = xmin, xmax = xmax,
 # pie chart
 ggplot(pie, aes(x = factor(1), y = value)) +
   geom_col(width = 1, color = "black", fill = "white") +
-  geom_text(aes(label = label), position = position_stack(vjust = .5), size = 5) +
+  geom_text(aes(label = label), position = position_stack(vjust = .5), size = 4) +
   coord_polar(theta = "y", direction = 1) +
   theme_void() +
   theme(legend.position = "none")
