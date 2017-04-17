@@ -6,7 +6,7 @@ output:
     theme: readable
     toc: yes
     toc_float: yes
-    code_folding: show
+    code_folding: hide
   github_document:
     toc: yes
     toc_depth: 3
@@ -34,6 +34,24 @@ library(plotly)
 options(digits = 3)
 set.seed(1234)
 theme_set(theme_minimal())
+```
+
+```{r theme_void2}
+theme_void2 <- function (base_size = 11, base_family = "") 
+{
+  theme(line = element_blank(),
+        rect = element_blank(),
+        text = element_text(family = base_family, 
+                            face = "plain", colour = "black", size = base_size,
+                            lineheight = 0.9, hjust = 0.5, vjust = 0.5, angle = 0,
+                            margin = margin(), debug = FALSE),
+        axis.text.y = element_blank(),
+        axis.title = element_blank(), 
+        legend.text = element_text(size = rel(0.8)),
+        legend.title = element_text(hjust = 0), 
+        strip.text = element_text(size = rel(0.8)),
+        plot.margin = unit(c(0, 0, 0, 0), "lines"), complete = TRUE)
+}
 ```
 
 # Cleveland and McGill
@@ -66,9 +84,10 @@ ggplot(diamonds_sum, aes(cut, pct)) +
 ### Pie chart
 
 ```{r pie}
-plot_ly(diamonds_sum, labels = ~cut, values = ~pct, type = 'pie', sort = FALSE) %>%
-  layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+ggplot(diamonds_sum, aes(x = factor(1), y = pct, fill = cut)) +
+  geom_col(width = 1) +
+  coord_polar(theta = "y", direction = -1) +
+  theme_void()
 ```
 
 ### Statistical maps with color
@@ -153,7 +172,6 @@ polls_data %>%
        caption = "Source: FiveThirtyEight")
 ```
 
-
 ## Experimental design
 
 * $N = 55$
@@ -161,6 +179,18 @@ polls_data %>%
 * Experiment 1 - asked to make assessments of length and position along a common scale
 * Experiment 2 - asked to make judgments of position and angle (pie vs bar chart)
 * Make visual assessments of what percentage one value was of a larger value
+
+## Cairo - applying perceptual task scale
+
+![A proportional symbol map. Source: *The Functional Art*](images/fa.6.16.jpeg)
+
+![Chloropeth map. Source: *The Functional Art*](images/fa.6.17.jpeg)
+
+![Dot chart. Source: *The Functional Art*](images/fa.6.18.jpeg)
+
+![Scatterplot. Source: *The Functional Art*](images/fa.6.19.jpeg)
+
+![Slopegraph. Source: *The Functional Art*](images/fa.6.20.jpeg)
 
 ## What we learn
 
@@ -216,24 +246,6 @@ ggplot(mpg, aes(cty, hwy)) +
     * Focus more on the subarea (area/size of individual slices rather than the entire circle)
     * People also do not generally use pie charts to estimate precise magnitudes (if so, use a table instead)
 
-```{r theme_void2}
-theme_void2 <- function (base_size = 11, base_family = "") 
-{
-  theme(line = element_blank(),
-        rect = element_blank(),
-        text = element_text(family = base_family, 
-                            face = "plain", colour = "black", size = base_size,
-                            lineheight = 0.9, hjust = 0.5, vjust = 0.5, angle = 0,
-                            margin = margin(), debug = FALSE),
-        axis.text.y = element_blank(),
-        axis.title = element_blank(), 
-        legend.text = element_text(size = rel(0.8)),
-        legend.title = element_text(hjust = 0), 
-        strip.text = element_text(size = rel(0.8)),
-        plot.margin = unit(c(0, 0, 0, 0), "lines"), complete = TRUE)
-}
-```
-
 ```{r pie-data}
 pie <- data_frame(label = c("A", "B", "C", "D"),
                   value = c(10, 20, 40, 30))
@@ -266,7 +278,11 @@ ggplot(pie, aes(x = factor(1), y = value)) +
   theme(legend.position = "none")
 
 # table
-knitr::kable(pie, col.names = c("", ""))
+pie %>%
+  select(value) %>%
+  t %>%
+  knitr::kable(col.names = pie$label,
+               row.names = FALSE)
 ```
 
 ## Experiment 1
@@ -290,6 +306,15 @@ knitr::kable(pie, col.names = c("", ""))
 * For comparing percentages, either chart is acceptable
 * To compare combinations of groupings, pie charts are slightly superior
 * Tables are only useful if you want to report exact percentages
+
+# Design a data visualization experiment
+
+* Work with someone next to you (or a group of three)
+* Develop a research question applicable to visual design that can be answered experimentally
+    * Replicate something from Cleveland and McGill
+    * Extend to additional question
+    * Tufte minimalism
+* How will you design two (or more) graphs to obtain an accurate and unbiased estimate?
 
 # Session Info {.toc-ignore}
 
