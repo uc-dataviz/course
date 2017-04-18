@@ -7,10 +7,6 @@ output:
     toc: yes
     toc_float: yes
     code_folding: hide
-  github_document:
-    toc: yes
-    toc_depth: 3
-always_allow_html: true
 ---
 
 ```{r setup, include = FALSE}
@@ -32,6 +28,7 @@ library(ggthemes)
 library(knitr)
 library(broom)
 library(stringr)
+library(modelr)
 
 options(digits = 3)
 set.seed(1234)
@@ -174,6 +171,118 @@ ggplot(flights, aes(weekday, week_month, fill = value)) +
 ```
 
 Aha, now the outlier makes sense. In the days following the September 11th attacks, the United States grounded virtually all commercial air traffic.
+
+# Smoothing lines
+
+When examining multivariate continuous data, scatterplots are a quick and easy visualization to assess relationships. However if the data points become too densely clustered, interpreting the graph becomes difficult. Consider the `diamonds` dataset:
+
+```{r diamonds-point}
+p <- ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(x = "Carat size",
+       y = "Price")
+p
+```
+
+What is the relationship between carat size and price? It appears positive, but there are also a lot of densely packed data points in the middle of the graph. **Smoothing lines** are a method for summarizing the relationship between variables to capture important patterns by approximating the functional form of the relationship. The functional form can take on many shapes. For instance, a very common functional form is a **best-fit line**, also known as **ordinary least squares (OLS)** or **simple linear regression**. We can estimate the model directly using `lm()`, or we can directly plot the line by using `geom_smooth(method = "lm")`:
+
+```{r diamonds-lm}
+p +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+The downside to a linear best-fit line is that it assumes the relationship between the variables is **additive** and **monotonic**. Therefore the summarized relationship between carat size and price seems wildly incorrect for diamonds with a carat size larger than 3. Instead we could use a [**generalized additive model**](http://cfss.uchicago.edu/persp007_nonlinear.html#generalized_additive_models) which allow for flexible, non-linear relationships between the variables while still implementing a basic regression approach:^[`geom_smooth()` automatically implements the `gam` method for datasets with greater than 1000 observations.]
+
+```{r diamonds-gam}
+p +
+  geom_smooth(se = FALSE)
+```
+
+**Locally weighted scatterplot smoothing** (local regression, LOWESS, or LOESS) fits a separate non-linear function at each target point $x_0$ using only the nearby training observations. This method estimates a regression line based on localized subsets of the data, building up the global function $f$ point-by-point.
+
+Here is an example of a local linear regression on the `ethanol` dataset in the `lattice` package:
+
+```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
+library(lattice)
+
+mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+fit <- augment(mod)
+
+mod0 <- loess(NOx ~ E, ethanol, degree = 0, span = .75)
+mod1 <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+mod2 <- loess(NOx ~ E, ethanol, degree = 2, span = .75)
+
+fit_all <- ethanol %>%
+  gather_predictions(mod0, mod1, mod2) %>%
+  mutate(model = factor(model, levels = c("mod0", "mod1", "mod2"),
+                        labels = c("Constant", "Linear", "Quadratic")))
+
+ggplot(fit_all, aes(E, NOx)) +
+  geom_point() +
+  geom_line(aes(y = pred, color = model)) +
+  labs(title = "Local linear regression",
+       x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J",
+       color = "Regression")
+```
+
+The LOESS is built up point-by-point:
+
+```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+dat <- ethanol %>%
+  inflate(center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= .75) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+library(gganimate)
+
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_line(aes(y = .fitted), data = fit, color = "red") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+gg_animate(p)
+```
+
+One important argument you can control with LOESS is the **span**, or how smooth the LOESS function will become. A larger span will result in a smoother curve, but may not be as accurate. A smaller span will be more local and wiggly, but improve our fit to the training data.
+
+```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+spans <- c(.25, .5, .75, 1)
+
+# create loess fits, one for each span
+fits <- data_frame(span = spans) %>%
+  group_by(span) %>%
+  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
+
+# calculate weights to reproduce this with local weighted fits
+dat <- ethanol %>%
+  inflate(span = spans, center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= span) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+# create faceted plot with changing points, local linear fits, and vertical lines,
+# and constant hollow points and loess fit
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_point(shape = 1, data = ethanol, alpha = .25) +
+  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
+  facet_wrap(~span) +
+  ylim(0, 5) +
+  ggtitle("x0 = ") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+
+gg_animate(p)
+```
+
+LOESS lines are best used for datasets with fewer than 1000 observations, otherwise the time and memory usage required to compute the line increases exponentially.
 
 # Coefficient of correlation ($r$)
 
