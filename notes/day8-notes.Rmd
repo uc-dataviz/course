@@ -175,14 +175,34 @@ ggplot(flights, aes(weekday, week_month, fill = value)) +
 
 Aha, now the outlier makes sense. In the days following the September 11th attacks, the United States grounded virtually all commercial air traffic.
 
+# Coefficient of correlation ($r$)
+
+* Produces a measure of association, known as Pearson's $r$, that gauges the direction and strength of a relationship between two continuous variables
+* Scales between $-1$ and $+1$
+  * $-1$ -- perfect negative association between the variables
+  * $+1$ -- perfect positive association between the variables
+  * $0$ -- no relationship between the variables
+* Unit-less measure - no matter what scale the variables fall on (e.g. turnout, education, income), the number will always fall between $-1$ and $+1$
+
+```{r pearson-r}
+r_plot <- function(r, n = 100){
+  xy <- ecodist::corgen(len = n, r = r) %>%
+    bind_cols
+  
+  ggplot(xy, aes(x, y)) +
+    geom_point() +
+    ggtitle(str_c("Pearson's r = ", r))
+}
+
+r <- c(.8, 0, -.8)
+
+for(r in r){
+  print(r_plot(r))
+}
+```
+
 # Types of graphs to cover/demo
 
-* Working with dates in R using `lubridate`
-    * Demo drawing calendar heatmap in `ggplot2`
-    * For more in-depth time series analysis, read [this](https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/)
-* Correlation coefficient
-    * Coefficient of correlation ($R$)
-    * Coefficient of determination ($R^2$)
 * Smoothing lines
     * Brief intro to the different `stat_smooth()` methods
 * Scatterplot matricies
