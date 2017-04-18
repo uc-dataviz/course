@@ -1,0 +1,66 @@
+---
+title: "Day 8 - Multivariate data visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+  github_document:
+    toc: yes
+    toc_depth: 3
+always_allow_html: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Demonstrate `lubridate` for working with dates in R and `ggplot2`
+* Define correlation
+* Review how to implement smoothing lines
+* Generate and interpret scatterplot matricies and correlation heatmaps
+* Introduce and generate parallel coordinate plots
+* Identify methods for implementing three-dimensional graphs in R
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+library(broom)
+library(stringr)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Types of graphs to cover/demo
+
+* Working with dates in R using `lubridate`
+    * Demo drawing calendar heatmap in `ggplot2`
+    * For more in-depth time series analysis, read [this](https://a-little-book-of-r-for-time-series.readthedocs.io/en/latest/)
+* Correlation coefficient
+    * Coefficient of correlation ($R$)
+    * Coefficient of determination ($R^2$)
+* Smoothing lines
+    * Brief intro to the different `stat_smooth()` methods
+* Scatterplot matricies
+    * Heatmaps of correlation coefficients
+* Parallel coordinate plots
+* Contour plots
+* 3D plots using plotly
+    * Surface plots
+    * Scatterplots
+    * Line plots
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
