@@ -7,10 +7,6 @@ output:
     toc: yes
     toc_float: yes
     code_folding: show
-  github_document:
-    toc: yes
-    toc_depth: 3
-always_allow_html: true
 ---
 
 ```{r setup, include = FALSE}
