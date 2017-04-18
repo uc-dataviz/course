@@ -38,6 +38,143 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
+# Working with dates in R
+
+> For more details on the `lubridate` package, check out [*R for Data Science*](http://r4ds.had.co.nz/dates-and-times.html).
+
+When importing data, date variables can be somewhat tricky to correctly store and utilize. In a spreadsheet, tabular format, dates by default will appear either as numeric (`20174018`) or string (`2016-04-18`, `April 18th, 2017`, etc.) columns. If you want to perform tasks such as: extracting and summarizing over individual components (year, month, day, etc.), we need to represent dates in a different, yet standardized, format.
+
+`lubridate` is a tidyverse package that facilitates working with dates (and date-times) in R.
+
+```{r lubridate}
+library(lubridate)
+```
+
+## Formatting dates
+
+When using `readr` to import data files, R will use `parse_date()` or `parse_datetime()` to try and format any columns it thinks contain dates or date-times. To manually format dates from strings, use the appropriate function combining `y`, `m`, and `d` in the proper order depending on the original format of the date:
+
+```{r format-date}
+ymd("2017-01-31")
+mdy("January 31st, 2017")
+dmy("31-Jan-2017")
+```
+
+## Extracting date components
+
+Let's practice extracting components of dates using an example dataset. `flights-departed.csv` is a time series data file containing the daily number of departing commercial flights in the United States from 1988-2008.
+
+```{r flights}
+(flights <- read_csv("data/flights-departed.csv"))
+```
+
+We will use `ggplot2` to generate several graphs based on the data. The first is a simple line plot over time of the daily commercial flights. To build this, we don't need to modify `flights`:
+
+```{r flights-over-time}
+ggplot(flights, aes(date, value)) +
+  geom_line() +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+But this is quite noisy. Instead, let's draw a line plot depicting commercial flights over a one-year period, with separate lines for each year in the data (1988, 1989, 1990, etc.). To do that, we need to create a new variable `year` which will serve as our grouping variable in `ggplot()`:
+
+```{r flights-year}
+(flights <- flights %>%
+  mutate(year = year(date),
+         yday = yday(date),
+         # hack to label the x-axis with months
+         days = dmy(format(date,"%d-%m-2016"))))
+
+ggplot(flights, aes(days, value)) +
+  geom_line(aes(group = year), alpha = .2) +
+  geom_smooth(se = FALSE) +
+  scale_x_date(labels = scales::date_format("%b")) +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+Or we could summarize the distribution of departing commercial flights by days in each month over the 20 year time period:
+
+```{r flights-by-month}
+(flights <- flights %>%
+  mutate(month = month(date, label = TRUE)))
+
+ggplot(flights, aes(month, value)) +
+  geom_violin() +
+  geom_boxplot(width = .1, outlier.shape = NA) +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+Hmmm, there seems to be an outlier in September. What's up with that?
+
+Finally, we can generate a heatmap depicting the change over time of this data by creating a calendar-like visualization.^[A la [U.S. Commercial Flights, 1995-2008](http://mbostock.github.io/d3/talk/20111018/calendar.html).] In order do this, we need the following grammar for the graph:
+
+* Layer
+    * Data - flights
+    * Mapping
+        * $x$ - weekday (e.g. Sunday, Monday, Tuesday)
+        * $y$ - week in month (e.g. first week, second week, third week)
+        * Fill - `value` (number of departing flights)
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `geom_tile()`
+    * Position adjustment (position) - none
+* Scale
+    * Fill - low and high-end colors (use shading to identify in-between values)
+* Coordinate system - Cartesian coordinate plane
+* Faceting - `facet_grid()` (year X month)
+
+In order to generate this graph then, we need to create several new variables for `flights`:
+
+* Year
+* Month
+* Weekday
+* Week-in-month
+
+We can use `lubridate` to directly generate three of those variables (we've already generated `year` and `month`):
+
+```{r parse-components}
+(flights <- flights %>%
+  mutate(weekday = wday(date, label = TRUE)))
+```
+
+We use `label = TRUE` to generate factor labels for these values (January, February, March) instead of the numeric equivalent (1, 2, 3).
+
+To generate the final week-in-month variable, we need to combine a few `lubridate` functions to get exactly what we want:
+
+```{r parse-week-in-month}
+(flights <- flights %>%
+  # generate variables for week in the year (1-54) and the day in the year (1-366)
+  mutate(week = week(date),
+         yday = yday(date)) %>%
+  # normalize to draw calendar correctly - wday should represent the number of days from the Sunday of the week containing January 1st, then adjust based on that
+  group_by(year) %>%
+  mutate(yday = yday + wday(date)[1] - 2,
+         week = floor(yday / 7)) %>%
+  group_by(year, month) %>%
+  mutate(week_month = week - min(week) + 1))
+```
+
+Now that we have the data correctly formatted and all the components are extracted, we can draw the graph:
+
+```{r heatmap, fig.asp = 2}
+ggplot(flights, aes(weekday, week_month, fill = value)) +
+  facet_grid(year ~ month) +
+  geom_tile(color = "black") +
+  scale_fill_continuous(low = "green", high = "red") +
+  scale_x_discrete(labels = NULL) +
+  scale_y_reverse(labels = NULL) +
+  labs(title = "Domestic commercial flight activity",
+       x = NULL,
+       y = NULL,
+       fill = "Number of departing flights") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+
+Aha, now the outlier makes sense. In the days following the September 11th attacks, the United States grounded virtually all commercial air traffic.
+
 # Types of graphs to cover/demo
 
 * Working with dates in R using `lubridate`
