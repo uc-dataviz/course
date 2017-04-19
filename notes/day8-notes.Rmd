@@ -6,7 +6,7 @@ output:
     theme: readable
     toc: yes
     toc_float: yes
-    code_folding: hide
+    code_folding: show
 ---
 
 ```{r setup, include = FALSE}
@@ -167,7 +167,8 @@ ggplot(flights, aes(weekday, week_month, fill = value)) +
        y = NULL,
        fill = "Number of departing flights") +
   theme_void() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        legend.text = element_text(angle = 45))
 ```
 
 Aha, now the outlier makes sense. In the days following the September 11th attacks, the United States grounded virtually all commercial air traffic.
@@ -308,6 +309,273 @@ r <- c(.8, 0, -.8)
 for(r in r){
   print(r_plot(r))
 }
+```
+
+# Scatterplot matricies
+
+To quickly visualize several variables in a dataset and their relation to one another, a **scatterplot matrix** is a quick and detailed tool for generating a series of scatterplots for each combination of variables. Consider `credit.csv` which contains a sample of individuals from a credit card company, identifying their total amount of credit card debt and other financial/demographic variables:
+
+```{r credit-import}
+credit <- read_csv("data/Credit.csv") %>%
+  # remove first ID column
+  select(-X1)
+names(credit) <- stringr::str_to_lower(names(credit))   # convert column names to lowercase
+str(credit)
+```
+
+If we want to quickly assess the relationship between all of the variables (in preparation for more advanced statistical learning techniques), we could generate a matrix of scatterplots using the base `graphics` package:
+
+```{r credit-scatter-matrix}
+pairs(select_if(credit, is.numeric))
+```
+
+* This only works well if we use strictly quantitative variables (hence the use of `select_if()`)
+* We don't automatically see correlation information
+* It's not built using `ggplot2` so it's hard to modify using techniques with which we are already familiar
+
+Instead, we can use `GGally::ggpairs()` to generate a scatterplot matrix. `GGally` is a package for R that extends `ggplot2` by adding helper functions for common multivariate data structures. `ggpairs()` is a function that allows us to quickly generate a scatterplot matrix.
+
+```{r credit-scatter-ggpairs}
+library(GGally)
+
+ggpairs(select_if(credit, is.numeric))
+```
+
+When applied to strictly numeric variables, the lower triangle generates scatterplots, the upper triangle prints the correlation coefficient, and the diagonal panels are density plots of the variable.
+
+Because `ggpairs()` is ultimately based on `ggplot()`, we can use the same types of commands to modify the graph. For instance, if we want to use the color aesthetic to distinguish between men and women in the dataset:
+
+```{r credit-scatter-matrix-gender}
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"))
+```
+
+Or if we wanted to draw a smoothing line instead of scatterplots, we can modify the graph's [matrix sections](http://ggobi.github.io/ggally/index.html#matrix_sections):
+
+```{r credit-scatter-smoother}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = "smooth"
+        )
+)
+```
+
+Hmm, too difficult to see the smoothers because the points are so dense. We can use `wrap()` to pass through individual parameters to the underlying `geom_()`:
+
+```{r wrap}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = wrap("smooth", alpha = .1, color = "blue")
+        )
+)
+```
+
+Or we can write a custom function and apply it to the lower triangle panels:
+
+```{r credit-scatter-point-smoother, message = FALSE, warning = FALSE}
+scatter_smooth <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    # make data points transparent
+    geom_point(alpha = .2) +
+    # add default smoother
+    geom_smooth(se = FALSE)
+}
+
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+```
+
+`ggpairs()` also works on datasets with a mix of qualitative and quantitative variables, drawing appropriate graphs based on whether the variables are continuous or discrete:
+
+```{r diamonds-scatter-matrix}
+ggpairs(select(rcfss::scorecard, type:debt))
+```
+
+## Heatmap of correlation coefficients
+
+Scatterplot matricies can provide lots of information, but can also be very densely packed. Perhaps instead we want to quickly visualize the correlation between each of the variables.^[Example drawn from [ ggplot2 : Quick correlation matrix heatmap - R software and data visualization](http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization).] We can easily calculate the correlation coefficients using `cor()`:
+
+```{r mpg-cor}
+(mpg_lite <- select_if(mpg, is.numeric))
+
+(cormat <- mpg_lite %>%
+  cor %>%
+  round(2))
+```
+
+But who likes yucky tables. Instead let's turn this into a heatmap. First we need to reshape the data into a tidy structure:
+
+1. Each row contains a single observation
+1. Each column contains a single variable
+1. Each cell contains a single value
+
+What we need is a data frame with three columns:
+
+1. First variable name
+1. Second variable name
+1. Correlation coefficient
+
+We can use `reshape2::melt()` to quickly accomplish this:
+
+```{r cormat-tidy}
+library(reshape2)
+(melted_cormat <- melt(cormat))
+```
+
+We can then use `geom_tile()` to visualize the correlation matrix:
+
+```{r cormat-tile}
+ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + 
+  geom_tile()
+```
+
+Not exactly pretty. We can clean it up first by reducing redundancy (remember the upper and lower triangles provide duplicate information):
+
+```{r cormat-reduce}
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+upper_tri
+```
+
+Now melt `upper_tri` and repeat the same process, cleaning up the colors for the heatmap as well to distinguish between positive and negative coefficients:
+
+```{r cormat-tile-tidy}
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white") +
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1)) +
+ coord_fixed()
+```
+
+We can also reorder the correlation matrix according to correlation coefficient to help reveal additional trends:
+
+```{r reorder-cormat}
+reorder_cormat <- function(cormat){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-cormat)/2)
+  hc <- hclust(dd)
+  cormat <-cormat[hc$order, hc$order]
+}
+
+# Reorder the correlation matrix
+cormat <- reorder_cormat(cormat)
+upper_tri <- get_upper_tri(cormat)
+
+# Melt the correlation matrix
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+# Create a ggheatmap
+ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed()
+
+# Print the heatmap
+print(ggheatmap)
+```
+
+Finally we can directly label the correlation coefficient values on the graph, so we have both the color channel and exact values:
+
+```{r add-coef-heatmap}
+ggheatmap + 
+  geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom")
+```
+
+To make it more flexible, we can also turn all of this into a function that works for any dataset:
+
+```{r coef-heatmap-function}
+cormat_heatmap <- function(data){
+  # generate correlation matrix
+  cormat <- round(cor(data), 2)
+  
+  # melt into a tidy table
+  get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+  }
+  
+  upper_tri <- get_upper_tri(cormat)
+  
+  # reorder matrix based on coefficient value
+  reorder_cormat <- function(cormat){
+    # Use correlation between variables as distance
+    dd <- as.dist((1-cormat)/2)
+    hc <- hclust(dd)
+    cormat <-cormat[hc$order, hc$order]
+  }
+  
+  cormat <- reorder_cormat(cormat)
+  upper_tri <- get_upper_tri(cormat)
+  
+  # Melt the correlation matrix
+  melted_cormat <- melt(upper_tri, na.rm = TRUE)
+  
+  # Create a ggheatmap
+  ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+    geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     size = 12, hjust = 1))+
+    coord_fixed()
+  
+  # add correlation values to graph
+  ggheatmap + 
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position = "bottom")
+}
+
+cormat_heatmap(select_if(mpg, is.numeric))
+cormat_heatmap(select_if(credit, is.numeric))
+cormat_heatmap(select_if(diamonds, is.numeric))
 ```
 
 # Types of graphs to cover/demo
