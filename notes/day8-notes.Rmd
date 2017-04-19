@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 ```
 
 # Objectives
@@ -29,6 +29,7 @@ library(knitr)
 library(broom)
 library(stringr)
 library(modelr)
+library(plotly)
 
 options(digits = 3)
 set.seed(1234)
@@ -578,18 +579,99 @@ cormat_heatmap(select_if(credit, is.numeric))
 cormat_heatmap(select_if(diamonds, is.numeric))
 ```
 
-# Types of graphs to cover/demo
+# Parallel coordinate plots
 
-* Smoothing lines
-    * Brief intro to the different `stat_smooth()` methods
-* Scatterplot matricies
-    * Heatmaps of correlation coefficients
-* Parallel coordinate plots
-* Contour plots
-* 3D plots using plotly
-    * Surface plots
-    * Scatterplots
-    * Line plots
+**Parallel coordinate plots** are an alternative graphical format for multivariate data analysis (continuous or discrete). They can be quite busy and messy. Key things for parallel coordinate plots:
+
+* Ordering variables in different ways helps to identify relevant patterns. Therefore a lot of this is trial and error
+* Adding interactivity (as we will see in later weeks) helps
+
+```{r pcp}
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5)
+
+# with the iris data, order the axes by overall class (Species) separation
+# using the anyClass option
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass")
+
+# add points to the plot, add a title, and use an alpha scalar to make the
+# lines transparent
+p <- ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass", 
+    showPoints = TRUE, title = "Parallel Coordinate Plot for the Iris Data", 
+    alphaLines = 0.3)
+p
+
+# add some basic interactivity
+ggplotly(p)
+```
+
+# Representing three-dimensional data in three physical dimensions
+
+Adding a third (or fourth) dimension to a two-dimensional plot is relatively trivial when at least one of the variables is discrete:
+
+```{r add-dimensions}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+However what happens when you have three continuous dimensions to represent? Can we draw 3D graphs in R? Not easily, and interpreting 3D graphs can also be challenging mentally. `ggplot2` cannot draw graphs in three dimensions. One possibility is to keep the data in two physical dimensions by using `geom_tile()` and adding the third dimension using the fill aesthetic (color channel). For example, say we estimate a logistic regression model of the probability of voting in the 1996 US presidential election and we want to visualize the predicted probability of survival for each combination of these variable:
+
+```{r vote96-model}
+# import data
+(vote <- rcfss::mental_health)
+
+# estimate model
+vote_glm <- glm(vote96 ~ age + educ, data = vote, family = "binomial")
+tidy(vote_glm)
+
+# extract predicted probabilities
+vote_prob <- vote %>%
+  data_grid(age = 18:89, educ = 0:20) %>%
+  modelr::add_predictions(vote_glm) %>%
+  # convert predicted values to probabilities
+  mutate(prob = rcfss::logit2prob(pred))
+
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_tile() +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+
+# cleaner image using geom_raster and interpolate = TRUE
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_raster(interpolate = TRUE) +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+```
+
+## 3D scatter plot with mesh
+
+If we wanted to represent this in true three-dimensional fashion, we could use [plotly](https://plot.ly/):
+
+```{r 3d-vote}
+plot_ly(vote_prob, x = ~age, y = ~educ, z = ~prob) %>%
+  add_mesh()
+```
+
+```{r 3d-credit}
+plot_ly(credit, x = ~limit, y = ~balance, z = ~income) %>%
+  add_mesh()
+```
+
+## 3D surface plot
+
+```{r 3d-surface}
+plot_ly(z = ~volcano) %>% add_surface()
+
+volcano %>%
+  melt %>%
+  ggplot(aes(Var1, Var2, z = value)) +
+  geom_contour(aes(color = ..level..))
+```
 
 # Session Info {.toc-ignore}
 
