@@ -23,7 +23,7 @@ Students are expected to have prior programming experience; this is not an intro
 | Assignment | Points |
 |------------------|--------|
 | [Assignment 1](assignments/assignment-1.md) | 15 |
-| Assignment 2 | 15 |
+| [Assignment 2](assignments/assignment-2.md) | 15 |
 | Assignment 3 | 15 |
 | Assignment 4 | 15 |
 | [Final project](assignments/final-project.md) | 30 |
@@ -58,8 +58,9 @@ Readings for the course will come primarily from the following books, as well as
 | Apr. 12 | W | Exploratory data analysis |  |
 | Apr. 17 | M | Graphical perception and cognition |  |
 | Apr. 19 | W | Multivariate data visualization |  |
-| Apr. 24 | M | Rules of thumb | Assignment 2 |
+| Apr. 24 | M | Rules of thumb |  |
 | Apr. 26 | W | Statistical learning models |  |
+| Apr. 28 | F |  | [Assignment 2](assignments/assignment-2.md) |
 | May 1 | M | Interactivity (theory) |  |
 | May 3 | W | Interactivity in R |  |
 | May 8 | M | Geospatial visualization | Assignment 3 |
