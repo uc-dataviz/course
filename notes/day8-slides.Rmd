@@ -1,0 +1,603 @@
+---
+title: "Multivariate data visualization"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "April 19, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Working with dates in R
+
+* Numeric (`20174018`)
+* String (`2016-04-18`, `April 18th, 2017`, etc.)
+* Split into components
+* `lubridate`
+
+## Formatting dates
+
+```{r lubridate}
+library(lubridate)
+```
+
+```{r format-date}
+ymd("2017-01-31")
+mdy("January 31st, 2017")
+dmy("31-Jan-2017")
+```
+
+## Extracting date components {.scrollable}
+
+```{r flights}
+(flights <- read_csv("data/flights-departed.csv"))
+```
+
+```{r flights-over-time}
+ggplot(flights, aes(date, value)) +
+  geom_line() +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+## Extracting date components {.scrollable}
+
+```{r flights-year}
+(flights <- flights %>%
+  mutate(year = year(date),
+         yday = yday(date),
+         # hack to label the x-axis with months
+         days = dmy(format(date,"%d-%m-2016"))))
+
+ggplot(flights, aes(days, value)) +
+  geom_line(aes(group = year), alpha = .2) +
+  geom_smooth(se = FALSE) +
+  scale_x_date(labels = scales::date_format("%b")) +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+## Extracting date components {.scrollable}
+
+```{r flights-by-month}
+(flights <- flights %>%
+  mutate(month = month(date, label = TRUE)))
+
+ggplot(flights, aes(month, value)) +
+  geom_violin() +
+  geom_boxplot(width = .1, outlier.shape = NA) +
+  labs(x = NULL,
+       y = "Number of departing commercial flights")
+```
+
+## Calendar heatmap
+
+* Layer
+    * Data - flights
+    * Mapping
+        * $x$ - weekday (e.g. Sunday, Monday, Tuesday)
+        * $y$ - week in month (e.g. first week, second week, third week)
+        * Fill - `value` (number of departing flights)
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `geom_tile()`
+    * Position adjustment (position) - none
+* Scale
+    * Fill - low and high-end colors (use shading to identify in-between values)
+* Coordinate system - Cartesian coordinate plane
+* Faceting - `facet_grid()` (year X month)
+
+## Calendar heatmap
+
+* Year
+* Month
+* Weekday
+* Week-in-month
+
+## Calendar heatmap {.scrollable}
+
+```{r parse-components}
+(flights <- flights %>%
+  mutate(weekday = wday(date, label = TRUE)))
+```
+
+```{r parse-week-in-month}
+(flights <- flights %>%
+  # generate variables for week in the year (1-54) and the day in the year (1-366)
+  mutate(week = week(date),
+         yday = yday(date)) %>%
+  # normalize to draw calendar correctly - wday should represent the number of days from the Sunday of the week containing January 1st, then adjust based on that
+  group_by(year) %>%
+  mutate(yday = yday + wday(date)[1] - 2,
+         week = floor(yday / 7)) %>%
+  group_by(year, month) %>%
+  mutate(week_month = week - min(week) + 1))
+```
+
+## {.scrollable}
+
+```{r heatmap, fig.asp = 2}
+ggplot(flights, aes(weekday, week_month, fill = value)) +
+  facet_grid(year ~ month) +
+  geom_tile(color = "black") +
+  scale_fill_continuous(low = "green", high = "red") +
+  scale_x_discrete(labels = NULL) +
+  scale_y_reverse(labels = NULL) +
+  labs(title = "Domestic commercial flight activity",
+       x = NULL,
+       y = NULL,
+       fill = "Number of departing flights") +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(angle = 45))
+```
+
+## Smoothing lines
+
+```{r diamonds-point, echo = FALSE}
+p <- ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(x = "Carat size",
+       y = "Price")
+p
+```
+
+----
+
+```{r diamonds-lm}
+p +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+----
+
+```{r diamonds-gam}
+p +
+  geom_smooth(se = FALSE)
+```
+
+## LOESS
+
+```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
+library(lattice)
+
+mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+fit <- augment(mod)
+
+mod0 <- loess(NOx ~ E, ethanol, degree = 0, span = .75)
+mod1 <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+mod2 <- loess(NOx ~ E, ethanol, degree = 2, span = .75)
+
+fit_all <- ethanol %>%
+  gather_predictions(mod0, mod1, mod2) %>%
+  mutate(model = factor(model, levels = c("mod0", "mod1", "mod2"),
+                        labels = c("Constant", "Linear", "Quadratic")))
+
+ggplot(fit_all, aes(E, NOx)) +
+  geom_point() +
+  geom_line(aes(y = pred, color = model)) +
+  labs(title = "Local linear regression",
+       x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J",
+       color = "Regression")
+```
+
+## LOESS
+
+```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+dat <- ethanol %>%
+  inflate(center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= .75) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+library(gganimate)
+
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_line(aes(y = .fitted), data = fit, color = "red") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+gg_animate(p)
+```
+
+## LOESS
+
+```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+spans <- c(.25, .5, .75, 1)
+
+# create loess fits, one for each span
+fits <- data_frame(span = spans) %>%
+  group_by(span) %>%
+  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
+
+# calculate weights to reproduce this with local weighted fits
+dat <- ethanol %>%
+  inflate(span = spans, center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= span) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+# create faceted plot with changing points, local linear fits, and vertical lines,
+# and constant hollow points and loess fit
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_point(shape = 1, data = ethanol, alpha = .25) +
+  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
+  facet_wrap(~span) +
+  ylim(0, 5) +
+  ggtitle("x0 = ") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+
+gg_animate(p)
+```
+
+## Coefficient of correlation ($r$)
+
+* Pearson's $r$
+* Scales between $-1$ and $+1$
+    * $-1$ -- perfect negative association between the variables
+    * $+1$ -- perfect positive association between the variables
+    * $0$ -- no relationship between the variables
+* Unit-less measure
+
+## Coefficient of correlation ($r$) {.scrollable}
+
+```{r pearson-r}
+r_plot <- function(r, n = 100){
+  xy <- ecodist::corgen(len = n, r = r) %>%
+    bind_cols
+  
+  ggplot(xy, aes(x, y)) +
+    geom_point() +
+    ggtitle(str_c("Pearson's r = ", r))
+}
+
+r <- c(.8, 0, -.8)
+
+for(r in r){
+  print(r_plot(r))
+}
+```
+
+## Scatterplot matrix
+
+```{r credit-import, include = FALSE}
+credit <- read_csv("data/Credit.csv") %>%
+  # remove first ID column
+  select(-X1)
+names(credit) <- stringr::str_to_lower(names(credit))   # convert column names to lowercase
+str(credit)
+```
+
+```{r credit-scatter-matrix}
+pairs(select_if(credit, is.numeric))
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r credit-scatter-ggpairs}
+library(GGally)
+
+ggpairs(select_if(credit, is.numeric))
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r credit-scatter-matrix-gender}
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"))
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r credit-scatter-smoother}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = "smooth"
+        )
+)
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r wrap}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = wrap("smooth", alpha = .1, color = "blue")
+        )
+)
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r credit-scatter-point-smoother, message = FALSE, warning = FALSE}
+scatter_smooth <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    # make data points transparent
+    geom_point(alpha = .2) +
+    # add default smoother
+    geom_smooth(se = FALSE)
+}
+
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+```
+
+## Scatterplot matrix {.scrollable}
+
+```{r diamonds-scatter-matrix}
+ggpairs(select(rcfss::scorecard, type:debt))
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r mpg-cor}
+(mpg_lite <- select_if(mpg, is.numeric))
+
+(cormat <- mpg_lite %>%
+  cor %>%
+  round(2))
+```
+
+```{r cormat-tidy}
+library(reshape2)
+(melted_cormat <- melt(cormat))
+```
+
+```{r cormat-tile}
+ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + 
+  geom_tile()
+```
+
+```{r cormat-reduce}
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+upper_tri
+```
+
+```{r cormat-tile-tidy}
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white") +
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1)) +
+ coord_fixed()
+```
+
+```{r reorder-cormat}
+reorder_cormat <- function(cormat){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-cormat)/2)
+  hc <- hclust(dd)
+  cormat <-cormat[hc$order, hc$order]
+}
+
+# Reorder the correlation matrix
+cormat <- reorder_cormat(cormat)
+upper_tri <- get_upper_tri(cormat)
+
+# Melt the correlation matrix
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+# Create a ggheatmap
+ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed()
+
+# Print the heatmap
+print(ggheatmap)
+```
+
+```{r add-coef-heatmap}
+ggheatmap + 
+  geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom")
+```
+
+```{r coef-heatmap-function}
+cormat_heatmap <- function(data){
+  # generate correlation matrix
+  cormat <- round(cor(data), 2)
+  
+  # melt into a tidy table
+  get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+  }
+  
+  upper_tri <- get_upper_tri(cormat)
+  
+  # reorder matrix based on coefficient value
+  reorder_cormat <- function(cormat){
+    # Use correlation between variables as distance
+    dd <- as.dist((1-cormat)/2)
+    hc <- hclust(dd)
+    cormat <-cormat[hc$order, hc$order]
+  }
+  
+  cormat <- reorder_cormat(cormat)
+  upper_tri <- get_upper_tri(cormat)
+  
+  # Melt the correlation matrix
+  melted_cormat <- melt(upper_tri, na.rm = TRUE)
+  
+  # Create a ggheatmap
+  ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+    geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     size = 12, hjust = 1))+
+    coord_fixed()
+  
+  # add correlation values to graph
+  ggheatmap + 
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position = "bottom")
+}
+
+cormat_heatmap(select_if(mpg, is.numeric))
+cormat_heatmap(select_if(credit, is.numeric))
+cormat_heatmap(select_if(diamonds, is.numeric))
+```
+
+## Parallel coordinate plots {.scrollable}
+
+```{r pcp}
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5)
+
+# with the iris data, order the axes by overall class (Species) separation
+# using the anyClass option
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass")
+
+# add points to the plot, add a title, and use an alpha scalar to make the
+# lines transparent
+p <- ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass", 
+    showPoints = TRUE, title = "Parallel Coordinate Plot for the Iris Data", 
+    alphaLines = 0.3)
+p
+
+# add some basic interactivity
+ggplotly(p)
+```
+
+## Three dimensions
+
+```{r add-dimensions, echo = FALSE}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+## Three dimensions {.scrollable}
+
+```{r vote96-model, echo = FALSE}
+# import data
+(vote <- rcfss::mental_health)
+
+# estimate model
+vote_glm <- glm(vote96 ~ age + educ, data = vote, family = "binomial")
+tidy(vote_glm)
+
+# extract predicted probabilities
+vote_prob <- vote %>%
+  data_grid(age = 18:89, educ = 0:20) %>%
+  modelr::add_predictions(vote_glm) %>%
+  # convert predicted values to probabilities
+  mutate(prob = rcfss::logit2prob(pred))
+
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_tile() +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+
+# cleaner image using geom_raster and interpolate = TRUE
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_raster(interpolate = TRUE) +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+```
+
+## 3D scatter plot with mesh
+
+```{r 3d-vote}
+plot_ly(vote_prob, x = ~age, y = ~educ, z = ~prob) %>%
+  add_mesh()
+```
+
+## 3D scatter plot with mesh
+
+```{r 3d-credit}
+plot_ly(credit, x = ~limit, y = ~balance, z = ~income) %>%
+  add_mesh()
+```
+
+## 3D surface plot {.scrollable}
+
+```{r 3d-surface}
+plot_ly(z = ~volcano) %>% add_surface()
+
+volcano %>%
+  melt %>%
+  ggplot(aes(Var1, Var2, z = value)) +
+  geom_contour(aes(color = ..level..))
+```
+
