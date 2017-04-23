@@ -1,0 +1,65 @@
+---
+title: "Data Viz | Assignment 2"
+author: "Julian McClellan and Jonathan Camacho"
+date: "April 23, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=FALSE}
+library(tidyverse)
+theme_set(theme_minimal())
+```
+
+```{r screening_data}
+colors <- c("red", "green", "blue")
+groups <- c("1", "2")
+num_rows <- 10
+set.seed(69)
+
+screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
+                        color = sample(colors, num_rows, replace = TRUE),
+                        group = sample(groups, num_rows, replace = TRUE))
+
+(screen_stack <- screening_dat %>%
+    ggplot(aes(x = group, fill = color)) + 
+      geom_bar(position = "stack") +
+      labs(y = "height",
+           x = ""))
+
+(screen_dodge <- screening_dat %>%
+    ggplot(aes(x = group, fill = color)) + 
+      geom_bar(position = "dodge") +
+      labs(y = "height",
+           x = ""))
+```
+
+```{r fake_data}
+num_rows <- 50
+set.seed(100)
+fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
+                   color = sample(colors, num_rows, replace = TRUE),
+                   group = sample(groups, num_rows, replace = TRUE))
+
+(test_stack <- fake_dat %>%
+  ggplot(aes(y = height, x = group, fill = color)) +
+    geom_col(position = "stack") + 
+    scale_x_discrete() + 
+    labs(x = ""))
+
+(test_dodge <- fake_dat %>%
+  group_by(group, color) %>%
+  summarise(tot_height = sum(height)) %>%
+  ungroup() %>%
+  ggplot(aes(y = tot_height, x = group, fill = color)) +
+    geom_col(position = "dodge") + 
+    scale_x_discrete() +
+    labs(x = "",
+         y = "height"))
+```
+
+```{r save_plots}
+ggsave("screen_stack.png", device = "png", plot = screen_stack, dpi = 100, width = 6, height = 4)
+ggsave("screen_dodge.png", device = "png", plot = screen_dodge, dpi = 100, width = 6, height = 4)
+ggsave("test_stack.png", device = "png", plot = test_stack, dpi = 100, width = 6, height = 4)
+ggsave("test_dodge.png", device = "png", plot = test_dodge, dpi = 100, width = 6, height = 4)
+```
