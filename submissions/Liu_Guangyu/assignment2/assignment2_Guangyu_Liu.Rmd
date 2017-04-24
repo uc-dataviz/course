@@ -1,0 +1,75 @@
+---
+title: "Assignment2: experimenting with visual design"
+author: "Guangyu Liu"
+date: "Due: April 28, 2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyr)
+library(tidyverse)
+```
+
+### Introduction
+According to Cairo (2012), the brain loves differences, and it is able to detect size, orientation, and shade preattentively. All these features, plus color, which is common in denoting different groups, however, are at the bottom of Cleveland and McGill's (1984) accuracy list. Cleveland and McGill designed 10 elementary perceptual tasks to rank several common ways of representing data. Heer and Michael (2010) replicated their research using crowdsourced experiments and got similiar results to the originals. Both studies focused on continuous variables. Cleveland and McGill's list had position and length, which allow more accurate judgments, on the top, while area and color, which allow more generic judgments (Cairo, 2012), on the bottom. However, color saturation, shading, shape, and size (area) are common channels used to represent categorical variables. Different from continuous variables, which require the audience to tell what percentage one value is of the other, what crucial to categorical variables is to easily differentiate one from others.     
+    
+In this assignment, I plan to test how the brain is good at differentiating colors, shapes, and sizes using mTurk and Qualtrics. By good, I mean quickly and accurately detect the difference. The hypothesises are below:    
+    
+- The brain detects color, shading, shape, and size with different speeds.
+- The brain detects color, shading, shape, and size with different accuracies.
+
+### Methods
+#### Research Design
+This experiment includes two parts. First, I tested how good the brain can find items represented by a certain feature. Second, I tested how good the brain can tell the general trend represented by a certain feature. Both tasks are frequently used in exploratory analysis when one wants to compare characteristics between groups.    
+    
+For the first task, I generated two data frames, each has 46 and 50 items respectively. `x` and `y` are random numbers, following standard normal distribution. `class` is a categorical variable with four categories. In each data frame, four categories have similiar number of points. All together, two dataframes have eight categories with number of points range from 11 to 13. I intentionly chose similiar but not identical number of items in each category, in order to reduce the probability of respondents guessing answer.    
+    
+I mapped `x` to x-axis, `y` to y-axis, and `class` to one of the channels -- color, shading, size, and shape. For each channel, I rerandomized `x` and `y` in the two data frames and generated two scatter plots. The respondents are required to count the number of points within a category. An example of plotting a color channeled graph is as below, and the respondents are asked to count how many points are 'A'.    
+    
+```{r}
+set.seed(428)
+
+# Generate a random N-item data frame, with x and y are normal distributed continuous variables,
+# class is a categorical variable with 4 categories, while each category has nearly equal number of  items
+N1 <- 46
+rData_1 <- data.frame(x = abs(rnorm(N1)), y = abs(rnorm(N1)), class = c(1:N1) %% 4)
+rData_1$class <- factor(as.factor(rData_1$class), labels = c("A", "B", "C", "D"))
+
+# Scatter plot
+color_1 <- ggplot(rData_1) +
+  geom_point(aes(x = x, y = y, color = class), size = 4) +
+  labs(x = "", y = "", title = "", color = "") +
+  scale_x_continuous(breaks = NULL) +
+  scale_y_continuous(breaks = NULL)
+png(filename = "submissions/Liu_Guangyu/assignment2/graphs/color_1.png")
+plot(color_1)
+dev.off()
+```
+
+For the second task, I generated three scatter plots for each channel using a data frame of 50 items. In each plot, there is a category in which `y` is possitively associated with `x` (`y = 0.6x + 0.3y'`), or negatively associated with `x` (`y = -0.6x + 0.3y'`), or a constant (`y = 0.3y'`), where `x` and `y'` are both normally distributed random numbers. So the plot shows a general trend between `x` and `y` with variations, rather than a perfectly fitted line. `x`s and `y`s in other categories are unrelated random numbers. `x`, `y`, and `class` are defined as above. The respondents are required to tell when `x` increases, how will `y` change. An example of plotting a shape channeled, `x` and `y` positively associated graph is as below, and the respondents are asked to tell for class D, how will `y` change when `x` increases.    
+```{r}
+# General trend by shape
+# Positive association
+rData$x <- rnorm(N)
+rData$y <- rnorm(N)
+rData$y <- ifelse(rData$class == "D", 0.6*rData$x + 0.3*rData$y, rData$y)
+
+shape_slope_1 <- ggplot(rData) +
+  geom_point(aes(x = x, y = y, shape = class), size = 4) +
+  labs(x = "x", y = "y", title = "") +
+  scale_x_continuous(breaks = NULL) +
+  scale_y_continuous(breaks = NULL)
+png(filename = "submissions/Liu_Guangyu/assignment2/graphs/shape_slope_1.png")
+plot(shape_slope_1)
+dev.off()
+```
+
+#### Data Collection
+Eight questions for task 1, two for each channel, and twelve questions for task 2, three for each channel are created. In a pilot study, I found respondents will answer questions more and more quickly as they get familiar with the question type. So questions appear at the beginning take longer time while questions in the end take shorter time. To minimize the order effect, I randomized all 20 questions. Both the respondents' answer to each question and the time spent on each question are recorded. The sample size is 21.    
+     
+### Results
+
+### Conclusion and Discussion
+Train respondents at the beginning. One respondent answered all increase as decrease, while answered all decrease as increase
+How to timing
