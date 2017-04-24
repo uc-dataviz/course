@@ -11,13 +11,13 @@ theme_set(theme_minimal())
 ```
 
 ```{r screening_data}
-colors <- c("red", "green", "blue")
+color_options <- c("red", "green", "blue")
 groups <- c("1", "2")
 num_rows <- 10
 set.seed(69)
 
 screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
-                        color = sample(colors, num_rows, replace = TRUE),
+                        color = sample(color_options, num_rows, replace = TRUE),
                         group = sample(groups, num_rows, replace = TRUE))
 
 (screen_stack <- screening_dat %>%
@@ -35,9 +35,10 @@ screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
 
 ```{r fake_data}
 num_rows <- 50
-set.seed(100)
+set.seed(69)
+color_options <- c(rep(color_options, 5), rep("green", 8))
 fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
-                   color = sample(colors, num_rows, replace = TRUE),
+                   color = sample(color_options, num_rows, replace = TRUE),
                    group = sample(groups, num_rows, replace = TRUE))
 
 (test_stack <- fake_dat %>%
