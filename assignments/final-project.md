@@ -16,7 +16,7 @@ By the end of the fourth week (April 21), students should select a topic and [su
 Assessment
 ----------
 
-Projects will be assessed on the following criteria:[1]
+Your project will be assessed on the following criteria:[1]
 
 -   Is it truthful?
 -   Is it functional?
@@ -34,11 +34,11 @@ Submit final deliverables to your GitHub repo by **Sunday, June 4 at 11:59 pm**.
 The final deliverables include:
 
 -   **Visualization**: the final product of your project. This could be a Markdown/HTML/PDF file of your research paper, a link to a Shiny app or web page hosting your visualization, etc. If this is located outside of the GitHub repository, make sure to include a link in your `README.md` file.
--   **Paper**: a 4-6 page paper to supplement your visualization. This should include the major components of a research paper, including an abstract, intro, literature review/theory, methods, analysis, and conclusion. As the paper itself is relatively short, these sections will likely be compressed.[2]
--   **Readme**: In the repository's `README.md`, include a brief project description and instructions for a user to execute your code on their own computer (e.g. what software/packages to install, instructions to obtain data if not included in repo). Aim for your project to be *reproducible*. If you work with a partner, include a description of which components each of you contributed to the project. Also include a commentary on the research/development process, answering questions such as (but not limited to):
-    -   On what parts did you struggle or excel?
-    -   How did you consider visual design principles when developing the visualization?
-    -   What resources did you find helpful when working on the project outside of the course materials?
+-   **Paper**: a 4-6 page paper to supplement your visualization explaining your major design choices. Expected components are:
+    -   **Introduction** - an explanation of the problem/research question and the motivation for solving it.
+    -   **Methods** - a detailed explanation of the visualization techniques you employed to solve the problem/answer the question.
+    -   **Results/discussion** - what has the audience learned from your work? How is the visualization truthful, functional, beautiful, insightful, and/or enlightening?
+-   **Readme**: In the repository's `README.md`, include a brief project description and instructions for a user to execute your code on their own computer (e.g. what software/packages to install, instructions to obtain data if not included in repo). Aim for your project to be *reproducible*. If you work with a partner, include a description of which components each of you contributed to the project.
 -   **Code**: an implementation of your source code. Make sure your code is well-documented and interpretable to outsiders.
 
 Getting started
@@ -47,5 +47,3 @@ Getting started
 All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/assignment-invitations/3122b7fd7efd6b37dce698193b57c280).
 
 [1] Drawn from chapter 2 of *The Truthful Art: Data, charts, and maps for communication* by Alberto Cairo.
-
-[2] Note that if your visualization takes the form of a research paper, then this deliverable is combined with the one above. Furthermore, I expect the research paper to take a more traditional form, so I expect to be closer to 15-25 pages with the full contents of a research paper in your discipline.
