@@ -36,7 +36,7 @@ screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
 ```{r fake_data}
 num_rows <- 50
 set.seed(69)
-color_options <- c(rep(color_options, 5), rep("green", 8))
+color_options <- c(rep(color_options, 5), rep("green", 5))
 fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
                    color = sample(color_options, num_rows, replace = TRUE),
                    group = sample(groups, num_rows, replace = TRUE))
