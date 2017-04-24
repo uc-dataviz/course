@@ -59,7 +59,7 @@ Readings for the course will come primarily from the following books, as well as
 | Apr. 17 | M | Graphical perception and cognition |  |
 | Apr. 19 | W | Multivariate data visualization |  |
 | Apr. 24 | M | Rules of thumb |  |
-| Apr. 26 | W | Statistical learning models |  |
+| Apr. 26 | W | Visualizing scientific results |  |
 | Apr. 28 | F |  | [Assignment 2](assignments/assignment-2.md) |
 | May 1 | M | Interactivity (theory) |  |
 | May 3 | W | Interactivity in R |  |
@@ -68,7 +68,7 @@ Readings for the course will come primarily from the following books, as well as
 | May 15 | M | Network visualization |  |
 | May 17 | W | More D3 |  |
 | May 22 | M | Text visualization | Assignment 4 |
-| May 24 | W | Effective presentations |  |
+| May 24 | W | Final project presentations | Present [final project](assignments/final-project.md) |
 | May 29 | M | No class (Memorial Day) |  |
 | May 31 | W | Final project presentations | Present [final project](assignments/final-project.md) |
 | June 4 | Su |  | Submit [final project](assignments/final-project.md) |
@@ -110,8 +110,11 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Multivariate data visualization
     * TA Ch 8-9
 1. Rules of thumb
-1. Statistical learning models
-    * ISLR Ch 3
+1. Visualizing scientific results
+    * [Using Graphs Instead of Tables in Political Science](http://www.jstor.org.proxy.uchicago.edu/stable/20446574?seq=1#page_scan_tab_contents)
+    * [visual battle: table vs graph](http://www.storytellingwithdata.com/blog/2011/11/visual-battle-table-vs-graph)
+    * [Why tables are really much better than graphs](http://andrewgelman.com/2009/04/01/why_tables_are/)
+    * ISLR Ch 3 - skim for a review of the assumptions and mechanics of linear regression (read in more depth if you need a stronger introduction)
 1. Interactivity (theory)
 1. Interactivity in R
 1. Geospatial visualization
@@ -122,6 +125,6 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. More D3
     * Murray TBD
 1. Text visualization
-1. Effective presentations
+1. Final project presentations
 1. No class (Memorial Day)
 1. Final project presentations
