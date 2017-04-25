@@ -303,8 +303,52 @@ The bubble plot tells us several things:
     * The 104th Congress has relatively low leverage but is very discrepant
     * The 74th and 98th Congresses demonstrate both high discrepancy and high leverage
 
-### Collinearity
+# Publishing statistical visualizations
 
+## Descriptive statistics
+
+### Mosaic plot
+
+```{r mosaic-happy}
+# Mosaic plot of happiness and education
+library(productplots)
+data("happy")
+
+happy <- happy %>%
+  na.omit
+```
+
+```{r happy-sex}
+# contingency table - raw values
+happy %>%
+  count(happy, sex) %>%
+  spread(sex, n) %>%
+  kable
+
+# contingency table - proportions
+with(happy, prop.table(table(happy, sex))) %>%
+  kable
+
+# mosaic plot using productplots
+prodplot(happy, ~ happy + sex)
+
+# add color
+prodplot(happy, ~ happy + sex) +
+  aes(fill = happy)
+
+prodplot(happy, ~ happy + marital) +
+  aes(fill = happy) +
+  theme(legend.position = "none")
+
+# using vcd
+library(vcd)
+mosaic(~ happy + sex, happy)
+```
+
+### Dot plot for summary statistics
+
+
+## Regression results
 
 # Session Info {.toc-ignore}
 
