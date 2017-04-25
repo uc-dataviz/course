@@ -1,0 +1,204 @@
+---
+title: "Day 10 - Visualizing scientific results"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Review the mechanics and assumptions of linear regression
+* Identify regression diagnostic tests based on visualization
+* Compare tables vs. graphs for publishing statistical results in academic journals
+* Discuss presenting results in a paper vs. a presentation
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Linear models and visualization
+
+## Linear functional form
+
+Linear models are the simplest functional form to understand. They adopt a generic form
+
+$$Y = \beta_0 + \beta_{1}X$$
+
+where $y$ is the **outcome of interest**, $x$ is the **explanatory** or **predictor** variable, and $\beta_0$ and $\beta_1$ are **parameters** that vary to capture different patterns. In algebraic terms, $\beta_0$ is the **intercept** and $\beta_1$ the **slope** for the linear equation. Given the empirical values you have for $x$ and $y$, you generate a **fitted model** that finds the values for the parameters that best fit the data.
+
+```{r sim-plot}
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+```
+
+This looks like a linear relationship. We could randomly generate parameters for the formula $y = \beta_0 + \beta_1 * x$ to try and explain or predict the relationship between $x$ and $y$:
+
+```{r sim-random-fit}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point()
+```
+
+But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters.
+
+## Least squares regression
+
+One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the difference between the actual values for $y$ and the predicted values for $y$ (also known as the **residuals**).
+
+```{r sim-error}
+dist1 <- sim1 %>% 
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge,
+    pred = 7 + x1 * 1.5
+  )
+
+ggplot(dist1, aes(x1, y)) + 
+  geom_abline(intercept = 7, slope = 1.5, color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+To estimate a linear regression model in R, we use the `lm()` function. The `lm()` function takes two parameters. The first is a **formula** specifying the equation to be estimated (`lm()` translates `y ~ x` into $y = \beta_0 + \beta_1 * x$). The second is the data frame containing the variables:
+
+```{r sim-lm}
+sim1_mod <- lm(y ~ x, data = sim1)
+```
+
+We can use the `summary()` function to examine key model components, including parameter estimates, standard errors, and model goodness-of-fit statistics.
+
+```{r sim-lm-summary}
+summary(sim1_mod)
+```
+
+The resulting line from this regression model looks like:
+
+```{r sim-lm-plot}
+dist2 <- sim1 %>%
+  add_predictions(sim1_mod) %>%
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge
+  )
+
+ggplot(dist2, aes(x1, y)) + 
+  geom_smooth(method = "lm", color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+## Testing assumptions of linear regression using visualizations
+
+### Non-linearity of the data
+
+Linear regression assumes the relationship between the predictors and the response is a straight line. If the true relationship is otherwise, then we cannot generate accurate inferences from the model. Consider the relationship between `mpg` and `horsepower` in the `ISLR::Auto` dataset:
+
+```{r mpg-horsepower}
+library(ISLR)
+data("Auto")
+
+ggplot(Auto, aes(mpg, horsepower)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+Doesn't look linear. We could just look at this graph and make that conclusion (a very basic visualization), but what happens once we estimate a model with more than a single predictor? Instead we can use **residual plots** to identify non-linearity. Recall that the residual is the error for an individual observation $e_i = y_i - \hat{y}_i$, or the difference between the actual and predicted value for the outcome of interest. Residual plots graph the relationship between the fitted values and the residuals. Ideally there should be no discernable pattern in the graph. If there is a pattern, then this indicates a problem with some aspect of the linear model.
+
+```{r resid-plot}
+# estimate models
+mpg_lin <- lm(horsepower ~ mpg, data = Auto)
+mpg_quad <- lm(horsepower ~ poly(mpg, 2, raw = TRUE), data = Auto)
+
+Auto %>%
+  add_predictions(mpg_lin) %>%
+  add_residuals(mpg_lin) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Residual plot for linear fit")
+
+Auto %>%
+  add_predictions(mpg_quad) %>%
+  add_residuals(mpg_quad) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Residual plot for quadratic fit")
+```
+
+### Correlation of error terms
+
+Another assumption of linear regression is that the error terms for the observations $\epsilon_1, \epsilon_2, \dots, \epsilon_n$ are uncorrelated - that is, knowledge of $\epsilon_n$ is not helpful in explaining or predicting $\epsilon_{n+1}$. If this assumption is violated, our standard errors will tend to be inflated (larger than the true standard errors) and could lead to incorrect inferences. Residual plots can be used to detect this type of correlation.
+
+For example in time series analysis, individuals or units are measured repeatedly at discrete points in time. In many cases, observations obtained in adjacent time periods have correlated errors. By plotting the residuals against time, we can look for discernible patterns.
+
+```{r econ-time-series}
+econ_mod <- lm(uempmed ~ unemploy, data = economics)
+
+economics %>%
+  add_residuals(econ_mod) %>%
+  ggplot(aes(date, resid)) +
+  geom_line() +
+  labs(title = "Residual plot of time series model",
+       subtitle = "No lag component")
+
+econ_lag <- economics %>%
+  mutate(unemploy_1 = lag(unemploy))
+
+econ_lag_mod <- lm(uempmed ~ unemploy + unemploy_1, data = econ_lag)
+
+econ_lag %>%
+  add_residuals(econ_lag_mod) %>%
+  ggplot(aes(date, resid)) +
+  geom_line() +
+  labs(title = "Residual plot of time series model",
+       subtitle = "With lag component")
+```
+
+```{r}
+sim <- arima.sim(model = list(ar = .9), n = 100)
+```
+
+
+### Non-constant variance of error terms
+
+
+### Outliers
+
+
+### High-leverage points
+
+
+### Collinearity
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
