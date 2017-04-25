@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE, message=FALSE}
 library(tidyverse)
 theme_set(theme_minimal())
+knitr::opts_chunk$set(include = FALSE, message = FALSE)
 ```
 
 ```{r screening_data}
@@ -20,17 +21,17 @@ screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
                         color = sample(color_options, num_rows, replace = TRUE),
                         group = sample(groups, num_rows, replace = TRUE))
 
-(screen_stack <- screening_dat %>%
+screen_stack <- screening_dat %>%
     ggplot(aes(x = group, fill = color)) + 
       geom_bar(position = "stack") +
       labs(y = "height",
-           x = ""))
+           x = "")
 
-(screen_dodge <- screening_dat %>%
+screen_dodge <- screening_dat %>%
     ggplot(aes(x = group, fill = color)) + 
       geom_bar(position = "dodge") +
       labs(y = "height",
-           x = ""))
+           x = "")
 ```
 
 ```{r fake_data}
@@ -41,13 +42,13 @@ fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
                    color = sample(color_options, num_rows, replace = TRUE),
                    group = sample(groups, num_rows, replace = TRUE))
 
-(test_stack <- fake_dat %>%
+test_stack <- fake_dat %>%
   ggplot(aes(y = height, x = group, fill = color)) +
     geom_col(position = "stack") + 
     scale_x_discrete() + 
-    labs(x = ""))
+    labs(x = "")
 
-(test_dodge <- fake_dat %>%
+test_dodge <- fake_dat %>%
   group_by(group, color) %>%
   summarise(tot_height = sum(height)) %>%
   ungroup() %>%
@@ -55,12 +56,108 @@ fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
     geom_col(position = "dodge") + 
     scale_x_discrete() +
     labs(x = "",
-         y = "height"))
+         y = "height")
+
+gonly <- fake_dat %>% filter(color == "green")
+
+true_value <- sum(gonly$height)
 ```
 
 ```{r save_plots}
-ggsave("screen_stack.png", device = "png", plot = screen_stack, dpi = 100, width = 6, height = 4)
-ggsave("screen_dodge.png", device = "png", plot = screen_dodge, dpi = 100, width = 6, height = 4)
-ggsave("test_stack.png", device = "png", plot = test_stack, dpi = 100, width = 6, height = 4)
-ggsave("test_dodge.png", device = "png", plot = test_dodge, dpi = 100, width = 6, height = 4)
+# ggsave("screen_stack.png", device = "png", plot = screen_stack, dpi = 100, width = 6, height = 4)
+# ggsave("screen_dodge.png", device = "png", plot = screen_dodge, dpi = 100, width = 6, height = 4)
+# ggsave("test_stack.png", device = "png", plot = test_stack, dpi = 100, width = 6, height = 4)
+# ggsave("test_dodge.png", device = "png", plot = test_dodge, dpi = 100, width = 6, height = 4)
+```
+
+```{r results}
+# FOR_JON:
+#
+# Jon, note that I conducted a 
+raw_results <- read_csv('Dataviz_April-24-2017_09.53.csv')
+
+stack_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q3) %>%
+  mutate(Q3 = as.numeric(Q3)) %>%
+  filter(!is.na(Q3),
+         (Q1 == 2 | Q1 == 1.8) & Q2 == 2) %>%
+  select(Q3) %>%
+  {.$Q3}
+
+dodge_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q4) %>%
+  mutate(Q4 = as.numeric(Q4)) %>%
+  filter(!is.na(Q4),
+         (Q1 == 2 | Q1 == 1.8) & Q2 == 2) %>%
+  select(Q4) %>%
+  {.$Q4}
+
+all_valid_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q3, Q4) %>%
+  mutate_each(funs = "as.numeric") %>%
+  filter(Q1 == 2 & Q2 == 2) %>%
+  select(Q3, Q4)
+        
+
+# FOR_JON: 
+# This density plot isn't displayed by default (so you can choose where to display it), display it by typing "stack_hist" again
+plot.summary_density <- all_valid_results %>%
+  ggplot() + 
+    geom_density(aes(x = Q3, color = "Stacked")) + 
+    geom_density(aes(x = Q4, color = "Dodged")) + 
+    scale_color_manual(values = c("Stacked" = "red", "Dodged" = "blue")) + 
+    labs(color = "Chart Type",
+         x = "Sum of Green Bars",
+         title = "Density of Responses for the sum of two green bars")
+
+# Bootstrap testing function
+calc_stat_ci <- function(vector, fun_name, conf = .95, h0 = true_value, num_samples = 20000){
+  require(bootstrap)
+  func <- get(fun_name)
+  samples <- vector - mean(vector) + h0 
+  samples <- bootstrap(samples, num_samples, func)$thetastar
+  lquantile <- (1 - conf) / 2
+  rquantile <- lquantile + conf
+  
+  if (is.na(conf)){
+    samples
+  } else {
+    quantile(samples, c(lquantile, rquantile)) 
+  }
+}
+
+# FOR_JON:
+# Plot of the bootstrap mean distributions versus the true value
+#
+# Firstly we see that the confidence interval for the stacked means is much wider compared to that of the dodged means.
+# Still, the stacked confidence interval actually captures the original mean, while the dodge confidence interval does not.
+# This means, that although it was easier to visually measure with the dodge chart type and that responses were within a 
+# tighter interval, they were confident aroung the wrong value!
+real_dodge_mean <- mean(dodge_results)
+real_stack_mean <- mean(stack_results)
+stack_bmeans_conf <- calc_stat_ci(stack_results, "mean")
+dodge_bmeans_conf <- calc_stat_ci(dodge_results, "mean")
+boot_means <- tibble(boot_means = c(calc_stat_ci(stack_results, "mean", conf = NA), calc_stat_ci(dodge_results, "mean", conf = NA)),
+                     chart_type = c(rep("Stacked", 20000), rep("Dodged", 20000)))
+plot.boot_means <- boot_means %>% ggplot(aes(x = boot_means, color = chart_type)) +
+  geom_density() + 
+  geom_vline(xintercept = stack_bmeans_conf[1], linetype = "dashed", color = "cyan3") + 
+  geom_vline(xintercept = stack_bmeans_conf[2], linetype = "dashed", color = "cyan3") +
+  geom_vline(xintercept = dodge_bmeans_conf[1], linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = dodge_bmeans_conf[2], linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = real_dodge_mean, color = "red") + 
+  geom_vline(xintercept = real_stack_mean, color = "cyan3") + 
+  annotate("text", x = real_dodge_mean, y = .30, label = "True Sum Mean") +
+  annotate("text", x = real_stack_mean, y = .30, label = "True Sum Mean") +
+  labs(title = "Bootstrap mean test for sum of green bars\n95% confidence intervals and true sum means shown",
+       x = "Bootstrap Mean",
+       color = "Chart Type")
+
+# FOR_JON:
+# This is an F test to compare two variances. Note that the p value is quite low, indicating that the variances
+# are probably un equal.
+#
+# This is probably the most concrete result we've attained. We can say that the dodged estimates have 
+# a significantly lower variance than the stacked results.
+f_test_results <- var.test(stack_results, dodge_results)
 ```
