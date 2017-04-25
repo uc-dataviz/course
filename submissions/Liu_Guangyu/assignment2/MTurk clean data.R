@@ -16,25 +16,52 @@ timeSpent <- select(T_Q, t = contains("Last"))
 question <- select(T_Q, -contains("Last")) %>% 
   select(q = contains("Q"))
 
-# Split data of two tasks
-task1 <- select(question, c(q1:q8))
-task2 <- select(question, c(q9:q20))
-
 # Answer to task 1
 answer1 <- c(11, 11, 12, 12, 12, 12, 13, 13)
 answer2 <- rep(c("Increase", "Decrease", "Hard to tell"), 4)
 
-# Compute correctness for each task
-error1 <- task1
-for (i in seq_along(task1)){
-  error1[[i]] <- task1[[i]] - answer1[i]
+# Merge data
+mergedData <- bind_cols(question, timeSpent)
+
+# Delete guessing answers
+# For multiple choice questions, if a respondent choose the same option for all 12 questions, 
+# he/she is regarded as guessing answers. All data from this respondent is removed from the dataset
+rownum = integer()
+for (r in 1:nrow(mergedData)){
+  guessAnswer <- TRUE
+  for (i in 10:20){
+    if (mergedData[r,][i] != mergedData[r,][i-1]){
+      guessAnswer <- FALSE
+      break
+      }
+  }
+  if (guessAnswer){
+    rownum <- c(rownum, r)
+  }
+}
+mergedData <- mergedData[-rownum,]
+
+# Remove unreasonable time
+# Time spent on a question is regarded as unreasonably long if it is more than 60 seconds.
+# Time spent on the first eight questions (counting points) is regared as unreasonably short if it is less than 5 sec.
+# Those data is converted as missing value
+for (i in 21:40){
+  for (r in 1:nrow(mergedData)){
+    if (mergedData[r,][i] > 60 | (mergedData[r,][i] < 5 & i < 29)){
+      mergedData[r,][i] = NA
+    }
+  }
 }
 
-error2 <- task2
-for (i in seq_along(task2)){
-  error2[[i]] <- (task2[[i]] == answer2[i])
+# Compute correctness for each task
+# First task
+for (i in 1:8){
+  mergedData[[i]] <- mergedData[[i]] - answer1[i]
+}
+# Second task
+for (i in 9:20){
+  mergedData[[i]] <- (mergedData[[i]] == answer2[i-8])
 }
 
 # Export cleaned data
-cleanedData <- bind_cols(error1, error2, timeSpent)
-write.csv(cleanedData, file = "submissions/Liu_Guangyu/assignment2/cleanedData.csv")
+write.csv(mergedData, file = "submissions/Liu_Guangyu/assignment2/cleanedData.csv")
