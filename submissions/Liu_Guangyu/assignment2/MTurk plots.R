@@ -1,6 +1,6 @@
 #---
 # April 22, 2017
-# Draw graphs for MTurk experiment -- count points
+# Assignment 2 -- Draw graphs for MTurk experiment (count points)
 #---
 
 library(tidyr)

@@ -1,6 +1,6 @@
 #---
 # April 28, 2017
-# Draw graphs for MTurk experiment -- general trend
+# Assignment 2 -- Draw graphs for MTurk experiment (general trend)
 #---
 library(tidyr)
 library(tidyverse)
