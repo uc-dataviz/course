@@ -1,0 +1,14 @@
+---
+title: "Assignment 2"
+author: "Dana Westley"
+date: "Due April 28"
+output: github_document
+---
+
+```{r setup, include=FALSE} 
+
+data = read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment2/SurveyDataClean.csv")
+
+```
+
+##Write Up 
