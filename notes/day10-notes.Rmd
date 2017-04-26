@@ -159,7 +159,11 @@ By doing so, the residuals now are more similarly distributed.
 
 Linear regression assumes the relationship between the predictors and the response is a straight line. If the true relationship is otherwise, then we cannot generate accurate inferences from the model. 
 
-
+```{r mpg-nonlinear}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
 
 Doesn't look linear. We could just look at this graph and make that conclusion (a very basic visualization), but what happens once we estimate a model with more than a single predictor? Instead we can use **residual plots** to identify non-linearity. Recall that the residual is the error for an individual observation $e_i = y_i - \hat{y}_i$, or the difference between the actual and predicted value for the outcome of interest. Residual plots graph the relationship between the fitted values and the residuals. Ideally there should be no discernable pattern in the graph. If there is a pattern, then this indicates a problem with some aspect of the linear model.
 
