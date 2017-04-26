@@ -1,0 +1,41 @@
+---
+title: "Tom Curran College Education EDA"
+author: "Thomas Curran"
+date: "4/12/2017"
+output: html_document
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rcfss)
+library(ggplot2)
+data("scorecard")
+
+```
+## Do colleges that cost more, pay their professors more?
+```{r echo=FALSE}
+
+#Relationship between the cost of the college and average prof salary
+graph_1<-ggplot(scorecard,
+                aes(x=avgfacsal,
+                    y=cost,
+                    label=name))+
+  geom_point()+
+  geom_smooth()
+  #geom_text(aes(label=name),hjust=0, vjust=0)
+
+graph_1
+
+```
+
+```{r}
+graph_2<-ggplot(scorecard, 
+                aes(x=comprate,y=firstgen)) +
+  geom_point() +
+  geom_smooth()
+
+graph_2 
+
+```
+

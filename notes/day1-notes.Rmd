@@ -6,9 +6,6 @@ output:
     theme: readable
     toc: yes
     toc_float: yes
-  github_document:
-    toc: yes
-    toc_depth: 3
 ---
 
 ```{r setup, include = FALSE}
