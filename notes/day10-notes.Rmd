@@ -146,6 +146,13 @@ If the model performed equally well for all three categories, the distributions 
 mpg_drv <- lm(hwy ~ displ + drv, data = mpg)
 
 mpg %>%
+  data_grid(displ, drv) %>%
+  add_predictions(mpg_drv) %>%
+  ggplot(aes(displ, pred, color = drv)) +
+  geom_line() +
+  geom_point(data = mpg, aes(displ, hwy))
+
+mpg %>%
   add_residuals(mpg_drv) %>%
   ggplot(aes(resid, color = drv)) +
   geom_density()
