@@ -5,9 +5,90 @@ date: "Due April 28"
 output: github_document
 ---
 
-```{r setup, include=FALSE} 
+#Intro
 
-data = read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment2/SurveyDataClean.csv")
+```{r setup, include=FALSE} 
+library(ggplot2)
+library(scales)
+
+survey = read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment2/SurveyDataClean2.csv")
+
+summary(survey)
+
+#distribution of group responses
+density_group <- ggplot(survey, aes(DiffReported)) + 
+  geom_density(aes(group = Treatment, color = Treatment, fill = Treatment), alpha = .3) + 
+  geom_vline(xintercept=12) +
+  theme_bw() + 
+  labs(title = "Estimating Difference in Height \n Between Two Bars", x = "Reported Difference", 
+       y= "Density") + 
+  theme(plot.title=element_text(size=25, hjust = 0.5)) +
+  annotate("text", x = 18.3, y = .06, label = "True Difference = 12")
+density_group
+
+#tests
+#T test to compare groups for Estimation Question
+t.test(data = survey, AccuracyScore ~ Treatment) #two sample t not significant p = .27
+
+#Logisitc Regression to compare groups for "Most Popular" Question
+mod <- glm(data = survey, AccuracyMost ~ Treatment, family = binomial) #not significant p = .71
+summary(mod)
+
+#Logistic Regression for Least Q***
+mod1 <- glm(data = survey, AccuracyLeast ~ Treatment, family = binomial)
+summary(mod1)                     #significant B = -2.19 p =.002
+exp(coef(mod1))       #Shaded = .1118, shaded group was 89% less likely to be accurate than control
+
+#BARGRAPH
+log_reg <-ggplot(survey, aes(Treatment, fill = AccuracyLeast)) + 
+  geom_bar(aes(y = (..count..)/sum(..count..)*2)) + 
+  scale_y_continuous(labels = percent) + 
+  labs(title = "Color Shading Group Less Accurate \n at Identifying Smallest Bar Height", 
+       y = "Percent", caption ="β = -2.19, p<.01") + 
+  theme(plot.title=element_text(size=25, hjust = 0.5)) + 
+  scale_fill_manual(values=c("firebrick1", "darkolivegreen2"))
+log_reg
+
+
+#correlation btw time to complete & AccuracyEstimation***
+cor.test(survey$Duration, survey$AccuracyScore) #correlation signifcant r2 = .32, p = .03
+
+#CORRELATION
+cor_plot <- ggplot(survey, aes(Duration, AccuracyScore)) + 
+  geom_point() + 
+  geom_smooth(method = lm, se = FALSE) + 
+  labs(title = "Relationship Between Survey Duration and \n Bar Height Estimation Accuracy", 
+       caption = "R^2 = .32, p<.05") + 
+  coord_cartesian(xlim=c(0,250)) + 
+  theme_bw() + 
+  theme(plot.title=element_text(size=25, hjust = 0.5))
+cor_plot
+
+
+mod2 <- lm(AccuracyScore ~ Race, data = survey) #one way anova not significant p =.36
+summary(mod2)
+anova(mod2)
+
+mod3 <- lm(AccuracyScore ~ Age, data = survey) #one way anova REALLY Not significant p = .95 (prob b/c most people fell into one age bracket)
+summary(mod3)
+anova(mod3)
+
+mod4 <- glm(AccuracyLeast ~ Race, data = survey, family = binomial) # no significance
+summary(mod4)
+
+mod5 <- glm(AccuracyLeast ~ Age, data = survey, family = binomial) #no significance
+summary(mod5)
+
+```
+
+#Results
+``` {r}
+density_group
+
+cor_plot
+
+log_reg
+
 
 ```
 
