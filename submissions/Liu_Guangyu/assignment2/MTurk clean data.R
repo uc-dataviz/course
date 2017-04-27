@@ -17,7 +17,7 @@ question <- select(T_Q, -contains("Last")) %>%
   select(q = contains("Q"))
 
 # Answer to task 1
-answer1 <- c(11, 11, 12, 12, 12, 12, 13, 13)
+answer1 <- c(11, 13, 12, 12, 11, 13, 12, 12)
 answer2 <- rep(c("Increase", "Decrease", "Hard to tell"), 4)
 
 # Merge data

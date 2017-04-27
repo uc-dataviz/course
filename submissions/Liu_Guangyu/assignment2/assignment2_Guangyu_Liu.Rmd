@@ -5,10 +5,11 @@ date: "Due: April 28, 2017"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(tidyr)
 library(tidyverse)
+library(knitr)
 ```
 
 ### Introduction
@@ -25,7 +26,7 @@ This experiment includes two parts. First, I tested how good the brain can find 
     
 For the first task, I generated two data frames, each has 46 and 50 items respectively. `x` and `y` are random numbers, following standard normal distribution. `class` is a categorical variable with four categories. In each data frame, four categories have similiar number of points. All together, two dataframes have eight categories with number of points range from 11 to 13. I intentionly chose similiar but not identical number of items in each category, in order to reduce the probability of respondents guessing answer.    
     
-I mapped `x` to x-axis, `y` to y-axis, and `class` to one of the channels -- color, shading, size, and shape. For each channel, I rerandomized `x` and `y` in the two data frames and generated two scatter plots. The respondents are required to count the number of points within a category. An example of plotting a color channeled graph is as below, and the respondents are asked to count how many points are 'A'.    
+I mapped `x` to x-axis, `y` to y-axis, and `class` to one of the channels -- color, shading, size, and shape. For each channel, I rerandomized `x` and `y` in the two data frames and generated two scatter plots. The respondents are required to count the number of points within a category. An example of plotting a color channeled graph is as below. The full script can be found in "MTurk plots.R" For this graphs, The respondents are asked to count how many points are 'A'.    
     
 ```{r}
 set.seed(428)
@@ -37,38 +38,134 @@ rData_1 <- data.frame(x = abs(rnorm(N1)), y = abs(rnorm(N1)), class = c(1:N1) %%
 rData_1$class <- factor(as.factor(rData_1$class), labels = c("A", "B", "C", "D"))
 
 # Scatter plot
-color_1 <- ggplot(rData_1) +
+ggplot(rData_1) +
   geom_point(aes(x = x, y = y, color = class), size = 4) +
   labs(x = "", y = "", title = "", color = "") +
   scale_x_continuous(breaks = NULL) +
   scale_y_continuous(breaks = NULL)
-png(filename = "submissions/Liu_Guangyu/assignment2/graphs/color_1.png")
-plot(color_1)
-dev.off()
 ```
 
-For the second task, I generated three scatter plots for each channel using a data frame of 50 items. In each plot, there is a category in which `y` is possitively associated with `x` (`y = 0.6x + 0.3y'`), or negatively associated with `x` (`y = -0.6x + 0.3y'`), or a constant (`y = 0.3y'`), where `x` and `y'` are both normally distributed random numbers. So the plot shows a general trend between `x` and `y` with variations, rather than a perfectly fitted line. `x`s and `y`s in other categories are unrelated random numbers. `x`, `y`, and `class` are defined as above. The respondents are required to tell when `x` increases, how will `y` change. An example of plotting a shape channeled, `x` and `y` positively associated graph is as below, and the respondents are asked to tell for class D, how will `y` change when `x` increases.    
+For the second task, I generated three scatter plots for each channel using a data frame of 50 items. In each plot, there is a category in which `y` is possitively associated with `x` (`y = 0.6x + 0.3y'`), or negatively associated with `x` (`y = -0.6x + 0.3y'`), or a constant (`y = 0.3y'`), where `x` and `y'` are both normally distributed random numbers. So the plot shows a general trend between `x` and `y` with variations, rather than a perfectly fitted line. `x`s and `y`s in other categories are unrelated random numbers. `x`, `y`, and `class` are defined as above. The respondents are required to tell when `x` increases, how will `y` change. An example of plotting a shape channeled, `x` and `y` positively associated graph is as below. The full script can be found in "MTurk plot general trend.R". For this graph, the respondents are asked to tell for class D, how will `y` change when `x` increases.    
 ```{r}
 # General trend by shape
 # Positive association
-rData$x <- rnorm(N)
-rData$y <- rnorm(N)
+N <- 50
+rData <- data.frame(x = rnorm(N), y = rnorm(N), class = c(1:N) %% 4)
+rData$class <- factor(as.factor(rData$class), labels = c("A", "B", "C", "D"))
 rData$y <- ifelse(rData$class == "D", 0.6*rData$x + 0.3*rData$y, rData$y)
 
-shape_slope_1 <- ggplot(rData) +
+ggplot(rData) +
   geom_point(aes(x = x, y = y, shape = class), size = 4) +
   labs(x = "x", y = "y", title = "") +
   scale_x_continuous(breaks = NULL) +
   scale_y_continuous(breaks = NULL)
-png(filename = "submissions/Liu_Guangyu/assignment2/graphs/shape_slope_1.png")
-plot(shape_slope_1)
-dev.off()
 ```
 
 #### Data Collection
-Eight questions for task 1, two for each channel, and twelve questions for task 2, three for each channel are created. In a pilot study, I found respondents will answer questions more and more quickly as they get familiar with the question type. So questions appear at the beginning take longer time while questions in the end take shorter time. To minimize the order effect, I randomized all 20 questions. Both the respondents' answer to each question and the time spent on each question are recorded. The sample size is 21.    
-     
+Eight questions for task 1, two for each channel, and twelve questions for task 2, three for each channel are created. I designed a [survey](http://ssd.az1.qualtrics.com/jfe/form/SV_eKCcpICSV9YLjIF) using Qualtrics and posted the link on MTurk to collect data. In a pilot study, I found respondents will answer questions more and more quickly as they get familiar with the question type. So questions appear at the beginning take longer time while questions in the end take shorter time. To minimize the order effect, I randomized all 20 questions. Both the respondents' answer to each question and the time spent on each question are recorded. The sample size is 21.    
+    
+Because it is difficult to control the experiment environment on MTurk, some creteria are applied to remove "guessing answers". For the first task (counting points), it is difficult to read the question, understand the legend, and count points within 5 seconds. Time spent less than 5 seconds is regarded as unreasonably short and was converted as missing value (N/A). Most respondents spent less than 30 seconds on each question. Time spent more than 60 seconds is regarded as unreasonably long and was converted as missing value. For the second task (multiple choice), two respondents chose the same option for all twelve questions, and spent relatively short time on each quesion. Their answers are regarded as "guessing answer", and all their answers are removed from the dataset. After that, the valid sample size is 19.
+
 ### Results
+#### Counting points
+For the first task, respondents are required to count the number of points belong to a category. I recoded the answer into the deviation from the correct number. Take the first graph in "Research Design" section as an example. Respondents are asked to count how many points are "A". The correct number is 11. If one answers 13, he/she has 2 points deviation from the correct number. If one answers 10, he/she has -1 point deviation from the correct number. Then I calculated the mean, min, max, and sd of the deviation of each channel. Channels with a mean closer to zero can convey categorical information more accurately.    
+    
+Similarly, I transformed the time spent on each question. Since there is no "correct time" for each question, I calculated the time deviation from the grand mean, i.e. the average time used of all eight questions in task 1. Then, the mean, min, max, and sd of time deviation of each channel are calculated. If a channel has a negative time deviation, people can differentiate points represented by this channel quicker than average. If a channel has a positive time deviation, it will take longer time for the brain to differentiate points represented by this channel than average.    
+    
+As an exploratory analysis, I graphed the answer deviation from the correct number and the time deviation from the grand mean in `Fig 1`. The points denote the means of each channel, the solid lines are mean +/- sd, and the dotted lines are the ranges of the deviation of each channel.    
+```{r}
+mTurkData <- read.csv("cleanedData.csv")
+
+# Task1 -- counting points
+task1 <- select(mTurkData, num_range("q", 1:8)) %>% 
+  gather(key = "channel", value = "answer") %>% 
+  mutate(channel = ifelse(channel == "q1" | channel == "q8", "color",
+                          ifelse(channel == "q2" | channel == "q7", "shading",
+                                 ifelse(channel == "q3" | channel == "q6", "size", "shape"))))
+
+time1 <- select(mTurkData, num_range("t", 1:8)) %>% 
+  gather(key = "channel", value = "timeSpent") %>% 
+  mutate(channel = ifelse(channel == "t1" | channel == "t8", "color",
+                          ifelse(channel == "t2" | channel == "t7", "shading",
+                                 ifelse(channel == "t3" | channel == "t6", "size", "shape"))),
+         centeredT = timeSpent - mean(timeSpent, na.rm = TRUE))
+
+# Calculate the mean, min, max, and sd of the deviation
+task1_sum <- task1 %>% 
+  group_by(channel) %>% 
+  summarize(mean = mean(answer, na.rm = TRUE), 
+            min = min(answer, na.rm = TRUE), 
+            max = max(answer, na.rm = TRUE), 
+            sd = sd(answer, na.rm = TRUE))
+
+time1_sum <- time1 %>% 
+  group_by(channel) %>% 
+  summarize(mean = mean(centeredT, na.rm = TRUE), 
+            min = min(centeredT, na.rm = TRUE), 
+            max = max(centeredT, na.rm = TRUE), 
+            sd = sd(centeredT, na.rm = TRUE))
+
+# Merge data and reorder factors
+task1_merge <- bind_rows("Answer" = task1_sum, "Time" = time1_sum, .id = "group")
+task1_merge$channel <- reorder(as.factor(task1_merge$channel), task1_merge$mean)
+task1_merge$group <- factor(task1_merge$group, 
+                            levels = c("Time", "Answer"), 
+                            labels = c("Time", "Answer"))
+
+
+# Plot the answer and time of each channel. 
+# The point in the middle denotes the mean of each channel. Answer close to zero means more accurate.
+# The dotted line denotes the range of the deviation from the correct answer/grand mean.
+# The solid line denotes [mean - sd, mean + sd]
+ggplot(task1_merge, aes(x = group, y = mean, color = group)) +
+  geom_linerange(aes(ymin = min, ymax = max), size = 1, linetype = 3) +
+  geom_linerange(aes(ymin = mean - sd, ymax = mean + sd), size = 1) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0, color = "ivory3", linetype = 2, size = 0.8) +
+  coord_flip() +
+  facet_grid(channel~.) +
+  labs(y = "Deviation",
+       x = NULL,
+       title = "Fig 1 - Differentiating points represented by different channels") +
+  scale_color_manual(values = c("Time" = "skyblue1", "Answer" = "coral1")) +
+  theme(legend.position = "none")
+```
+The graph above shows that from color to shape to shading to size, the accuracy in conveying categorical variables decreases while time used increases. To see if the differences are statistically significant, I ran t-test for every two adjacent channels.
+```{r}
+# T-test for every adjacent channels
+# Define a function to add t-test results to a dataframe
+add_result <- function(df, result, test){
+  df <- add_row(df, test = test, t_stat = result$statistic, p_value = result$p.value)
+}
+
+# New dataframe
+ttest1 <- data.frame(test = character(0), t_stat = numeric(0), p_value = numeric(0))
+
+# T-tests and adding results
+result <- t.test(answer ~ channel, data = filter(task1, channel == "color" | channel == "shape"))
+ttest1 <- add_result(ttest1, result, "Answer: color~shape")
+
+result <- t.test(answer ~ channel, data = filter(task1, channel == "shape" | channel == "shading"))
+ttest1 <- add_result(ttest1, result, "Answer: shape~shading")
+
+result <- t.test(answer ~ channel, data = filter(task1, channel == "shading" | channel == "size"))
+ttest1 <- add_result(ttest1, result, "Answer: shading~size")
+
+result <- t.test(centeredT ~ channel, data = filter(time1, channel == "color" | channel == "shape"))
+ttest1 <- add_result(ttest1, result, "Time: color~shape")
+
+result <- t.test(centeredT ~ channel, data = filter(time1, channel == "shape" | channel == "shading"))
+ttest1 <- add_result(ttest1, result, "Time: shape~shading")
+
+result <- t.test(centeredT ~ channel, data = filter(time1, channel == "shading" | channel == "size"))
+ttest1 <- add_result(ttest1, result, "Time: shading~size")
+
+kable(ttest1, format = "markdown", col.names = c("Test", "t-stat", "p-value"),
+      caption = "T-test output")
+```
+The statistic analysis shows that regarding accuracy, `color` has the highest accuracy, while `size` has the lowest accuracy. `shape` and `shading` are in the middle and are not statistically different from each other. Regarding speed, our brain can differentiate `color` and `shape` statistically faster than `shading` and `size`.    
+
+#### General trend
 
 ### Conclusion and Discussion
 Train respondents at the beginning. One respondent answered all increase as decrease, while answered all decrease as increase
