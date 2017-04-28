@@ -5,6 +5,10 @@ date: "Due April 28"
 output: github_document
 ---
 
+![Control](~/Desktop/ScreenShot1.png)
+
+![Treatment](~/Desktop/ScreenShot2.png)
+
 #Double-Encoding Visual Information Appears to Reduce Accuracy of Perception
 
 ##Research Question

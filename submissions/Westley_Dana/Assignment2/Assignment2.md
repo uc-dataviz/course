@@ -3,6 +3,10 @@ Assignment 2
 Dana Westley
 Due April 28
 
+![Control](~/Desktop/ScreenShot1.png)
+
+![Treatment](~/Desktop/ScreenShot2.png)
+
 Double-Encoding Visual Information Appears to Reduce Accuracy of Perception
 ===========================================================================
 
@@ -12,8 +16,6 @@ Research Question
 I wondered if providing more information, i.e. using a second channel to encode information in a visualizaiton, would improve or hinder the processing of information. My original hypothesis was that using a second channel would help people to accurately process the information in the visual more easily and quickly. My thinking was that with two layers of information However, those in the Tufte school of thought may consider this to be superfluous, or unnecessary "noise" that wouldactually hinder people's processing of the information conveyed.
 
 In order to test this idea, I created a simple bar graph since perceptually, we are extremely accurate at comparing height of lines from a common base line. I used the mpg dataset to create a count of each type of car in the dataset. However, the information was presented as "percent of Americans who own each type of car" for a realistic feel. One version of the graph had bars of all one color, making up the control condition. For the test condition, the bars in the graph varied on a color gradient, getting darker as their height got longer. For the control group, the information was only conveyed in one channel: bar height. For the test group, the information was encoded via two channels: bar height *and* color gradient.
-
-![Control Group](~/Desktop/Onecolor.png) ![Test Group](~/Desktop/Shaded.png)
 
 The Survey - Methodology
 ------------------------
