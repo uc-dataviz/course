@@ -43,7 +43,35 @@ peppers_tidy <- peppers %>%
 ```	
 
 As the difference between the highest bar and any other bar was greater than the difference between any other bars (see figures used in experiment in ~/materials folder), it was surmised that the highest bar would be most salient, while the second lowest bar would be the least salient of the three bars that participants were asked to recall.  Differences in accuracy on recalling the second lowest bar were of particular interest to the authors, though intention was to explore differences inaccuracy in recalling all three bars.  For this reason, the authors chose not to pool the accuracy for the three questions into a single value, and instead perform three unique Pearson’s chi-squares, one with the accuracy in recalling the highest bar as the DV, one with accuracy in recalling the lowest bar as the DV, and one with accuracy in recalling the second lowest bar as the DV.  Accuracy was coded as a factor with levels 0 (incorrect) or 1 (correct).  Results in all three tests were highly non-significant for all three conditions (see Figs. 1-3).  Therefore, preliminary results suggest that color does neither detracts nor enhances short-term recall of results displayed in a graph.  
-Moreover, an exploratory chi-square using question as predictor, regardless of condition, found that there were significant differences in accuracy across questions (Figs. 4-5);  χ2 = 15.7, p < 0.0005.  Though coefficients in a logistic regression could not be properly interpreted, the sign for each question was of interest to the authors; therefore, a binomial logistic regression was performed, similarly using question as the predictor and accuracy as the DV.  The regression revealed that probability of correctly answering the question decreased significantly when question concerned either the second highest or second lowest bar (compared to the highest bar; β = -2.206, p < 0.05 and β = -3.066, p < 0.005 for the second highest and second lowest bar, respectively; see Fig. 5).  Therefore, the highest bar in the bar graphs used was significantly more salient than the others (resulting in significantly greater probability of answering this question correctly
+
+```#Chi-square for highest bar
+pander(chisq.test(xtabs( ~ highest + condition, data = peppers_tidy)))
+
+
+#Chi-square for lowest bar
+pander(chisq.test(xtabs( ~ lowest + condition, data = peppers_tidy)))
+
+
+#Chi-square for second lowest bar
+pander(chisq.test(xtabs( ~ second + condition, data = peppers_tidy)))
+
+#Tidy for Fig 4 and produce chi-square test
+question_accuracy <- peppers_tidy %>%
+  gather(highest, lowest, second, key = "Question", value = "Accuracy") %>%
+  mutate(Accuracy = factor(Accuracy))
+
+pander(chisq.test(xtabs( ~ Accuracy + Question, data = question_accuracy)))
+
+
+#Tidy for Fig 5 and produce binomial logistic regression
+graph_heights <- peppers_tidy %>%
+  gather(highest, lowest, second, key = "Question", value = "Accuracy") %>%
+  mutate(Accuracy = factor(Accuracy))
+
+pander(summary(glm(Accuracy ~ Question, family = binomial(link = 'logit'), data = graph_heights)))
+```
+
+Moreover, an exploratory chi-square using question as predictor, regardless of condition, found that there were significant differences in accuracy across questions (Figs. 4-5);  χ2 = 15.7, p < 0.0005.  Though coefficients in a logistic regression could not be properly interpreted, the sign for each question was of interest to the authors; therefore, a binomial logistic regression was performed, similarly using question as the predictor and accuracy as the DV.  The regression revealed that probability of correctly answering the question decreased significantly when question concerned either the second highest or second lowest bar (compared to the highest bar; β = -2.206, p < 0.05 and β = -3.066, p < 0.005 for the second highest and second lowest bar, respectively; see Fig. 5).  Therefore, the highest bar in the bar graphs used was significantly more salient than the others (resulting in significantly greater probability of answering this question correctly,
 
 Discussion
 ---
@@ -54,16 +82,25 @@ Parsing apart the mechanics of these results (either the difference in heights o
 	
 **Figure 1:  Pearson’s χ2 with accuracy recalling highest bar as DV**
 
-
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_1.jpg)
 
 **Figure 2:  Pearson’s χ2 with accuracy recalling lowest bar as DV**
 
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_2.jpg)
+
 **Figure 3:  Pearson’s χ2 with accuracy recalling second-lowest bar as DV**
+
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_3.jpg)
 
 **Figure 4:  Pearson’s χ2 with question as predictor**
 
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_4.jpg)
+
 **Figure 5:  Binomial logistic regression with question as predictor**
+
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_5.jpg)
 
 
 **Figure 6**
  
+![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/assignment_2_graph.jpg)
