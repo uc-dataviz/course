@@ -2,12 +2,12 @@ Assignment 2 -- Effects of color channel on short-term recall (Donald Lyons & Ni
 =====
 
 Introduction
-===
+---
 
 Our intent with the present study is to analyze the ways in which coding categorical data through the “color” channel may impact interpretation and recall of graphical data. The present study follows from the findings of Bateman, Mandryk, Gutwin, Genest, McDine, & Brooks (2010) wherein it was observed that additional visual imagery on charts, as opposed to the sparse nature of most charts, improves long-term recall of content. We presume that the addition of validity allows the mind to better streamline memory of design and content together, and thus want to test if increasing relevance to the meaning of the data while holding the design stable otherwise (unlike the design in the Bateman paper, in which the different designs were radically different) would meaningfully impact retrieval of content. Thus, we ask this: does a making a visualization more directly relatable render it more retrievable, and if so does making a visualization more directly relatable by misleading render it less retrievable than if it does not resemble reality at all?
 
 Methods
-===
+---
 
 Following the cue of Heer & Bostock (2010), we are using MTurk to collect responses of 60 people. In our survey (see attached in the /materials folder), we asked people to first answer a question regarding their favorite color of bell pepper (between red, green, yellow, and orange). The data from this question was not involved in analysis. Then, participants were told that they could see the results of the survey, but were actually shown a graph reflecting their random assignment. Regardless of random assignment, in the graph Green, Orange, Red, and Yellow were presented in that order, with Red being the highest, Orange the second highest, Yellow the second lowest, and Green the lowest. Participants in group 1 were shown a graph with non-relevant colors (see materials/control), participants in group 2 were shown a graph where the colors of the bars corresponded to the pepper colors they represented (see materials/correct), and participants in group 3 were shown a graph where the colors of the bars corresponded to the pepper colors but were assigned to the wrong pepper color (see materials/stroop). Then, all participants were asked to recall (1) the pepper color most favored, (2) the pepper color least favored, and (3) the pepper color second least favored. These were then coded as hit/miss, with 0 representing an incorrect answer and 1 a correct answer. We then ran 3 separate chi-square tests with assignment group as IV and accuracy (incorrect or correct) for each question as three unique DVs to see how low relevance, high relevance, and high relevance with high confusion map onto basic recall.
 
