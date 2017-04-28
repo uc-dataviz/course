@@ -11,8 +11,7 @@ Methods
 
 Following the cue of Heer & Bostock (2010), we are using MTurk to collect responses of 60 people. In our survey (see attached in the /materials folder), we asked people to first answer a question regarding their favorite color of bell pepper (between red, green, yellow, and orange). The data from this question was not involved in analysis. Then, participants were told that they could see the results of the survey, but were actually shown a graph reflecting their random assignment. Regardless of random assignment, in the graph Green, Orange, Red, and Yellow were presented in that order, with Red being the highest, Orange the second highest, Yellow the second lowest, and Green the lowest. Participants in group 1 were shown a graph with non-relevant colors (see materials/control), participants in group 2 were shown a graph where the colors of the bars corresponded to the pepper colors they represented (see materials/correct), and participants in group 3 were shown a graph where the colors of the bars corresponded to the pepper colors but were assigned to the wrong pepper color (see materials/stroop). Then, all participants were asked to recall (1) the pepper color most favored, (2) the pepper color least favored, and (3) the pepper color second least favored. These were then coded as hit/miss, with 0 representing an incorrect answer and 1 a correct answer. We then ran 3 separate chi-square tests with assignment group as IV and accuracy (incorrect or correct) for each question as three unique DVs to see how low relevance, high relevance, and high relevance with high confusion map onto basic recall.
 
-Graph shown in condition 1:
---
+**Graph shown in condition 1:**
 
 ![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/materials/control.jpg)
 
