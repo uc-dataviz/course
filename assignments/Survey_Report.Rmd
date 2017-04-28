@@ -1,0 +1,79 @@
+---
+title: "Survey Report"
+output: html_document
+---
+```{r}
+library(rworldmap)
+library(tidyverse)
+setwd("~/cfss hw02/dataviz")
+```
+
+
+```{r}
+library("ggmap")
+library(maptools)
+library(maps)
+library(graphics)
+library(readxl)
+library(readr)
+
+dataset <- read_csv("~/cfss hw02/dataviz/Visualization+Survey_April+28,+2017_13.37.csv")
+
+dataset <- dataset[-c(1,2),]
+
+dataset$Latitude <- as.numeric(dataset$LocationLatitude)
+dataset$Longitude <- as.numeric(dataset$LocationLongitude)
+
+mp <- NULL
+mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders
+mp <- ggplot() +   mapWorld
+
+#Now Layer the cities on top
+mp <- mp+ geom_point(aes(x=dataset$Longitude, y=dataset$Latitude) ,color="red", size=0.05) 
+mp
+```
+
+
+```{r}
+graph_group <- filter(dataset, is.na(Q1)==FALSE)
+table_group <- filter(dataset, is.na(Q6)==FALSE)
+```
+
+##Q1
+
+
+```{r}
+graph_group$Q1 <- as.factor(graph_group$Q1)
+graph_group$`Q14_Last Click` <- as.numeric(graph_group$`Q14_Last Click`)
+ggplot(data = graph_group) + 
+  stat_count(mapping = aes(x = Q1, fill=Q1))+
+  ggtitle('The answer for "Which company ranks the third in sales?" of Graph Group')
+
+
+table_group$Q6 <- as.factor(table_group$Q6)
+ggplot(data = table_group) + 
+  stat_count(mapping = aes(x = Q6, fill=Q6))+
+  ggtitle('The answer for "Which company ranks the third in sales?" of Table Group')
+avetime_2 <- mean(graph_group$`Q14_Last Click`)
+```
+
+##Q2
+This actually an invalid question as everone got the correct answer.
+
+##Q3
+```{r}
+graph_group$Q10 <- as.factor(graph_group$Q10) 
+ggplot(graph_group) + 
+  stat_count(mapping = aes(x = Q10, fill=Q10))+
+  ggtitle('The answer for "Which company has the highest sales" of Graph Group')
+
+table_group$Q10 <- as.factor(table_group$Q10) 
+ggplot(table_group) + 
+  stat_count(mapping = aes(x = Q10, fill=Q10))+
+  ggtitle('The answer for "Which company has the highest sales" of Table Group')
+```
+
+```{r}
+
+```
+
