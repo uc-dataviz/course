@@ -42,6 +42,7 @@ For the first task, respondents are required to count the number of points belon
 Similarly, I transformed the time spent on each question. Since there is no "correct time", I calculated the time deviation from the grand mean, i.e. the average time of all eight questions in task 1. Then, the mean, min, max, and sd of time deviation of each channel are calculated. If a channel has a negative time deviation, people can differentiate points represented by this channel quicker than average. If a channel has a positive time deviation, it will take longer time for the brain to differentiate points represented by this channel.
 
 As an exploratory analysis, I graphed the answer deviation from the correct number and the time deviation from the grand mean in `Fig 1`. The points denote the means of each channel, the solid lines are mean +/- sd, and the dotted lines are the ranges of the deviation of each channel.
+
 ![](assignment2_Guangyu_Liu_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 The graph above shows that from color to shape to shading to size, the accuracy in conveying categorical variables decreases while time used increases. To see if the differences are statistically significant, I ran t-test for every two adjacent channels.
@@ -76,7 +77,7 @@ According to the results above, our brain can differentiate points represented b
 
 However, in both tasks, there is a large variation in the time spent, even within the same respondent. It is difficult to control the experiment environment using MTurk. A respondent may randomly click an answer, which results very short time spent, or he/she may rest for several seconds before really starts to answer a question, which results longer time. The measurement error may bias the experiment results.
 
-**The full code can be found in [assignment2.R](https://github.com/guangyu-liu/dataviz/blob/master/submissions/Liu_Guangyu/assignment2/assignment2.R)**
+**The full code for this assignment can be found in [assignment2.R](https://github.com/guangyu-liu/dataviz/blob/master/submissions/Liu_Guangyu/assignment2/assignment2.R)**
 
 ### References
 

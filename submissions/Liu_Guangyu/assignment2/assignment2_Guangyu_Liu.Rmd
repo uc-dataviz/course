@@ -73,6 +73,7 @@ For the first task, respondents are required to count the number of points belon
 Similarly, I transformed the time spent on each question. Since there is no "correct time", I calculated the time deviation from the grand mean, i.e. the average time of all eight questions in task 1. Then, the mean, min, max, and sd of time deviation of each channel are calculated. If a channel has a negative time deviation, people can differentiate points represented by this channel quicker than average. If a channel has a positive time deviation, it will take longer time for the brain to differentiate points represented by this channel.    
     
 As an exploratory analysis, I graphed the answer deviation from the correct number and the time deviation from the grand mean in `Fig 1`. The points denote the means of each channel, the solid lines are mean +/- sd, and the dotted lines are the ranges of the deviation of each channel.    
+    
 ```{r}
 mTurkData <- read.csv("cleanedData.csv")
 
