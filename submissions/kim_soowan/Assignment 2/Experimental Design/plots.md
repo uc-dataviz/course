@@ -12,34 +12,7 @@ x1 <- runif(4, min = 3, max = 39)
 id <- c("A", "B", "C", "D")
 qualification <- as.data.frame(cbind(id, x1)) %>%
   transform(x1 = as.numeric(x1)*20)
-
-qualification_test <- ggplot(qualification, aes(id, x1)) + 
-  geom_bar(stat = "identity", color = "black", fill = NA) + 
-  scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
-  theme_classic() + 
-  theme(axis.ticks.x = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text = element_text(face = "bold", size = 16))
-
-Cairo(file="qualification_test.png", 
-      type="png",
-      bg = "white",
-      units="px", 
-      width=380, 
-      height=380,  
-      dpi="auto")
-qualification_test
 ```
-
-![](plots_files/figure-markdown_github/qualification-1.png)
-
-``` r
-dev.off()
-```
-
-    ## png 
-    ##   2
 
 ### Plot 2: Normal bar chart, side by side comparison
 
