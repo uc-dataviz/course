@@ -173,4 +173,4 @@ Therefore, we can conclude that the table with statistics can better convey the 
 Conclusion
 ----------
 
-The conclusion is pretty intuitive. Graps (especially the graphs have points with difference sizes) conveys the rank better.The table with statistics can better convey the numbers.
+The conclusion is pretty intuitive. Graps (especially the graphs have points with difference sizes) conveys the rank better.The table with statistics can better convey the numbers. We measure the effects of table and graph by the accuracy and speed of the people's memory.
