@@ -314,6 +314,10 @@ dur_table %>%
         format = "html")
 ```
 
+### Note on ethics:
+
+All initially rejected workers were approved and paid, considering that I did use their responses for analysis, even if only to analyze the rate of successful completion. All personally identifiable information such as IP Address and MTurk Worker ID were removed from the data. Geolocation data was included only to analyze the geographical spread of the participants.
+
 ## Results
 
 The following table shows the mean of the absolute value of the error for all five questions by treatment group. Treatment group 3 or the group shown selectively colored bar charts performed the best, lending support to hypothesis 3. However, it appears the type of question may also have played an important role in the overall results. Participants performed much better in questions 2 and 3, the questions involving non-stacked bar charts, compared to the rest of the questions which involved stacked or segmented bar charts, in which performance was quite poor across the board. This suggests either that the segmenting induced confusion with the added difficulty of addressing the relative positioning on top of relative height, or simply induced confusion. It is possible that some workers did not properly understand the question and compared the heights of the whole bars rather than the segments. 
