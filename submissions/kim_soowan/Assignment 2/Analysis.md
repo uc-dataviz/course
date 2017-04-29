@@ -155,7 +155,7 @@ All
 </tr>
 </tbody>
 </table>
-### Note on ethics:
+### Note on ethics
 
 All initially rejected workers were approved and paid, considering that I did use their responses for analysis, even if only to analyze the rate of successful completion. All personally identifiable information such as IP Address and MTurk Worker ID were removed from the data. Geolocation data was included only to analyze the geographical spread of the participants.
 
