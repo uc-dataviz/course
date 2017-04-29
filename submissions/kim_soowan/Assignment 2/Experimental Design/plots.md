@@ -1,24 +1,13 @@
----
-title: "Test Stimuli"
-author: "Soo Wan Kim"
-date: "April 26, 2017"
-output:
-  html_document:
-    code_folding: hide
-    keep_md: true
-    theme: default
----
+# Test Stimuli
+Soo Wan Kim  
+April 26, 2017  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
-library(tidyverse)
-library(Cairo)
-```
 
 ### Plot 1: Qualification test (Unmodified version)
 
-```{r qualification}
+
+```r
 set.seed(11111)
 
 x1 <- runif(4, min = 3, max = 39)
@@ -43,12 +32,23 @@ Cairo(file="qualification_test.png",
       height=380,  
       dpi="auto")
 qualification_test
+```
+
+![](plots_files/figure-html/qualification-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 ### Plot 2: Normal bar chart, side by side comparison
 
-```{r dodged_side_data}
+
+```r
 dodged_side <- qualification %>%
   mutate(dot = ifelse(id == "B" | id == "C", x1/2, NA))
 
@@ -57,7 +57,8 @@ write_csv(dodged_side, "plot2.csv")
 
 #### Treatment 1: Black and white
 
-```{r dodged_side_bw}
+
+```r
 plot2bw <- ggplot(dodged_side, aes(id, x1)) + 
   geom_bar(stat = "identity", color = "black", fill = NA) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -76,12 +77,23 @@ Cairo(file="plot2bw.png",
       height=380,  
       dpi="auto")
 plot2bw
+```
+
+![](plots_files/figure-html/dodged_side_bw-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 2: All bars colored
 
-```{r dodged_side_all_colored}
+
+```r
 plot2col <- ggplot(dodged_side, aes(id, x1)) + 
   geom_bar(stat = "identity", aes(fill = id), color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -101,12 +113,23 @@ Cairo(file="plot2col.png",
       height=380,  
       dpi="auto")
 plot2col
+```
+
+![](plots_files/figure-html/dodged_side_all_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 3: Selectively colored
 
-```{r dodged_side_selectively_colored}
+
+```r
 plot2sel <- ggplot(dodged_side, aes(id, x1)) + 
   geom_bar(stat = "identity", color = "black", alpha = 0.4, aes(fill = id)) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -127,12 +150,23 @@ Cairo(file="plot2sel.png",
       height=380,  
       dpi="auto")
 plot2sel
+```
+
+![](plots_files/figure-html/dodged_side_selectively_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 ### Plot 3: Stacked bar chart, bottom comparison
 
-```{r stacked_bottom_data}
+
+```r
 set.seed(1212121)
 
 x3 <- runif(8, min = 3, max = 39)
@@ -149,7 +183,8 @@ write_csv(stacked_bottom, "plot3.csv")
 
 #### Treatment 1: Black and white
 
-```{r stacked_bottom_bw}
+
+```r
 plot3bw <- ggplot(stacked_bottom, aes(id, x3)) + 
   geom_bar(stat = "identity", aes(group = type), fill = "NA", color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -169,12 +204,23 @@ Cairo(file="plot3bw.png",
       height=380,  
       dpi="auto")
 plot3bw
+```
+
+![](plots_files/figure-html/stacked_bottom_bw-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 2: All bars colored
 
-```{r stacked_bottom_all_colored}
+
+```r
 plot3col <- ggplot(stacked_bottom, aes(id, x3)) + 
   geom_bar(stat = "identity", aes(group = type, fill = id), color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -194,12 +240,23 @@ Cairo(file="plot3col.png",
       height=380,  
       dpi="auto")
 plot3col
+```
+
+![](plots_files/figure-html/stacked_bottom_all_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 3: Selectively colored
 
-```{r stacked_bottom_selectively_colored}
+
+```r
 plot3sel <- ggplot(stacked_bottom, aes(id, x3)) + 
   geom_bar(stat = "identity", aes(fill = type), color = "black", alpha = 0.4) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -220,12 +277,23 @@ Cairo(file="plot3sel.png",
       height=380,  
       dpi="auto")
 plot3sel
+```
+
+![](plots_files/figure-html/stacked_bottom_selectively_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 ### Plot 4: Dodged bar chart, far apart comparison
 
-```{r dodged_apart}
+
+```r
 set.seed(414141)
 
 x4 <- runif(4, min = 3, max = 39)
@@ -239,7 +307,8 @@ write_csv(dodged_apart, "plot4.csv")
 
 #### Treatment 1: Black and white
 
-```{r dodged_apart_bw}
+
+```r
 plot4bw <- ggplot(dodged_apart, aes(id, x4)) + 
   geom_bar(stat = "identity", color = "black", fill = NA) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -258,12 +327,23 @@ Cairo(file="plot4bw.png",
       height=380,  
       dpi="auto")
 plot4bw
+```
+
+![](plots_files/figure-html/dodged_apart_bw-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 2: All bars colored
 
-```{r dodged_apart_all_colored}
+
+```r
 plot4col <- ggplot(dodged_apart, aes(id, x4)) + 
   geom_bar(stat = "identity", color = "black", aes(fill = id)) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -283,12 +363,23 @@ Cairo(file="plot4col.png",
       height=380,  
       dpi="auto")
 plot4col
+```
+
+![](plots_files/figure-html/dodged_apart_all_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 3: Selectively colored
 
-```{r dodged_apart_selectively_colored}
+
+```r
 plot4sel <- ggplot(dodged_apart, aes(id, x4)) + 
   geom_bar(stat = "identity", color = "black", aes(fill = id), alpha = 0.4) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -309,12 +400,23 @@ Cairo(file="plot4sel.png",
       height=380,  
       dpi="auto")
 plot4sel
+```
+
+![](plots_files/figure-html/dodged_apart_selectively_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 ### Plot 5: Stacked bar chart, top comparison
 
-```{r stacked_top_data}
+
+```r
 set.seed(653)
 
 x5 <- runif(8, min = 3, max = 39)
@@ -337,7 +439,8 @@ write_csv(stacked_top, "plot5.csv")
 
 #### Treatment 1: Black and white
 
-```{r stacked_top_bw}
+
+```r
 plot5bw <- ggplot(stacked_top, aes(id, x5)) + 
   geom_bar(stat = "identity", aes(group = type), fill = "NA", color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -357,12 +460,23 @@ Cairo(file="plot5bw.png",
       height=380,  
       dpi="auto")
 plot5bw
+```
+
+![](plots_files/figure-html/stacked_top_bw-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 2: All bars colored
 
-```{r stacked_top_all_colored}
+
+```r
 plot5col <- ggplot(stacked_top, aes(id, x5)) + 
   geom_bar(stat = "identity", aes(group = type, fill = id), color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -382,12 +496,23 @@ Cairo(file="plot5col.png",
       height=380,  
       dpi="auto")
 plot5col
+```
+
+![](plots_files/figure-html/stacked_top_all_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 3: Selectively colored
 
-```{r stacked_top_selectively_colored}
+
+```r
 plot5sel <- ggplot(stacked_top, aes(id, x5)) + 
   geom_bar(stat = "identity", aes(fill = type), color = "black", alpha = 0.4) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -408,12 +533,23 @@ Cairo(file="plot5sel.png",
       height=380,  
       dpi="auto")
 plot5sel
+```
+
+![](plots_files/figure-html/stacked_top_selectively_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 ### Plot 6: Stacked bar chart, same bar comparison
 
-```{r stacked_same_data}
+
+```r
 set.seed(18187)
 
 x6 <- runif(8, min = 3, max = 39)
@@ -440,7 +576,8 @@ write_csv(stacked_same, "plot6.csv")
 
 #### Treatment 1: Black and white
 
-```{r stacked_same_bw}
+
+```r
 plot6bw <- ggplot(stacked_same, aes(id, x6)) + 
   geom_bar(stat = "identity", aes(group = type), fill = "NA", color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -460,12 +597,23 @@ Cairo(file="plot6bw.png",
       height=380,  
       dpi="auto")
 plot6bw
+```
+
+![](plots_files/figure-html/stacked_same_bw-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 2: All bars colored
 
-```{r stacked_same_all_colored}
+
+```r
 plot6col <- ggplot(stacked_same, aes(id, x6)) + 
   geom_bar(stat = "identity", aes(group = type, fill = id), color = "black") + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -485,12 +633,23 @@ Cairo(file="plot6col.png",
       height=380,  
       dpi="auto")
 plot6col
+```
+
+![](plots_files/figure-html/stacked_same_all_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
 
 #### Treatment 3: Selectively colored
 
-```{r stacked_same_selectively_colored}
+
+```r
 plot6sel <- ggplot(stacked_same, aes(id, x6)) + 
   geom_bar(stat = "identity", aes(group = type, fill = rowid), color = "black", alpha = 0.4) + 
   scale_y_continuous(breaks = c(0, 100), limits=c(0,100)) + 
@@ -511,5 +670,15 @@ Cairo(file="plot6sel.png",
       height=380,  
       dpi="auto")
 plot6sel
+```
+
+![](plots_files/figure-html/stacked_same_selectively_colored-1.png)<!-- -->
+
+```r
 dev.off()
+```
+
+```
+## png 
+##   2
 ```
