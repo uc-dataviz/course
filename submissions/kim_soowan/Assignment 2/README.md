@@ -6,7 +6,7 @@ R markdown file for creating the plots used in the experiment:
 
 Plots from the experiment
 
-* [plots](dataviz/submissions/kim_soowan/Assignment 2/Experimental Design/Plots)
+* [plots](../dataviz/submissions/kim_soowan/Assignment 2/Experimental Design/Plots)
 
 Sample survey
 
