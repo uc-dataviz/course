@@ -2,7 +2,11 @@
 title: "Analysis"
 author: "Soo Wan Kim"
 date: "April 28, 2017"
-output: html_document
+output:
+  html_document:
+    code_folding: hide
+    keep_md: true
+    theme: default
 ---
 
 # The Role of Color in Proportional Judgment in Bar Charts
