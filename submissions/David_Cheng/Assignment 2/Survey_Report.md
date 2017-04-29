@@ -191,7 +191,7 @@ Conclusion
 
 The conclusion is pretty intuitive. Graps (especially the graphs have points with difference sizes) conveys the rank better.The table with statistics can better convey the numbers. We measure the effects of table and graph by the accuracy and speed of the people's memory.
 
-About the Group
----------------
+The division of the work
+------------------------
 
 Xiaoran is mainly in charge of designing the questions of the survey and analyzing the results. Longxuan is mainly in charge of conducting the survey online.
