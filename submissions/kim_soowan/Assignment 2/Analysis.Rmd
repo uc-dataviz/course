@@ -369,8 +369,8 @@ ggplot(experimental_data, aes(combined_err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Absolute error distribution across all questions",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 
@@ -381,13 +381,13 @@ ggplot(early_time, aes(combined_err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Absolute error distribution across all questions",
        subtitle = "Responses recorded before 4 AM",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 71")
 ```
 
-The following chart shows the results from applying the Wilconox test on all combinations of treatment groups for all questions. The results indicate that there is not a significant difference in mean error between treatment groups 1 and 2 for all questions, suggesting that indiscrimately coloring all bars does not significantly aid proportional judgment relative to black and white charts for either stacked or non-stacked bar charts. However, in most cases we find a significant difference in means between groups 1 and 3. This suggests that selective coloring improves proportional judgment relative to no coloring. Also, when comparing differences in the means of absolute error for all questions combined, we see that there is a signficant difference between groups 2 and 3. This lends weak support to the argument that selective coloring aids proportional judgment more so than indiscriminate coloring. 
+The following chart shows the results from applying the Wilconox test on all combinations of treatment groups for all questions. The results indicate that there is not a significant difference in mean error between treatment groups 1 and 2 for all questions, suggesting that indiscrimately coloring all bars does not significantly aid proportional judgment relative to black and white charts for either stacked or non-stacked bar charts. However, in most cases we find a significant difference in means between groups 1 and 3. This suggests that selective coloring improves proportional judgment relative to no coloring. Also, when comparing differences in the means of absolute error for all questions combined, we see that there is a signficant difference between groups 2 and 3. This lends weaker support to the argument that selective coloring aids proportional judgment more so than indiscriminate coloring. 
 
 ```{r wilconox}
 treatment1_filt <- experimental_data %>%
@@ -467,8 +467,8 @@ ggplot(experimental_data, aes(Q2err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Error distribution for Question 2",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 
@@ -477,8 +477,8 @@ ggplot(experimental_data, aes(Q3err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Error distribution for Question 3",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 
@@ -487,8 +487,8 @@ ggplot(experimental_data, aes(Q4err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Error distribution for Question 4",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 
@@ -497,8 +497,8 @@ ggplot(experimental_data, aes(Q5err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Error distribution for Question 5",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 
@@ -507,8 +507,8 @@ ggplot(experimental_data, aes(Q6err)) +
   geom_density(aes(color = treatment)) + 
   labs(title = "Error distribution for Question 6",
        subtitle = "All responses",
-       x = "Density",
-       y = "Error",
+       x = "Error",
+       y = "Density",
        color = "Treatment\nGroup",
        caption = "N = 151")
 ```
