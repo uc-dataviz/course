@@ -2,7 +2,7 @@
 
 R markdown file for creating the plots used in the experiment: 
 
-*  [plots.Rmd](dataviz/submissions/kim_soowan/Assignment 2/Experimental Design/plots.Rmd)
+*  [plots.Rmd](submissions/kim_soowan/Assignment 2/Experimental Design/plots.Rmd)
 
 Plots from the experiment
 
