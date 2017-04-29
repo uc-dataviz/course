@@ -3,10 +3,7 @@ title: "Test Stimuli"
 author: "Soo Wan Kim"
 date: "April 26, 2017"
 output:
-  html_document:
-    code_folding: hide
-    keep_md: true
-    theme: default
+  github_document
 ---
 
 ```{r setup, include=FALSE}
