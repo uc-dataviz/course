@@ -13,13 +13,29 @@ library(readr)
 setwd("~/cfss hw02/dataviz")
 ```
 
+Project Overview
+----------------
+
+You can find the survey [here](http://ssd.az1.qualtrics.com/jfe/form/SV_6DoZpmklORF0v4N). Be sure to answer the first questions correctly otherwise you will not be able to proceed. You should try this survey at least two times so you can see our randomization at work.
+
+For this project, we want to test whether graphs and tables are equally good tools of data visualization. Our hypothesis is that graphs should be more memorable because various psychology literature says that people retain better memory of graphical information. HOwever, we also hypothesize that graphs will be distracting, as people will focus their attention on the salient part of the graph but ignore the details such as actual numerical values on the y-axis. In contrast, we hypothesize that people will pay more attention to numbers if they are reading a table.
+
+Experiment Setting
+------------------
+
+We set our experiment as the following. First, we randomly present to the participants a graph or a table contaiing the same information: total sales of various fast food restaurants. The we use the first question as a qualifying question, and only participants who correctly answered the first question will move forward. The first question, as well as the second question, also serve the purpose of drawing the participants attention on to the graph/table. Both of those questions are based on the information provided in the graph/table.
+
+The we give the participants two small math problems so as to distract their attention and potentially weaken their memory of the graph/table they just saw.
+
+Finally, we test the memory retention of the participants by two questions. First, we ask which company ranks the first in total sales. The number one company occupies a salient position in the graph. On the other hand, the number one company occupies the same row of the table, but the row is not so different from other rows. So we hypothesize that participants who read graphs will do better in this question than those who read tables. Second, we ask McDonald's sale is about how many billions. This question tests participants' attention and memory to numerical values. The actual numerical value obviously is not the focus of attention if the participants read the graph, but to the contrary if they read the table. So we hypothesize that those who read the table will do better on this numerical question.
+
 Participants
 ------------
 
 We have 63 partcipants in total. 62 of them are in the United States and the rest 1 is in India. I marked them on a world map.
 
 ``` r
-dataset <- read_csv("~/cfss hw02/dataviz/assignments/Visualization+Survey_April+28,+2017_13.37.csv")
+dataset <- read_csv("~/cfss hw02/dataviz/submissions/David_Cheng/Assignment 2/Visualization+Survey_April+28,+2017_13.37.csv")
 
 dataset <- dataset[-c(1,2),]
 
@@ -174,3 +190,8 @@ Conclusion
 ----------
 
 The conclusion is pretty intuitive. Graps (especially the graphs have points with difference sizes) conveys the rank better.The table with statistics can better convey the numbers. We measure the effects of table and graph by the accuracy and speed of the people's memory.
+
+About the Group
+---------------
+
+Xiaoran is mainly in charge of designing the questions of the survey and analyzing the results. Longxuan is mainly in charge of conducting the survey online.
