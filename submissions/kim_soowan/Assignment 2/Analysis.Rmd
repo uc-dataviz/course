@@ -293,10 +293,10 @@ ggmap(us_map) +
   labs(title = "Participant locations by treatment group (US only)")
 ```
 ```{r completion_time1}
-avg_dur <- mean(experimental_data$Duration)
+avg_dur <- round(mean(experimental_data$Duration),2)
 ```
 
-The average time to complete each HIT was `r avg_dur`, or about 3 minutes.
+The average time to complete each HIT was `r avg_dur` seconds, or about 3 minutes.
 
 ```{r completion_time2}
 completion_time_byq <- experimental_data %>%
@@ -459,7 +459,7 @@ ttest_table %>%
         format = "html")  
 ```
 
-More raphical evidence is provided below.
+More graphical evidence is provided below.
 
 ```{r more_graphs}
 #Q2

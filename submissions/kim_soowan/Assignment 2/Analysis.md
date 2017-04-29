@@ -104,7 +104,7 @@ Based on geolocations data from Qualtrics, it appears most of the workers reside
 
 ![](Analysis_files/figure-markdown_github/worker_locations-1.png)![](Analysis_files/figure-markdown_github/worker_locations-2.png)
 
-The average time to complete each HIT was 183.6291391, or about 3 minutes.
+The average time to complete each HIT was 183.63 seconds, or about 3 minutes.
 
 <table>
 <caption>
@@ -613,7 +613,7 @@ Significant
                     </tbody>
                     </table>
 
-More raphical evidence is provided below.
+More graphical evidence is provided below.
 
 ![](Analysis_files/figure-markdown_github/more_graphs-1.png)![](Analysis_files/figure-markdown_github/more_graphs-2.png)![](Analysis_files/figure-markdown_github/more_graphs-3.png)![](Analysis_files/figure-markdown_github/more_graphs-4.png)![](Analysis_files/figure-markdown_github/more_graphs-5.png)
 
