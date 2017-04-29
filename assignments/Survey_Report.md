@@ -124,6 +124,8 @@ Every one in the graph group gave the right answer. 2 people in table group gave
 
 As for the time. The graph group took 4.4645 seconds to answer this question in average. However, it took the table group 4.966929 seconds in average. Obviously, the graph group is faster. In terms of showing the rank, the graph definitely has a better effect.
 
+To sum up, according to the survey, the grap conveys the rank better.
+
 McDonald's sales is about how many billions?
 --------------------------------------------
 
@@ -167,3 +169,8 @@ In terms of average time spent on this question, table group has the average tim
 From the bar chart, it is quite obvisous that the table group gave much fewer wrong answer than the graph group.
 
 Therefore, we can conclude that the table with statistics can better convey the numbers.
+
+Conclusion
+----------
+
+The conclusion is pretty intuitive. Graps (especially the graphs have points with difference sizes) conveys the rank better.The table with statistics can better convey the numbers.
