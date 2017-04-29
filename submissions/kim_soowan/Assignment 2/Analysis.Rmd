@@ -9,6 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(knitr)
+
+setwd("~/GitHub/dataviz/submissions/kim_soowan/Assignment 2")
 
 ##################
 # Correct answers #
@@ -41,33 +44,186 @@ for (i in seq_along(files)) {
   proportions <- rbind(proportions, prop)
 }
 
+rm(prop)
+
 ###################
 # Tidy Test Data  #
 ###################
 
+#Treatment 1 - Black and White
+
 treatment1 <- read_csv("Test Data/Treatment 1 - Black and White.csv") %>%
   filter(Status == "IP Address", Finished == "TRUE")
 
-names(treatment1)
+total_count1 <- nrow(treatment1)
+
+treatment1_filt <- treatment1 %>%
+  select(-RecipientLastName, -RecipientFirstName, -RecipientEmail, 
+         -ExternalReference, -ResponseId, -Status, -Finished) %>%
+  transform(Q1 = toupper(Q1)) %>%
+  filter(Q1 %in% c("A", "C", "A20")) %>%
+  transform(Q2 = gsub("%", "", Q2)) %>%
+  transform(Q2 = gsub("4-Jan", "25", Q2)) %>%
+  transform(Q2 = ifelse(grepl("[0-9]", Q2), Q2, NA)) %>%
+  transform(Q3 = gsub("%", "", Q3)) %>%
+  transform(Q3 = ifelse(grepl("[0-9]", Q3), Q3, NA)) %>%
+  transform(Q4 = gsub("%", "", Q4)) %>%
+  transform(Q4 = ifelse(grepl("[0-9]", Q4), Q4, NA)) %>%
+  transform(Q4 = gsub("2-Jan", "50", Q4)) %>%
+  transform(Q5 = gsub("%", "", Q5)) %>%
+  transform(Q5 = ifelse(grepl("[0-9]", Q5), Q5, NA)) %>%
+  transform(Q6 = gsub("%", "", Q6)) %>%
+  transform(Q6 = ifelse(grepl("[0-9]", Q6), Q6, NA)) %>%
+  transform(Q6 = gsub("2-Jan", "50", Q6)) %>%
+  transform(Q2 = as.numeric(Q2)) %>%
+  transform(Q2 = ifelse(Q2 > 100, 1/(Q2/100) * 100, Q2)) %>%
+  transform(Q3 = as.numeric(Q3)) %>%
+  transform(Q3 = ifelse(Q3 > 100, 1/(Q3/100) * 100, Q3)) %>%
+  transform(Q4 = as.numeric(Q4)) %>%
+  transform(Q4 = ifelse(Q4 > 100, 1/(Q4/100) * 100, Q4)) %>%
+  transform(Q5 = as.numeric(Q5)) %>%
+  transform(Q5 = ifelse(Q5 > 100, 1/(Q5/100) * 100, Q5)) %>%
+  transform(Q6 = as.numeric(Q6)) %>%
+  transform(Q6 = ifelse(Q6 > 100, 1/(Q6/100) * 100, Q6)) %>%
+  mutate(treatment = 1) %>%
+  na.omit()
+  
+filt_count1 <- nrow(treatment1_filt)
+
+#Treatment 2 - All Colored
+
+treatment2 <- read_csv("Test Data/Treatment 2 - All Color.csv") %>%
+  filter(Status == "IP Address", Finished == "TRUE")
+
+total_count2 <- nrow(treatment2)
+
+treatment2_filt <- treatment2 %>%
+  select(-RecipientLastName, -RecipientFirstName, -RecipientEmail, 
+         -ExternalReference, -ResponseId, -Status, -Finished) %>%
+  transform(Q1 = toupper(Q1)) %>%
+  filter(Q1 %in% c("A", "C", "1")) %>%
+  transform(Q2 = gsub("%", "", Q2)) %>%
+  transform(Q2 = gsub(" PERCENTAGE", "", Q2)) %>%
+  transform(Q2 = ifelse(grepl("^[0-9]", Q2), Q2, NA)) %>%
+  transform(Q3 = gsub("%", "", Q3)) %>%
+  transform(Q3 = gsub(" PERCENTAGE", "", Q3)) %>%
+  transform(Q3 = gsub("B. ", "", Q3)) %>%
+  transform(Q3 = gsub("9580", "95", Q3)) %>%
+  transform(Q3 = ifelse(grepl("[0-9]", Q3), Q3, NA)) %>%
+  transform(Q4 = gsub("%", "", Q4)) %>%
+  transform(Q4 = gsub(" PERCENTAGE", "", Q4)) %>%
+  transform(Q4 = ifelse(grepl("^[0-9]", Q4), Q4, NA)) %>%
+  transform(Q5 = gsub("%", "", Q5)) %>%
+  transform(Q5 = gsub(" PERCENTAGE", "", Q5)) %>%
+  transform(Q5 = gsub("appear equal", "100", Q5)) %>%
+  transform(Q5 = ifelse(grepl("[0-9]", Q5), Q5, NA)) %>%
+  transform(Q6 = gsub("%", "", Q6)) %>%
+  transform(Q6 = gsub(" PERCENTAGE", "", Q6)) %>%
+  transform(Q6 = ifelse(grepl("[0-9]", Q6), Q6, NA)) %>%
+  transform(Q2 = as.numeric(Q2)) %>%
+  transform(Q2 = ifelse(Q2 > 100, 1/(Q2/100) * 100, Q2)) %>%
+  transform(Q3 = as.numeric(Q3)) %>%
+  transform(Q3 = ifelse(Q3 > 100, 1/(Q3/100) * 100, Q3)) %>%
+  transform(Q4 = as.numeric(Q4)) %>%
+  transform(Q4 = ifelse(Q4 > 100, 1/(Q4/100) * 100, Q4)) %>%
+  transform(Q5 = as.numeric(Q5)) %>%
+  transform(Q5 = ifelse(Q5 > 100, 1/(Q5/100) * 100, Q5)) %>%
+  transform(Q6 = as.numeric(Q6)) %>%
+  transform(Q6 = ifelse(Q6 > 100, 1/(Q6/100) * 100, Q6)) %>%
+  mutate(treatment = 2) %>%
+  na.omit()
+
+filt_count2 <- nrow(treatment2_filt)
+
+#Treatment 3 - Selectively Colored
+
+treatment3 <- read_csv("Test Data/Treatment 3 - Selectively Colored.csv") %>%
+  filter(Status == "IP Address", Finished == "TRUE")
+
+total_count3 <- nrow(treatment3)
+
+treatment3_filt <- treatment3 %>%
+  select(-RecipientLastName, -RecipientFirstName, -RecipientEmail, 
+         -ExternalReference, -ResponseId, -Status, -Finished) %>%
+  transform(Q1 = toupper(Q1)) %>%
+  filter(Q1 %in% c("A", "C", "BC", "50", "20")) %>%
+  transform(Q2 = gsub("%", "", Q2)) %>%
+  transform(Q2 = gsub("4$", "40", Q2)) %>%
+  transform(Q2 = ifelse(grepl("^[0-9]", Q2), Q2, NA)) %>%
+  transform(Q3 = gsub("%", "", Q3)) %>%
+  transform(Q3 = gsub("0.25", "25", Q3)) %>%
+  transform(Q3 = gsub("7-Jan", "0.1428571", Q3)) %>%
+  transform(Q3 = ifelse(grepl("^[0-9]", Q3), Q3, NA)) %>%
+  transform(Q4 = gsub("%", "", Q4)) %>%
+  transform(Q4 = gsub("0.5", "50", Q4)) %>%
+  transform(Q4 = gsub("8597", "85", Q4)) %>%
+  transform(Q4 = ifelse(grepl("^[0-9]", Q4), Q4, NA)) %>%
+  transform(Q5 = gsub("%", "", Q5)) %>%
+  transform(Q5 = ifelse(grepl("^[0-9]", Q5), Q5, NA)) %>%
+  transform(Q6 = gsub("%", "", Q6)) %>%
+  transform(Q6 = ifelse(nchar(Q6) > 2, NA, Q6)) %>%
+  transform(Q6 = ifelse(grepl("[0-9]", Q6), Q6, NA)) %>%
+  transform(Q2 = as.numeric(Q2)) %>%
+  transform(Q2 = ifelse(Q2 > 100, 1/(Q2/100) * 100, Q2)) %>%
+  transform(Q3 = as.numeric(Q3)) %>%
+  transform(Q3 = ifelse(Q3 > 100, 1/(Q3/100) * 100, Q3)) %>%
+  transform(Q4 = as.numeric(Q4)) %>%
+  transform(Q4 = ifelse(Q4 > 100, 1/(Q4/100) * 100, Q4)) %>%
+  transform(Q5 = as.numeric(Q5)) %>%
+  transform(Q5 = ifelse(Q5 > 100, 1/(Q5/100) * 100, Q5)) %>%
+  transform(Q6 = as.numeric(Q6)) %>%
+  transform(Q6 = ifelse(Q6 > 100, 1/(Q6/100) * 100, Q6)) %>%
+  mutate(treatment = 3) %>%
+  na.omit()
+  
+filt_count3 <- nrow(treatment3_filt)
+
+#Combined
+true2 
+
+experimental_data <- rbind(treatment1_filt, treatment2_filt, treatment3_filt) %>%
+  mutate(Q2err = proportions$prop[proportions$question_id == 2] - Q2) %>%
+  mutate(Q3err = proportions$prop[proportions$question_id == 3] - Q3) %>%
+  mutate(Q4err = proportions$prop[proportions$question_id == 4] - Q4) %>%
+  mutate(Q5err = proportions$prop[proportions$question_id == 5] - Q5) %>%
+  mutate(Q6err = proportions$prop[proportions$question_id == 6] - Q6) %>%
+  mutate(combined_err = Q2err + Q3err + Q4err + Q5err + Q6err) %>%
+  mutate(dodged_err = Q2err + Q4err) %>%
+  mutate(stacked_side_err = Q3err + Q5err)
 
 ```
 
-## R Markdown
+```{r}
+#Average results (absolute error)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Q2err_total_mean <- mean(Q2err)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+err_means_byq <- experimental_data %>%
+  group_by(treatment) %>%
+  summarize(Q2err_mean = round(mean(abs(Q2err)),2), Q4err_mean = round(mean(abs(Q4err)),2),
+            Q3err_mean = round(mean(abs(Q3err)),2), Q5err_mean = round(mean(abs(Q5err)),2),
+            Q6err_mean = round(mean(abs(Q6err)),2), combinederr_mean = round(mean(abs(combined_err)),2)) %>%
+  transform(treatment = as.character(treatment))
 
-```{r cars}
-summary(cars)
+err_means_allq <- experimental_data %>%
+  summarize(Q2err_mean = round(mean(abs(Q2err)),2), Q4err_mean = round(mean(abs(Q4err)),2),
+            Q3err_mean = round(mean(abs(Q3err)),2), Q5err_mean = round(mean(abs(Q5err)),2),
+            Q6err_mean = round(mean(abs(Q6err)),2), combinederr_mean = round(mean(abs(combined_err)),2))
+
+all_groups <- data.frame(c("All"))
+colnames(all_groups) <- c("treatment")
+err_means_allq <- cbind(all_groups, err_means_allq)
+
+err_table <- rbind(err_means_byq, err_means_allq)
+
+err_table %>%
+  kable(caption = "Mean absolute error across questions",
+        col.names = c("Treatment\nGroup", "Q2", "Q4", "Q3", "Q5", "Q6", "All Questions"),
+        format = "html")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+```{r}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
