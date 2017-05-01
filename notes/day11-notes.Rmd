@@ -1,0 +1,169 @@
+---
+title: "Day 11 - Interactivity"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Identify common structures and features of interactivity
+* Review several examples of interactive visualizations
+* Introduce `htmlwidgets` and `plotly` for generating interactive graphics in R
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Structuring interactivity
+
+## Visual information-seeking mantra
+
+> Overview first, zom and filter, then details on demand
+
+This mantra first coined by Ben Schneiderman (a professor of computer science) can be seen as a succinct summary of the purpose of data visualization:
+
+1. Present the most important figures or most relevant points to the audience
+1. Allow readers to dig into the information, explore, and come up with their own stories
+
+Interactivity enhances our ability to accomplish the second point by presenting a structured way for readers to interact and explore the data, without having to know research design, computer programming, or other substantial technical skills that are a hurdle for the average reader. There are several design guidelines we can keep in mind as we design interactive graphics to keep them orderly and useful (rather than introducing interactivity that is pointless, confusing, or misleading).
+
+### Linear vs non-linear
+
+Some visualizations will be **linear** - each step of the presentation depends on understanding the previous one. Others will be **non-linear**, giving the reader a choice in navigation and the direction of the story.
+
+![Think "choose your own adventure" stories.](http://www.liketotally80s.com/wp-content/uploads/2014/03/choose-your-own-adventure.jpg)
+
+Both approaches should utilize an introduction to setup the question and topic, but diverge quickly in the possible options the reader can explore.
+
+### Interaction techniques
+
+* Scroll and pan
+* Zoom
+* Open and close
+* Sort and rearrange
+* Search and filter
+
+# Examples of interactive graphics
+
+## Central limit theorem
+
+> [Central Limit Theorem Visualized in D3](http://blog.vctr.me/posts/central-limit-theorem.html)
+
+* Interactive animation designed to teach the **central limit theorem**
+* Every time the ball his a triangle it has a 50/50 chance of going to the left or right (i.e. a coin flip)
+* As the animation plays out, the balls are sorted into bins which start to form a normal distribution
+* Very linear format - user controls very little of the animation
+    * Can adjust the **delay** - rate at which balls fall
+    * **Bins** - number of bins into which the balls can fall
+
+## Seeing theory
+
+> [Seeing Theory: A visual introduction to probability and statistics](http://students.brown.edu/seeing-theory/)
+
+* Makes heavy use of a linear format to teach basic statistical principles
+* Lots of animations
+* Pan and scroll down the page to the next demonstration module
+* [Open and close](http://students.brown.edu/seeing-theory/basic-probability/index.html#third)
+    * Open definitions of different estimation terms (bias, variance, mean squared error)
+
+## The changing American diet
+
+> [The Changing American Diet](http://flowingdata.com/2016/05/17/the-changing-american-diet/)
+
+* Very linear structure
+* Animation used to identify change over time by shifting foods up and down based on relative frequency
+* Direct controls for user
+    * Speed
+    * Scale
+* Still situated within an article setting up the question and explaining the results - graphic does not stand alone (but it could)
+
+## How (un)popular is Donald Trump?
+
+> [How popular/unpopular is Donald Trump?](https://projects.fivethirtyeight.com/trump-approval-ratings/)
+
+* More of a standalone graphic
+* Linear (but also non-linear) structure
+* Open/close to see all the individual data points used to generate the trendline
+* Open/close to see exact data point values
+* Zoom in and out on different time periods
+
+## Gun deaths in America
+
+> [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+
+* Highly linearized storyline
+* Animation goes from description to description
+* Ends with an interaction where users can search and filter by different variables
+* What is the benefit to making this interactive?
+
+## You draw it
+
+> [You Draw It: Just How Bad Is the Drug Overdose Epidemic?](https://www.nytimes.com/interactive/2017/04/14/upshot/drug-overdose-epidemic-you-draw-it.html)
+
+* Linear structure
+* Allows users to "fill in" the missing years, rather than just presenting the answer
+* How does interactivity enhance this visualization?
+    * Allows users to explicitly confront misperceptions they have about major causes of death in the United States
+* Uses open and close windows to present details about deaths at the county-level on a cartogram
+
+## Movie explorer
+
+> [Movie explorer](http://shiny.rstudio.com/gallery/movie-explorer.html)
+
+* Example of `shiny` app
+* Non-linear structure - user has complete freedom to change the inputs
+* Can change variables on the graph's axes
+* Hover over data points on graph to get more details
+* Can expand the size of the graph
+* Better situated with an accompanying article/post describing the data and perhaps highlighting some noteworthy trends
+
+## Revenue effect of restoring the tax-preferred status
+
+> [Revenue Effect of Restoring the Tax-Preferred Status of Over-the-Counter Drugs Purchased Through Health Savings Accounts, Flexible Spending Accounts, and Health Reimbusement Arrangements through the Repeal of Section 9003 of the Affordable Care Act.](https://bensoltoff.shinyapps.io/otc-tax/)
+
+* Widget designed for think tank in conjunction with policy report on a tax reform bill
+* Changing inputs creates a new "user model" projecting the estimated revenue effect of the tax policy given varying assumptions about the state of the world
+* As inputs change, graph is redrawn and table is updated
+* Hovering over data points on the graph identifies the annual expected revenue effect for each model, rather than pasting it in as a table
+* Clicking on the legend hides/reveals different models
+* Built using `shiny`, `ggplot2`, `plotly`, and Excel(!)
+
+## America's public bible
+
+> [America’s Public Bible: Biblical Quotations in U.S. Newspapers](http://americaspublicbible.org/)
+
+* Digital humanities project
+* Combines linear and non-linear structure
+* On front page, open and close used to provide exact values for data points
+* [Exploration](http://americaspublicbible.org/exploration.html)
+    * Embeds a Shiny application for examining use over time of different bible verses
+    * Search and filter
+    * Pan and zoom
+
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
