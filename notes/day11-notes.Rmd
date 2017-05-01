@@ -38,7 +38,7 @@ theme_set(theme_minimal())
 
 ## Visual information-seeking mantra
 
-> Overview first, zom and filter, then details on demand
+> Overview first, zoom and filter, then details on demand
 
 This mantra first coined by Ben Schneiderman (a professor of computer science) can be seen as a succinct summary of the purpose of data visualization:
 
@@ -226,13 +226,12 @@ dahl_augment <- dahl %>%
 # use size
 p <- ggplot(dahl_augment, aes(hat, student)) +
   geom_hline(yintercept = 0, linetype = 2) +
-  geom_point(aes(size = cooksd), shape = 1) +
-  geom_text(data = dahl_augment %>%
-              arrange(-cooksd) %>%
-              slice(1:10),
-            aes(label = Congress)) +
+  geom_point(aes(size = cooksd,
+                 text = str_c(Congress, "Session of Congress", sep = " ")),
+             shape = 1) +
   scale_size_continuous(range = c(1, 20)) +
-  labs(x = "Leverage",
+  labs(title = "Regression diagnostics for Dahl model",
+       x = "Leverage",
        y = "Studentized residual") +
   theme(legend.position = "none")
 
