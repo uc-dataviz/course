@@ -17,7 +17,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 
 * Identify common structures and features of interactivity
 * Review several examples of interactive visualizations
-* Introduce `htmlwidgets` and `plotly` for generating interactive graphics in R
+* Introduce `htmlwidgets`, `plotly`, and `highcharter` for generating interactive graphics in R
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
@@ -26,6 +26,8 @@ library(broom)
 library(stringr)
 library(modelr)
 library(forcats)
+library(haven)
+library(plotly)
 
 options(digits = 3)
 set.seed(1234)
@@ -158,7 +160,95 @@ Both approaches should utilize an introduction to setup the question and topic, 
     * Search and filter
     * Pan and zoom
 
+# Interactive graphics in R
 
+`ggplot2` does not have built-in interactivity. The successor to `ggplot2`, [`ggvis`](http://ggvis.rstudio.com/), is still in development and not ready for production-level graphics.
+
+However we can still build interactive graphics within the R environment. This is accomplished by a series of packages that generate [JavaScript](https://en.wikipedia.org/wiki/JavaScript) visualizations directly within R. JavaScript is a core technology within the World Wide Web framework, and is used to render websites. The majority of the demonstration visualizations above were created using JavaScript.
+
+To build these types of graphs, we could shift entirely to an interactive graphics library based on Javascript, such as [D3](https://d3js.org/), and write all of our code in that format. The drawbacks to this approach are:
+
+* Learning another programming language is time-consuming
+* D3 visualizations are typically meant for presenting visualizations in their final form, not quickly rendering exploratory graphs, so there is a lot of unnecessary code-writing involved.
+    * Think about how `ggplot()` makes many default assumptions when you write code to generate a graph. Normally the defaults work correctly, but you can always override them if necessary. With D3 and other JavaScript libraries, you cannot rely on these defaults.
+
+## `htmlwidgets`
+
+`htmlwidgets` is a framework for creating R bindings to JavaScript libraries. In essence, packages built on this framework take the R code that you write, process it, and convert it to the appropriate JavaScript code. From here, you can view the resulting graph in RStudio like an ordinary plot, embed it within an R Markdown document, or save it as a standalone `.html` page to share with others or post online.
+
+Some of the packages we will explore this week are built using `htmlwidgets`; others use their own approach to bind R functions onto JavaScript libraries.
+
+## `plotly`
+
+[Plotly](https://plot.ly/) is an online analytics and data visualization tool built using Python, JavaScript, and D3. They offer a commercial product for designing graphics via a point-and-click interface online, but have developed open-source packages for generating plotly graphs ([plotly.js](https://plot.ly/javascript/)), as well as API libraries for generating plotly graphs in [R](https://plot.ly/r/).
+
+### `ggplotly()`
+
+`ggplot2` can be readily converted into interactive graphics in `plotly` through the use of `ggplotly()`:
+
+```{r ggplotly-scatter}
+library(plotly)
+
+# basic scatterplot
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+
+ggplotly(p)
+
+# add color
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class))
+
+ggplotly(p)
+
+# add smoothing line
+ggplotly(p +
+           geom_smooth())
+
+# add vehicle labels to tooltips
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class, text = str_c(manufacturer, model, sep = " "))) +
+  geom_smooth()
+
+ggplotly(p)
+```
+
+```{r bubble}
+# dahl bubbleplot
+dahl <- read_dta("data/LittleDahl.dta")
+dahl_mod <-lm(nulls ~ age + tenure + unified, data = dahl)
+
+dahl_augment <- dahl %>%
+  mutate(hat = hatvalues(dahl_mod),
+         student = rstudent(dahl_mod),
+         cooksd = cooks.distance(dahl_mod))
+
+# use size
+p <- ggplot(dahl_augment, aes(hat, student)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(size = cooksd), shape = 1) +
+  geom_text(data = dahl_augment %>%
+              arrange(-cooksd) %>%
+              slice(1:10),
+            aes(label = Congress)) +
+  scale_size_continuous(range = c(1, 20)) +
+  labs(x = "Leverage",
+       y = "Studentized residual") +
+  theme(legend.position = "none")
+
+ggplotly(p)
+```
+
+#### Modifying `ggplotly()` objects
+
+```{r ggplotly-str}
+str(plotly_build(p))
+```
+
+`ggplotly()` stores all the components of the graph in a list object in R, which you can directly access using `plotly_build()`. To modify components of the `ggplotly()` object, "simply" modify the appropriate element in `plotly_build()`. Let's use the OTC tax widget as an example, converting it into a non-Shiny object.^[In fact this is the exact trouble I went through when building the app. It's easier to work on the graph portion in a static environment first, before incorporating the Shiny components.]
+
+```{r otc, code = readLines("plotly-otc.R"), eval = FALSE}
+```
 
 # Session Info {.toc-ignore}
 
