@@ -241,7 +241,7 @@ ggplotly(p)
 #### Modifying `ggplotly()` objects
 
 ```{r ggplotly-str}
-str(plotly_build(p))
+str(plotly_build(p), max.level = 2)
 ```
 
 `ggplotly()` stores all the components of the graph in a list object in R, which you can directly access using `plotly_build()`. To modify components of the `ggplotly()` object, "simply" modify the appropriate element in `plotly_build()`. Let's use the OTC tax widget as an example, converting it into a non-Shiny object.^[In fact this is the exact trouble I went through when building the app. It's easier to work on the graph portion in a static environment first, before incorporating the Shiny components.]
