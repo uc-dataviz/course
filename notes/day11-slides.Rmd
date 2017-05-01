@@ -1,0 +1,176 @@
+---
+title: "Interactivity"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "May 1, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(haven)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Visual information-seeking mantra
+
+> Overview first, zoom and filter, then details on demand
+
+1. Present the most important figures or most relevant points to the audience
+1. Allow readers to dig into the information, explore, and come up with their own stories
+
+## Linear vs non-linear
+
+![Think "choose your own adventure" stories.](http://www.liketotally80s.com/wp-content/uploads/2014/03/choose-your-own-adventure.jpg)
+
+## Interaction techniques
+
+* Scroll and pan
+* Zoom
+* Open and close
+* Sort and rearrange
+* Search and filter
+
+## Central limit theorem
+
+> [Central Limit Theorem Visualized in D3](http://blog.vctr.me/posts/central-limit-theorem.html)
+
+## Seeing theory
+
+> [Seeing Theory: A visual introduction to probability and statistics](http://students.brown.edu/seeing-theory/)
+
+## The changing American diet
+
+> [The Changing American Diet](http://flowingdata.com/2016/05/17/the-changing-american-diet/)
+
+## How (un)popular is Donald Trump?
+
+> [How popular/unpopular is Donald Trump?](https://projects.fivethirtyeight.com/trump-approval-ratings/)
+
+## Gun deaths in America
+
+> [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+
+## You draw it
+
+> [You Draw It: Just How Bad Is the Drug Overdose Epidemic?](https://www.nytimes.com/interactive/2017/04/14/upshot/drug-overdose-epidemic-you-draw-it.html)
+
+## Movie explorer
+
+> [Movie explorer](http://shiny.rstudio.com/gallery/movie-explorer.html)
+
+## Revenue effect of restoring the tax-preferred status
+
+> [Revenue Effect of Restoring the Tax-Preferred Status of Over-the-Counter Drugs Purchased Through Health Savings Accounts, Flexible Spending Accounts, and Health Reimbusement Arrangements through the Repeal of Section 9003 of the Affordable Care Act.](https://bensoltoff.shinyapps.io/otc-tax/)
+
+## America's public bible
+
+> [America’s Public Bible: Biblical Quotations in U.S. Newspapers](http://americaspublicbible.org/)
+
+## Interactive graphics in R
+
+* `ggplot2` and `ggvis`
+* JavaScript libraries
+    * D3
+    * Highcharts
+    * Leaflet
+    * Plotly
+* Why use R?
+* [`htmlwidgets`](http://www.htmlwidgets.org/index.html)
+
+## `plotly`
+
+* [Plot.ly](https://plot.ly/)
+* plotly.js
+* `plotly` API libraries
+
+## `ggplotly()`
+
+```{r ggplotly-scatter}
+library(plotly)
+
+# basic scatterplot
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+
+ggplotly(p)
+```
+
+## `ggplotly()`
+
+```{r}
+# add color
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class))
+
+ggplotly(p)
+```
+
+## `ggplotly()`
+
+```{r}
+# add smoothing line
+ggplotly(p +
+           geom_smooth())
+```
+
+## `ggplotly()` {.scrollable}
+
+```{r echo = TRUE}
+# add vehicle labels to tooltips
+p <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = class, text = str_c(manufacturer, model, sep = " "))) +
+  geom_smooth()
+
+ggplotly(p)
+```
+
+## `ggplotly()`
+
+```{r bubble}
+# dahl bubbleplot
+dahl <- read_dta("data/LittleDahl.dta")
+dahl_mod <-lm(nulls ~ age + tenure + unified, data = dahl)
+
+dahl_augment <- dahl %>%
+  mutate(hat = hatvalues(dahl_mod),
+         student = rstudent(dahl_mod),
+         cooksd = cooks.distance(dahl_mod))
+
+# use size
+p <- ggplot(dahl_augment, aes(hat, student)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(size = cooksd,
+                 text = str_c(Congress, "Session of Congress", sep = " ")),
+             shape = 1) +
+  scale_size_continuous(range = c(1, 20)) +
+  labs(title = "Regression diagnostics for Dahl model",
+       x = "Leverage",
+       y = "Studentized residual") +
+  theme(legend.position = "none")
+
+ggplotly(p)
+```
+
+## Modifying `ggplotly()` objects {.scrollable}
+
+```{r ggplotly-str}
+str(plotly_build(p), max.level = 2)
+```
+
