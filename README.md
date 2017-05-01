@@ -61,8 +61,8 @@ Readings for the course will come primarily from the following books, as well as
 | Apr. 24 | M | Rules of thumb |  |
 | Apr. 26 | W | Visualizing scientific results |  |
 | Apr. 28 | F |  | [Assignment 2](assignments/assignment-2.md) |
-| May 1 | M | Interactivity (theory) |  |
-| May 3 | W | Interactivity in R |  |
+| May 1 | M | Interactivity |  |
+| May 3 | W | Interactivity (cont.) |  |
 | May 8 | M | Geospatial visualization | Assignment 3 |
 | May 10 | W | Introduction to D3 |  |
 | May 15 | M | Network visualization |  |
@@ -115,8 +115,13 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [visual battle: table vs graph](http://www.storytellingwithdata.com/blog/2011/11/visual-battle-table-vs-graph)
     * [Why tables are really much better than graphs](http://andrewgelman.com/2009/04/01/why_tables_are/)
     * ISLR Ch 3 - skim for a review of the assumptions and mechanics of linear regression (read in more depth if you need a stronger introduction)
-1. Interactivity (theory)
-1. Interactivity in R
+1. Interactivity
+    * [Plotly R library](https://plot.ly/r/)
+    * [`htmlwidgets`](http://www.htmlwidgets.org/)
+    * [`flexdashboard`](http://rmarkdown.rstudio.com/flexdashboard/)
+    * [Shiny by RStudio](https://shiny.rstudio.com/)
+    * [Building Shiny Apps](http://cfss.uchicago.edu/shiny001_abc.html)
+1. Interactivity (cont.)
 1. Geospatial visualization
     * TA Ch 10
 1. Introduction to D3
