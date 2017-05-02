@@ -24,7 +24,7 @@ Students are expected to have prior programming experience; this is not an intro
 |------------------|--------|
 | [Assignment 1](assignments/assignment-1.md) | 15 |
 | [Assignment 2](assignments/assignment-2.md) | 15 |
-| Assignment 3 | 15 |
+| [Assignment 3](assignments/assignment-3.md) | 15 |
 | Assignment 4 | 15 |
 | [Final project](assignments/final-project.md) | 30 |
 | Participation | 10 |
@@ -63,8 +63,8 @@ Readings for the course will come primarily from the following books, as well as
 | Apr. 28 | F |  | [Assignment 2](assignments/assignment-2.md) |
 | May 1 | M | Interactivity |  |
 | May 3 | W | Interactivity (cont.) |  |
-| May 8 | M | Geospatial visualization | Assignment 3 |
-| May 10 | W | Introduction to D3 |  |
+| May 8 | M | Geospatial visualization |  |
+| May 10 | W | Introduction to D3 | Assignment 3 |
 | May 15 | M | Network visualization |  |
 | May 17 | W | More D3 |  |
 | May 22 | M | Text visualization | Assignment 4 |
