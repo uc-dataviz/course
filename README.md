@@ -124,6 +124,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Interactivity (cont.)
 1. Geospatial visualization
     * TA Ch 10
+    * [Cartographers for social equality](https://www.youtube.com/watch?v=vVX-PrBRtTY)
 1. Introduction to D3
     * Murray TBD
 1. Network visualization
