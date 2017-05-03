@@ -17,9 +17,6 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 
 * Introduce `plot_ly()` generating interactive graphs
 * Introduce `shiny` for interactive visualizations
-* Demonstrate each element of a Shiny app
-* Distinguish **UI** from **server** components
-* Define reactivity
 * Introduce `flexdashboard` for creating interactive dashboards
 
 ```{r packages, cache = FALSE, message = FALSE}
