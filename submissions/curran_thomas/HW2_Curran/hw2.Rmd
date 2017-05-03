@@ -1,0 +1,97 @@
+---
+title: "Homework assignment #2"
+author: "Thomas Curran"
+date: "4/24/2017"
+output: html_document
+---
+
+Research Question:
+
+Does incorporating animation into a graphic, specifically motion of a shape channel effect the interpretation of the graphic. 
+
+How does motion complement graphi complexity
+
+Questions to ask: 
+
+
+
+
+```{r data, echo=FALSE, include=FALSE}
+library(gapminder)
+library(tidyverse)
+library(ggplot2)
+library(gganimate)
+library(data.table)
+library(pander)
+library(psych)
+results<-read_csv("/Users/TomCurran/Desktop/SurveyResults.csv")
+results_long<-as.data.frame(read_csv("/Users/TomCurran/Desktop/SurveyResults.csv"))
+
+results_long<-gather(results, question, response, q1:q4, factor_key = TRUE)
+
+results_long<-as.data.frame(results_long)
+```
+Control Group - non animated graph
+```{r}
+data <- filter(gapminder, 
+               country == 'Nepal' | 
+                 country=='United States' |
+                 country == 'Morocco'
+)
+p <- ggplot(data, aes(gdpPercap, lifeExp, color = country, frame = year)) +
+  geom_point() +
+  scale_x_log10() +
+  theme(legend.position="none")
+p
+```
+Experimental Group
+```{r animated, results='hide'}
+
+data <- filter(gapminder, 
+               country == 'Nepal' | 
+                 country=='United States' |
+                 country == 'Morocco'
+)
+p <- ggplot(data, aes(gdpPercap, lifeExp, color = country, frame = year)) +
+  geom_point() +
+  scale_x_log10()+
+  theme(legend.position="none") +
+  ggtitle("GDP Per Capita versus Life Expectancy from 1952 - 2007. Year: ")
+
+
+gganimate(p)
+
+```
+Results
+
+```{r results}
+
+results <-data.table(results)
+#mean for entire survey
+total_mean<-mean(results$duration)
+#mean for animated
+animated<-filter(results, results$version == 'Animated')
+animated_mean<-mean(results$duration)
+#mean for static
+static<-filter(results, results$version == 'Static')
+static_mean<-mean(results$duration)
+
+#density plot
+ggplot(results,aes(x=results$duration))+geom_histogram(aes(y=..density..),
+                                                                      binwidth = 5,
+                                                                      color='black', fill='white')+
+  geom_density(alpha=.2, fill='#FF6666')
+
+#grouped historygram - static vs animated
+ggplot(results, aes(x=results$duration, fill=results$version))+
+  geom_density(alpha=.3)
+
+#Response Bar Chart
+response<-ggplot(results_long, aes(factor(question)))+
+  geom_bar(position='dodge', aes(fill=factor(response)))+
+  theme(legend.position = "bottom") +
+  facet_wrap(~version)
+response
+
+```
+
