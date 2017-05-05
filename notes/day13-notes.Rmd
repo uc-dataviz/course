@@ -1,0 +1,109 @@
+---
+title: "Day 13 - Geospatial visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Geospatial visualization
+
+Geospatial visualizations are some of the oldest data visualization methods in human existence. Data maps were first popularized in the seventeenth century and have grown in complexity and detail since then. Consider [Google Maps](https://www.google.com/maps), the sheer volume of data depicted, and the analytical pathways available to its users.
+
+Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).^[See chapter 10 in **The Truthful Art** for a more detailed introduction to these features.]
+
+# Map boundaries
+
+Let's start by first drawing a map's boundaries. Later on we will fill these in with data and turn them into data visualizations.
+
+## Storing map boundaries
+
+
+## Using `maps` boundaries
+
+
+### `fiftystater`
+
+
+## `ggmap`
+
+
+## Using shapefiles
+
+
+## Changing projection
+
+
+# Adding data to the map
+
+
+## Points
+
+
+## Symbols
+
+
+## Lines
+
+
+# Drawing choropleth maps
+
+
+## Loading the data
+
+
+## Joining the data to regions
+
+
+## Defining colors
+
+
+### RColorBrewer
+
+
+## Fixed size choropleths
+
+
+# Faceting maps
+
+
+# Making maps interactive
+
+
+## `ggplotly()`
+
+
+## `leaflet`
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
