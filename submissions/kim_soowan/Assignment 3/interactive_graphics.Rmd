@@ -1,0 +1,147 @@
+---
+title: "Assignment 3: Interactive graphics"
+author: "Soo Wan Kim"
+date: "May 5, 2017"
+output: html_document
+---
+
+## The North Korean Diaspora
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(ggmap)
+library(ggthemes)
+
+theme_set(theme_minimal())
+
+setwd("~/GitHub/dataviz/submissions/kim_soowan/Assignment 3")
+
+#sk
+sk_arrivals <- read_csv("NKDefectorArrivals(2017.3).csv") %>%
+  select(-Sum, -`17.3`)
+
+headings <- sk_arrivals$Year
+years <- c("1998", "2001", "2002", "2003", "2004", "2005", "2006", 
+           "2007", "2008", "2009", "2010", "2011", "2012", "2013", 
+           "2014", "2015", "2016")
+
+sk_arrivals <- as.data.frame(t(sk_arrivals))
+rownames(sk_arrivals) <- NULL
+colnames(sk_arrivals) <- headings
+sk_arrivals <- sk_arrivals[-1,]
+sk_arrivals$Year <- years
+sk_arrivals$YearLabels <- unlist(map(years, function(x) paste0("'",substr(x, 3,4))))
+
+sk_arrivals <- sk_arrivals %>%
+  transform(PropFemale = as.numeric(as.character(PropFemale))) %>%
+  mutate(PercFemale = PropFemale * 100) %>%
+  transform(Year = as.numeric(Year))
+
+sk_arrivals_reshape <- sk_arrivals %>%
+  gather(`NumMale`, `NumFemale`, `Total`, key = `SumType`, value = `Total`) %>%
+  transform(Total = as.numeric(Total)) %>%
+  transform(SumType = ifelse(SumType == "NumMale", "Male", ifelse(SumType == "NumFemale", "Female", "All")))
+
+#worldwide
+
+add_totals <- function(col) {
+  total = col[1]
+  totals_list = c(total)
+  for (i in seq_along(col[-1])) {
+    total = total + col[i]
+    totals_list = c(totals_list, total)
+  }
+  return(totals_list)
+}
+
+sk_arrivals_pop <- sk_arrivals %>%
+  select(Year)
+sk_arrivals_pop$Total <- add_totals(as.numeric(as.character(sk_arrivals$Total)))
+  
+
+
+diaspora <- read.csv("unhcr_popstats_export_time_series_2017_05_03_050911.csv", skip = 3, na.strings = "*") %>%
+  select(-Origin)
+colnames(diaspora) <- c("Year", "Country", "PopulationType", "Total")
+
+diaspora <- arrange(diaspora, Country)
+country_sum <- diaspora %>%
+  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  group_by(Country) %>%
+  summarize(sum = sum(Total)) %>%
+  filter(sum > 10)
+
+country_list <- country_sum$Country
+
+numbers_sum_ref <- diaspora %>%
+  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  group_by(PopulationType, Year) %>%
+  summarize(Total = sum(Total)) %>%
+  mutate(Country = "All") %>%
+  select(Year, Country, PopulationType, Total) %>%
+  filter(PopulationType == "Refugees (incl. refugee-like situations)")
+
+numbers_sum_ref$Total2 <- c(NA, numbers_sum_ref$Total[-length(numbers_sum_ref$Total)])
+
+numbers_sum_ref <- numbers_sum_ref %>%
+  mutate(diff = (Total - Total2)/Total * 100)
+```
+
+### South Korea, Yearly Arrivals
+
+```{r}
+ggplot(sk_arrivals_reshape, aes(Year, Total)) + 
+  geom_line(aes(color = SumType)) + 
+  #geom_point(aes(color = SumType)) + 
+  scale_x_continuous(breaks = seq(sk_arrivals_reshape$Year[1],
+                                  sk_arrivals_reshape$Year[length(sk_arrivals_reshape$Year)], 2) 
+                     #labels = seq(sk_arrivals_reshape$YearLabels[1],
+                    #              sk_arrivals_reshape$YearLabels[length(sk_arrivals_reshape$YearLabels)], 2)
+                                  ) + 
+  #scale_y_continuous(breaks = seq(0, 3000, 500)) + 
+  geom_vline(xintercept = 2011, color = "#FF4500", linetype = 2) + 
+  #geom_vline(xintercept = 2012, color = "#FF4500", linetype= 2) + 
+  annotate(geom = "text", x = 2009.45, y = 1500, label = "Kim Jong Il dies", size = 3.4) + 
+  #annotate(geom = "text", x = 2009.45, y = 1500, label = "Kim Jong Il dies", size = 3.4, color = "#696969") + 
+  #annotate(geom = "text", x = 2011.4, y = 950, label = "Border security tightens", size = 3.5) + 
+  #annotate(geom = "text", x = 2014.4, y = 600, label = "Kim Jong Un takes office", size = 3.4, 
+  #         color = "#696969") + 
+  #geom_rect(data=NULL,aes(xmin=2011,xmax=2012,ymin=-Inf,ymax=Inf),
+  #                  fill="#FF4500", alpha = 0.002) + 
+  #annotate(geom = "text", x = 2011, y = 1100, label = "Kim Jong Un\ntakes power", size = 3) +
+  #geom_text(x=2011, y=500, label="Kim Jong Il dies December 2011") + 
+  #geom_text(x=2012, y=800, label="Kim Jong Un takes office April 2012") + 
+  labs(title = "North Korean Defector Arrivals in South Korea by Gender",
+       y = "New Arrivals",
+       color = c(""),
+       caption = "Source: ROK Ministry of Unification") + 
+  theme(legend.position = c(0.9, 0.9), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black")) + 
+  scale_colour_tableau()
+
+x <- c(1,2,3,4,5)
+```
+
+
+### Refugee Populations Outside of South Korea
+
+```{r}
+ggplot(filter(numbers_sum_ref, 
+              PopulationType == "Refugees (incl. refugee-like situations)"),
+       aes(Year, Total)) + 
+  ylim(0, )
+  geom_line()
+```
+
+
+### Trends by Country
+
+```{r}
+ggplot(filter(diaspora, 
+              PopulationType == "Refugees (incl. refugee-like situations)" & Country %in% country_list),
+       aes(Year, Total)) + 
+  geom_line(aes(color = Country))
+```
