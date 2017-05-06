@@ -9,6 +9,7 @@ knitr::opts_chunk$set(include = FALSE)
 ```{r packages}
 library(tidyverse)
 library(haven)
+
 ```
 
 # Assignment 1
