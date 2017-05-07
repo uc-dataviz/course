@@ -1,0 +1,56 @@
+---
+title: ""
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+runtime: shiny
+---
+
+```{r setup, include=FALSE, message=FALSE, echo = FALSE, }
+library(tidyverse)
+library(readxl)
+
+import_gapminder <- function(filename, inc_name = NA){
+  # import file
+  indicator <- read_excel(filename)
+  
+  # rename first column to country, store indicator name for later
+  inc_fullname <- names(indicator)[[1]]
+  names(indicator)[[1]] <- "country"
+  
+  # tidy data frame and add indicator name as variable
+  indicator <- indicator %>%
+    gather(year, value, -1, convert = TRUE) %>%
+    mutate(value = as.numeric(value),
+           variable = ifelse(!is.na(inc_name), inc_name, inc_fullname)) %>%
+    select(country, year, variable, value)
+}
+
+
+tax_dat <- import_gapminder("assignments/data/Tax revenue (p of GDP).xlsx",
+                            inc_name = "tax_perc_gdp") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(tax_perc_gdp = value)
+  
+
+invest_dat <- import_gapminder("assignments/data/Investment.xlsx", 
+                               inc_name = "invest_perc_gdp") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(invest_perc_gdp = value)
+
+for_invest_in_dat <- import_gapminder("assignments/data/Foreign investment inflow.xlsx") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(for_invest_in_perc_gdp = value)
+
+
+for_invest_out_dat <- import_gapminder("assignments/data/Foreign investment outflow.xlsx") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(for_invest_out_perc_gdp = value)
+```
+
+
+
