@@ -11,8 +11,8 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 library(tidyverse)
-library(ggmap)
 library(ggthemes)
+library(plotly)
 
 theme_set(theme_minimal())
 
@@ -46,6 +46,31 @@ sk_arrivals_reshape <- sk_arrivals %>%
 
 #worldwide
 
+diaspora <- read.csv("unhcr_popstats_export_time_series_2017_05_03_050911.csv", skip = 3, na.strings = "*") %>%
+  select(-Origin)
+colnames(diaspora) <- c("Year", "Country", "PopulationType", "Total")
+
+diaspora <- arrange(diaspora, Country)
+
+diaspora_ref <- diaspora %>%
+  filter(PopulationType == "Refugees (incl. refugee-like situations)")
+
+country_sum <- diaspora_ref %>%
+  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  group_by(Country) %>%
+  summarize(sum = sum(Total)) %>%
+  filter(sum > 0)
+
+country_list <- country_sum$Country
+
+numbers_sum_ref <- diaspora_ref %>%
+  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  group_by(Year) %>%
+  summarize(Total = sum(Total)) %>%
+  mutate(Country = "All other countries") %>%
+  select(Year, Country, Total)
+
+
 add_totals <- function(col) {
   total = col[1]
   totals_list = c(total)
@@ -57,37 +82,109 @@ add_totals <- function(col) {
 }
 
 sk_arrivals_pop <- sk_arrivals %>%
+  filter(Year < 2016) %>%
   select(Year)
-sk_arrivals_pop$Total <- add_totals(as.numeric(as.character(sk_arrivals$Total)))
-  
+sk_arrivals_pop$Total <- add_totals(as.numeric(as.character(sk_arrivals$Total[-length(sk_arrivals$Total)])))
+sk_arrivals_pop$Country <- "South Korea"
 
+numbers_sum_ref <- bind_rows(filter(numbers_sum_ref, Year > 1997), sk_arrivals_pop)
+numbers_sum_ref$Country <- as.factor(numbers_sum_ref$Country)
+numbers_sum_ref$Country <- factor(numbers_sum_ref$Country, levels = c("South Korea", "All other countries"))
 
-diaspora <- read.csv("unhcr_popstats_export_time_series_2017_05_03_050911.csv", skip = 3, na.strings = "*") %>%
-  select(-Origin)
-colnames(diaspora) <- c("Year", "Country", "PopulationType", "Total")
+numbers_sum_tot <- numbers_sum_ref %>%
+  group_by(Year) %>%
+  summarize(All = sum(Total)) %>%
+  transform(All = ifelse(All == 13, NA, All))
 
-diaspora <- arrange(diaspora, Country)
-country_sum <- diaspora %>%
-  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
-  group_by(Country) %>%
-  summarize(sum = sum(Total)) %>%
-  filter(sum > 10)
+numbers_sum_ref <- left_join(numbers_sum_ref, numbers_sum_tot, by = "Year")
 
-country_list <- country_sum$Country
+diaspora_ref_group <- diaspora_ref %>%
+  filter(Country %in% country_list) %>%
+  select(-PopulationType)
 
-numbers_sum_ref <- diaspora %>%
-  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
-  group_by(PopulationType, Year) %>%
-  summarize(Total = sum(Total)) %>%
-  mutate(Country = "All") %>%
-  select(Year, Country, PopulationType, Total) %>%
-  filter(PopulationType == "Refugees (incl. refugee-like situations)")
-
-numbers_sum_ref$Total2 <- c(NA, numbers_sum_ref$Total[-length(numbers_sum_ref$Total)])
-
-numbers_sum_ref <- numbers_sum_ref %>%
-  mutate(diff = (Total - Total2)/Total * 100)
+Year <- rep(sort(unique(diaspora_ref$Year)), length(country_list))
+Country <- sort(rep(country_list, length(unique(diaspora_ref$Year))))
+diaspora_ref_groupNA <- data.frame(Year, Country)
+diaspora_ref_groupNA <- left_join(diaspora_ref_groupNA, diaspora_ref_group)
 ```
+
+### Refugee Populations Outside of South Korea
+
+```{r}
+
+###North Korean Defectors Granted International Refugee Status or South Korean Citizenship
+
+ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) + 
+  geom_area() + 
+  geom_line(aes(Year, All), color = "#F8766D", alpha = 0.4) + 
+  scale_x_continuous(breaks = seq(numbers_sum_ref$Year[1],
+                                  numbers_sum_ref$Year[length(numbers_sum_ref$Year)], 2)) +
+  labs(title = "The rise of the global North Korean defector population",
+       subtitle = "All documented cases from 1998 to 2015",
+       y = "Number of defectors",
+       fill = c("Residence"),
+       caption = "Sources: UNHCR, ROK Ministry of Unification") + 
+  theme(legend.position = c(0.15, 0.45), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black")) + 
+  scale_colour_tableau()
+
+ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) + 
+  geom_area(alpha = 0.6) + 
+  geom_line(aes(Year, All), color = "#00BFC4", alpha = 0.4) + 
+  scale_x_continuous(breaks = seq(numbers_sum_ref$Year[1],
+                                  numbers_sum_ref$Year[length(numbers_sum_ref$Year)], 2)) +
+  labs(title = "The rise of the global North Korean defector population",
+       subtitle = "All documented cases from 1998 to 2015",
+       y = "Number of defectors",
+       fill = c("Residence"),
+       caption = "Sources: UNHCR, ROK Ministry of Unification") + 
+  theme(legend.position = c(0.15, 0.45), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black")) + 
+  scale_fill_manual(values = c("#00BFC4", "#F8766D"))
+
+ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) + 
+  geom_area(alpha = 0.6) + 
+  geom_line(aes(Year, All), color = "#00BFC4", alpha = 0.4) + 
+  scale_x_continuous(breaks = seq(numbers_sum_ref$Year[1],
+                                  numbers_sum_ref$Year[length(numbers_sum_ref$Year)], 2)) +
+  labs(title = "Documented North Korean Defector Populations Worldwide",
+       subtitle = "All defectors granted international refugee status or South Korean citizenship, 1998 - 2015",
+       y = "Number of defectors",
+       fill = c("Residence"),
+       caption = "Sources: UNHCR, Ministry of Unification") + 
+  theme(legend.position = c(0.15, 0.45), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black")) + 
+  scale_fill_manual(values = c("#00BFC4", "#F8766D"))
+```
+
+
+### Trends by Country
+
+```{r}
+country_sum_top <- country_sum %>%
+  arrange(desc(sum))
+```
+
+
+```{r}
+unhcr <- ggplot(filter(diaspora_ref_groupNA, Country %in% country_list),
+       aes(Year, Total)) + 
+  geom_line(aes(color = Country)) + 
+  scale_x_continuous(breaks = seq(1994, 2015, 2)) +
+  labs(title = "North Korean Defector Populations Outside of South Korea",
+       subtitle = "All defectors granted international refugee status, 1994 - 2015",
+       y = "Number of defectors",
+       caption = "Sources: UNHCR") + 
+  theme(legend.position = "None", 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black"))
+
+ggplotly(unhcr)
+```
+
 
 ### South Korea, Yearly Arrivals
 
@@ -103,11 +200,13 @@ ggplot(sk_arrivals_reshape, aes(Year, Total)) +
   #scale_y_continuous(breaks = seq(0, 3000, 500)) + 
   geom_vline(xintercept = 2011, color = "#FF4500", linetype = 2) + 
   #geom_vline(xintercept = 2012, color = "#FF4500", linetype= 2) + 
-  annotate(geom = "text", x = 2009.45, y = 1500, label = "Kim Jong Il dies", size = 3.4) + 
+  annotate(geom = "text", x = 2009.45, y = 1450, label = "Kim Jong Il dies", size = 3.4) + 
   #annotate(geom = "text", x = 2009.45, y = 1500, label = "Kim Jong Il dies", size = 3.4, color = "#696969") + 
   #annotate(geom = "text", x = 2011.4, y = 950, label = "Border security tightens", size = 3.5) + 
-  #annotate(geom = "text", x = 2014.4, y = 600, label = "Kim Jong Un takes office", size = 3.4, 
-  #         color = "#696969") + 
+  annotate(geom = "text", x = 2014.4, y = 700, label = "Kim Jong Un takes power", size = 3.4, 
+           color = "#696969") + 
+  geom_rect(data=NULL,aes(xmin=2011,xmax=2012,ymin=-Inf,ymax=Inf),
+                    fill="#666666", alpha = 0.002) + 
   #geom_rect(data=NULL,aes(xmin=2011,xmax=2012,ymin=-Inf,ymax=Inf),
   #                  fill="#FF4500", alpha = 0.002) + 
   #annotate(geom = "text", x = 2011, y = 1100, label = "Kim Jong Un\ntakes power", size = 3) +
@@ -116,32 +215,30 @@ ggplot(sk_arrivals_reshape, aes(Year, Total)) +
   labs(title = "North Korean Defector Arrivals in South Korea by Gender",
        y = "New Arrivals",
        color = c(""),
-       caption = "Source: ROK Ministry of Unification") + 
+       caption = "Source: Ministry of Unification") + 
   theme(legend.position = c(0.9, 0.9), 
         panel.grid.minor = element_blank(),
         axis.text = element_text(color = "black")) + 
   scale_colour_tableau()
 
-x <- c(1,2,3,4,5)
-```
+sk <- ggplot(sk_arrivals_reshape, aes(Year, Total)) + 
+  geom_line(aes(color = SumType)) + 
+  scale_x_continuous(breaks = seq(sk_arrivals_reshape$Year[1],
+                                  sk_arrivals_reshape$Year[length(sk_arrivals_reshape$Year)], 2)) + 
+  geom_vline(xintercept = 2011, color = "#FF4500", linetype = 2) + 
+  annotate(geom = "text", x = 2009.35, y = 1430, label = "Kim Jong Il dies", size = 3.5) + 
+  annotate(geom = "text", x = 2013.6, y = 840, label = "Kim Jong Un takes power", size = 3.5, 
+           color = "#4d4d4d") + 
+  geom_rect(data=NULL,aes(xmin=2011,xmax=2012,ymin=-Inf,ymax=Inf),
+                    fill="#666666", alpha = 0.002) + 
+  labs(title = "North Korean Defector Arrivals in South Korea by Gender, 1998 - 2016",
+       y = "New Arrivals",
+       color = c(""),
+       caption = "Source: Ministry of Unification") + 
+  theme(legend.position = c(0.9, 0.9), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black")) + 
+  scale_colour_tableau()
 
-
-### Refugee Populations Outside of South Korea
-
-```{r}
-ggplot(filter(numbers_sum_ref, 
-              PopulationType == "Refugees (incl. refugee-like situations)"),
-       aes(Year, Total)) + 
-  ylim(0, )
-  geom_line()
-```
-
-
-### Trends by Country
-
-```{r}
-ggplot(filter(diaspora, 
-              PopulationType == "Refugees (incl. refugee-like situations)" & Country %in% country_list),
-       aes(Year, Total)) + 
-  geom_line(aes(color = Country))
+ggplotly(sk)
 ```
