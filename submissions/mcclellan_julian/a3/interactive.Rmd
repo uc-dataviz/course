@@ -6,7 +6,7 @@ output:
 runtime: shiny
 ---
 
-```{r setup, include=FALSE, message=FALSE, echo = FALSE, }
+```{r}
 library(tidyverse)
 library(readxl)
 
@@ -26,31 +26,217 @@ import_gapminder <- function(filename, inc_name = NA){
     select(country, year, variable, value)
 }
 
-
-tax_dat <- import_gapminder("assignments/data/Tax revenue (p of GDP).xlsx",
-                            inc_name = "tax_perc_gdp") %>%
-  filter(!is.na(value)) %>%
-  select(country, year, value) %>%
-  rename(tax_perc_gdp = value)
-  
-
-invest_dat <- import_gapminder("assignments/data/Investment.xlsx", 
-                               inc_name = "invest_perc_gdp") %>%
-  filter(!is.na(value)) %>%
-  select(country, year, value) %>%
-  rename(invest_perc_gdp = value)
-
-for_invest_in_dat <- import_gapminder("assignments/data/Foreign investment inflow.xlsx") %>%
+for_invest_in_dat <- import_gapminder("~/dataviz/assignments/data/Foreign investment inflow.xlsx") %>%
   filter(!is.na(value)) %>%
   select(country, year, value) %>%
   rename(for_invest_in_perc_gdp = value)
 
 
-for_invest_out_dat <- import_gapminder("assignments/data/Foreign investment outflow.xlsx") %>%
+for_invest_out_dat <- import_gapminder("~/dataviz/assignments/data/Foreign investment outflow.xlsx") %>%
   filter(!is.na(value)) %>%
   select(country, year, value) %>%
   rename(for_invest_out_perc_gdp = value)
+
+import_dat <- import_gapminder("~/dataviz/assignments/data/Imports (p of GDP).xlsx") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(import_perc_gdp = value) 
+
+export_dat <- import_gapminder("~/dataviz/assignments/data/Exports (p of GDP).xlsx") %>%
+  filter(!is.na(value)) %>%
+  select(country, year, value) %>%
+  rename(export_perc_gdp = value) 
+
+full_dat <- for_invest_in_dat %>%
+  merge(for_invest_out_dat, by = c("country", "year")) %>%
+  merge(import_dat, by = c("country", "year")) %>%
+  merge(export_dat, by = c("country", "year")) %>%
+  rename(fdi_in = for_invest_in_perc_gdp,
+         fdi_out = for_invest_out_perc_gdp,
+         imports = import_perc_gdp,
+         exports = export_perc_gdp) %>%
+  mutate(net_exports = exports - imports) %>%
+  gather(key = measure, value = perc_of_gdp,
+         fdi_in,
+         fdi_out,
+         net_exports,
+         imports,
+         exports)
+theme_set(theme_minimal())
 ```
 
 
+```{r test_stuff, eval = F}
+country_of_int <- "United States"
+year_start <- 1970
+year_end <- 2010
+measures <- c("fdi_in", "fdi_out", "net_exports", "imports", "exports")
 
+# View single country
+full_dat %>%
+  filter(country == country_of_int,
+         (year_start <= year) & (year <= year_end),
+         measure %in% measures
+         ) %>%
+  mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                           ifelse(measure == "fdi_in", "FDI (in)", 
+                                  ifelse(measure == "net_exports", "Net Exports",
+                                         ifelse(measure == "exports", "Exports", "Imports"))))) %>% 
+  ggplot(aes(year, perc_of_gdp, color = measure)) +
+    geom_line() + 
+    geom_hline(yintercept = 0, linetype = "dashed", size = .25) +
+    labs(title = country_of_int,
+         x = "Year",
+         y = "% of GDP",
+         color = "Measures"
+         )
+
+
+# Compare two countries
+countries_to_compare <- c("United States", "China")
+measure_of_int <- "net_exports"
+
+full_dat %>%
+  filter(country %in% countries_to_compare,
+         (year_start <= year) & (year <= year_end),
+         measure == measure_of_int) %>%
+  mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                           ifelse(measure == "fdi_in", "FDI (in)", "Net Exports"))) %>% 
+  ggplot(aes(year, perc_of_gdp, color = country)) +
+    geom_line() +
+    geom_hline(yintercept = 0, linetype = "dashed", size = .25) + 
+    labs(x = "Year", 
+         y = "% of GDP",
+         title = create_two_country_lab(measure_of_int, countries_to_compare),
+         color = "Country")
+```
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Years
+
+```{r}
+numericInput("year_start", "Starting year", 1970, min = 1970, max = 2010, 
+             step = 1)
+numericInput("year_end", "Ending year", 2010, min = 1970, max = 2010, 
+             step = 1)
+```
+
+Compare measures in for a single country
+
+```{r}
+selectInput("country_of_int", "Country", sort(unique(full_dat$country)),
+            selected = "United States")
+
+checkboxGroupInput("measures", "Trade measures",
+               c("Foreign Direct Investment Net Inflow" = "fdi_in",
+                 "Foreign Direct Investment Net outflow" = "fdi_out",
+                 "Net Exports" = "net_exports",
+                 "Imports" = "imports",
+                 "Exports" = "exports"),
+               selected = c("fdi_in", "fdi_out", "net_exports"))
+```
+
+Compare a measure between two countries
+
+```{r}
+selectInput("country_1", "Country 1", sort(unique(full_dat$country)),
+                selected = "United States")
+
+
+selectInput("country_2", "Country 2", sort(unique(full_dat$country)),
+                selected = "China")
+
+radioButtons("measure", "Trade measures",
+               c("Foreign Direct Investment Net Inflow" = "fdi_in",
+                 "Foreign Direct Investment Net outflow" = "fdi_out",
+                 "Net Exports" = "net_exports",
+                 "Imports" = "imports",
+                 "Exports" = "exports"),
+               selected = "net_exports")
+
+twoCountries <- reactive({
+  c(input$country_2, input$country_1)
+})
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Single Country Comparison
+
+```{r}
+# Combine the selected variables into a new data frame
+singleCountryData <- reactive({
+  full_dat %>%
+    filter(country == input$country_of_int,
+           (input$year_start <= year) & (year <= input$year_end),
+           measure %in% input$measures
+           ) %>%
+    mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                             ifelse(measure == "fdi_in", "FDI (in)", 
+                                    ifelse(measure == "net_exports", "Net Exports",
+                                           ifelse(measure == "exports", "Exports", "Imports")))))
+})
+
+renderPlot({
+  ggplot(singleCountryData(), aes(year, perc_of_gdp, color = measure)) +
+    geom_line() + 
+    geom_hline(yintercept = 0, linetype = "dashed", size = .25) +
+    labs(title = input$country_of_int,
+         x = "Year",
+         y = "% of GDP",
+         color = "Measures"
+         )
+})
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Two Country Comparison
+
+
+```{r}
+create_two_country_lab <- function(measure, countries){
+  lab <- sprintf("%s versus %s: ", countries[1], countries[2])
+  
+  if (measure == "net_exports"){
+    lab <- paste(lab, "Net Exports")
+  } else if (measure == "fdi_out"){
+    lab <- paste(lab, "Foreign Direct Investment: Net Outflow")
+  } else {
+    lab <- paste(lab, "Foreign Direct Investment: Net Inflow")
+  }
+  lab
+}
+
+# Combine the selected variables into a new data frame
+twoCountryData <- reactive({
+  full_dat %>%
+    filter(country %in% twoCountries(),
+           (input$year_start <= year) & (year <= input$year_end),
+           measure == input$measure
+           ) %>%
+    mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                             ifelse(measure == "fdi_in", "FDI (in)", 
+                                    ifelse(measure == "net_exports", "Net Exports",
+                                           ifelse(measure == "exports", "Exports", "Imports")))))
+})
+
+renderPlot({
+  ggplot(twoCountryData(), aes(year, perc_of_gdp, color = country)) +
+    geom_line() +
+    geom_hline(yintercept = 0, linetype = "dashed", size = .25) + 
+    labs(x = "Year", 
+         y = "% of GDP",
+         title = create_two_country_lab(input$measure, twoCountries()),
+         color = "Country")
+})
+```
+
+Column
+-----------------------------------------------------------------------
+
+# 
