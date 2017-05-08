@@ -8,6 +8,8 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+
+#FAILED ATTEMPT 1
 library(RColorBrewer)
 colourPalette <- brewer.pal(7, "Greens")
 library(rworldmap)
@@ -39,23 +41,27 @@ world <- map_data("world") %>%
 g2 <- ggplot(data, aes(map_id = Country)) +
   geom_map(aes(fill = TotalFert2015), map = world) +
   expand_limits(x = world$long, y = world$lat)
-g2 #Some countries missing
+#Some countries missing
 
-#need to relabel Ivory Coast, USA, Republic of Congo, Macedonia, Slovakia, Laos
+#need to relabel Ivory Coast, USA, Republic of Congo, Democratic Republic of the Congo, Macedonia, Slovakia, Laos, South Sudan
 
-
-
-
-
-#UGH, I TRIED...
-#cholorpleth = fill map #source: http://rmaps.github.io/blog/posts/animated-choropleths/index.html
 fert <- read.csv("~/Desktop/FertilityHistory2.csv", check.names = FALSE)
 
 library(reshape2)
 fertmelt <- melt(fert, "Country", variable.name = "Year", value.name = "Fertility")
 
-fertmelt <- subset(na.omit(fertmelt))
+g3 <- ggplot(fertmelt, aes(map_id = Country)) +
+  geom_map(aes(fill = Fertility), map = world) +
+  expand_limits(x = world$long, y = world$lat)
 
+g3
+
+```
+
+``` {r, include = FALSE}
+
+#UGH, I TRIED... FAILED ATTEMPT 2
+#cholorpleth = fill map #source: http://rmaps.github.io/blog/posts/animated-choropleths/index.html
 #make fertility discrete and not continuous for fill
 fertmelt <- transform(fertmelt, fillKey = cut(Fertility, quantile(Fertility, seq(0, 1, 1/5)), labels = LETTERS[1:5]), Year = as.numeric(substr(Year, 1, 4)))
 
@@ -63,7 +69,4 @@ fills = setNames(
   c(RColorBrewer::brewer.pal(5, 'YlOrRd'), 'white'),
   c(LETTERS[1:5], 'defaultFill')
 )
-
-
-
 ```
