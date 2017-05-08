@@ -1,0 +1,23 @@
+---
+title: "Assignment 3"
+author: "Dana Westley"
+date: "Due May 10, 2017"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(RColorBrewer)
+colourPalette <- brewer.pal(7, "Greens")
+library(rworldmap)
+data <- read.csv("~/Desktop/MasterGapminder.csv")
+n <- joinCountryData2Map(df, joinCode="NAME", nameJoinColumn="Country")
+mapDevice()
+mapCountryData(n, nameColumnToPlot="TotalFert2015", mapTitle="World Fertility",
+               colourPalette =colourPalette, catMethod = c(1.3,2.4,3.5,4.6,5.7,6.8,7.51),
+               addLegend=TRUE,
+               oceanCol="lightblue", missingCountryCol="darkgrey")
+#identifyCountries() #"interactive" function does not work, supposed to make clickable labels with other variable info -_-
+
+```
