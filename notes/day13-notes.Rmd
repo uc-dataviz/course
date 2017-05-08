@@ -236,7 +236,8 @@ il_df <- filter(states, region == "illinois")
 Now let's get the accompanying counties:
 
 ```{r il-counties}
-counties <- map_data("county")
+counties <- map_data("county") %>%
+  as_tibble
 il_county <- filter(counties, region == "illinois")
 il_county
 ```
