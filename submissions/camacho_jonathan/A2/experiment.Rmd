@@ -1,0 +1,224 @@
+---
+title: "Data Viz | Assignment 2"
+author: "Julian McClellan and Jonathan Camacho"
+date: "April 23, 2017"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE, message=FALSE, echo = FALSE, }
+library(tidyverse)
+library(devtools)
+theme_set(theme_minimal())
+knitr::opts_chunk$set(include = TRUE, message = FALSE)
+```
+
+```{r screening_data, echo = FALSE, message=FALSE}
+color_options <- c("red", "green", "blue")
+groups <- c("1", "2")
+num_rows <- 10
+set.seed(69)
+
+screening_dat <- tibble(height = sample(c(1), num_rows, replace = TRUE),
+                        color = sample(color_options, num_rows, replace = TRUE),
+                        group = sample(groups, num_rows, replace = TRUE))
+
+screen_stack <- screening_dat %>%
+    ggplot(aes(x = group, fill = color)) + 
+      geom_bar(position = "stack") +
+      labs(y = "height",
+           x = "", title = "Plot 1a. Screen Stack Plot.")
+
+screen_dodge <- screening_dat %>%
+    ggplot(aes(x = group, fill = color)) + 
+      geom_bar(position = "dodge") +
+      labs(y = "height",
+           x = "",
+           title = "Plot 1b. Screen Dodge Plot.")
+```
+
+```{r fake_data, echo=FALSE, message=FALSE}
+num_rows <- 50
+set.seed(69)
+color_options <- c(rep(color_options, 5), rep("green", 5))
+fake_dat <- tibble(height = rlnorm(num_rows, 1, 1),
+                   color = sample(color_options, num_rows, replace = TRUE),
+                   group = sample(groups, num_rows, replace = TRUE))
+
+test_stack <- fake_dat %>%
+  ggplot(aes(y = height, x = group, fill = color)) +
+    geom_col(position = "stack") + 
+    scale_x_discrete() + 
+    labs(x = "",
+         title = "Plot 2b. Test Stack Plot")
+
+test_dodge <- fake_dat %>%
+  group_by(group, color) %>%
+  summarise(tot_height = sum(height)) %>%
+  ungroup() %>%
+  ggplot(aes(y = tot_height, x = group, fill = color)) +
+    geom_col(position = "dodge") + 
+    scale_x_discrete() +
+    labs(x = "",
+         y = "height", title = "Plot 2a. Test Dodge Plot.")
+
+gonly <- fake_dat %>% filter(color == "green")
+
+true_value <- sum(gonly$height)
+```
+### Introduction
+
+
+One of the objectives of data visualization is to facilitate the reader’s understanding and extraction of the data. In this sense, Cairo (2016) highlights the importance of correctly selecting the best ways for data coding. He proposes a Hierarchy of Elementary perceptual tasks, developed and tested by William S. Cleveland and Robert McGill, as a guide to determining the best channels for coding data. According to this _Hierarchy of Elementary Perceptual Tasks_, position along identical scales is the most effective mental-visual task; allowing readers to extract information more accurately from plots.
+
+In this assignment, we expand this idea arguing that the context of the position of the data also has an important effect on the effectiveness of the mental-visual task and people’s ability to accurately find and extract information from a plot. We pose the following research question: Is data in a stacked bar plot more difficult to estimate and extract than data in a dodge bar plot? We hypothesize that the sum of the bar heights extracted from a stack plot is less accurate than the sum of bar heights extracted from a dodge plot. We assume as a mechanism, the fact that bars in a dodge plot have a baseline based on zero while bars in a stack plot have a variable baseline. The idea is that having a baseline of zero facilitates information estimation and extraction. 
+
+### Methods 
+To test this hypothesis, we designed an experiment consisting of one task: estimating the sum of bar heights from a plot. The participants have to read the heights of two bars (the green bars) from data divided into two groups in the same plot and add the heights to create a total height. To compare the effect that stacked vs. dodge positioning of information has on the participants' ability to estimate the bars' sum, the data is presented in two different types of plots: one stacked and the other dodged. 
+
+Moreover, to test whether a participant's answers were reliable, participants are asked to perform a screening task. Each participant was exposed to both of the two plots below, and asked to calculate the total height of the green bars. In both cases, the total height is `2` and it is easy to deduce from the image.
+
+
+```{r, echo=FALSE}
+screen_stack
+screen_dodge
+```
+
+
+Then, randomly, we assigned each participant to one plot from the _test_ set; a stacked or a dodged plot. (Plot 2a or 2b) The participant has to estimate the total height of the green bars for this task. The data for this experiment was collected through a survey developed in Qualtrics and deployed through the online platform Mechanical Turk from Amazon. Data from this experiment was collected from a 100 participants, 50 to each plot type. The data was cleaned, transformed (the results were separated into a stack, dodge and all results data set), and analyzed. Those participants who were unable to answer the first two screening questions correctly were omitted resulting in 21/50 valid observations for the stacked chart and 30/50 valid observations for the dodged chart.
+
+```{r save_plots, echo=FALSE, message=FALSE}
+# ggsave("screen_stack.png", device = "png", plot = screen_stack, dpi = 100, width = 6, height = 4)
+# ggsave("screen_dodge.png", device = "png", plot = screen_dodge, dpi = 100, width = 6, height = 4)
+# ggsave("test_stack.png", device = "png", plot = test_stack, dpi = 100, width = 6, height = 4)
+# ggsave("test_dodge.png", device = "png", plot = test_dodge, dpi = 100, width = 6, height = 4)
+test_dodge
+test_stack
+```
+
+
+### Data Summary
+
+Below (Plot 3) shows the density distributions of participants responses: the total sum of the height of the two green bars in the plot. The data is presented according to the randomly assigned plot to the participant: stacked or dodge. The plot suggests that the sums of green bars estimated from the stack plot have less variance than the sums estimated from the dodge plot, which has a flatter distribution of estimated sums, with what seems like a slight left-skew.
+
+
+```{r results, echo=FALSE, message=FALSE, warning=FALSE}
+# FOR_JON:
+#
+# Jon, note that I conducted a 
+raw_results <- read_csv('Dataviz_April-24-2017_09.53.csv')
+
+stack_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q3) %>%
+  mutate(Q3 = as.numeric(Q3)) %>%
+  filter(!is.na(Q3),
+         (Q1 == 2 | Q1 == 1.8) & Q2 == 2) %>%
+  select(Q3) %>%
+  {.$Q3}
+
+dodge_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q4) %>%
+  mutate(Q4 = as.numeric(Q4)) %>%
+  filter(!is.na(Q4),
+         (Q1 == 2 | Q1 == 1.8) & Q2 == 2) %>%
+  select(Q4) %>%
+  {.$Q4}
+
+all_valid_results <- read_csv('Dataviz_April-24-2017_09.53.csv') %>%
+  select(Q1, Q2, Q3, Q4) %>%
+  mutate_each(funs = "as.numeric") %>%
+  filter(Q1 == 2 & Q2 == 2) %>%
+  select(Q3, Q4)
+
+# FOR_JON: 
+# This density plot isn't displayed by default (so you can choose where to display it), display it by typing "stack_hist" again
+plot.summary_density <- all_valid_results %>%
+  ggplot() + 
+    geom_density(aes(x = Q3, color = "Stacked")) + 
+    geom_density(aes(x = Q4, color = "Dodged")) + 
+    scale_color_manual(values = c("Stacked" = "red", "Dodged" = "blue")) + 
+    labs(color = "Chart Type",
+         x = "Sum of Green Bars",
+         title = "Plot 3. Density of Responses for the sum of two green bars.")
+
+plot.summary_density
+```
+
+
+### Analysis
+To determine whether the distributions of dodged and stack bar heights captured the true sum of the green bars, we conduct a bootstrap mean test was conducted with a 95% confidence interval. Finally, an F-test was also conducted to compare two variances. However, the F-test might not be the most powerful variance test available, given that both distributions are not perfectly normal.
+ 
+In Plot 4 below, we see that the confidence interval for the stacked means is much wider compared to that of the dodged means. Still, the stacked confidence interval actually captures the original mean, while the dodge confidence interval does not. 
+
+Finally, to compare the two variances (means from stack and dodge plots), an F-test was conducted. It is important to note that the p-value is significantly low, indicating that the variances are probably unequal.
+
+```{r, echo=FALSE, message=FALSE}
+# Bootstrap testing function
+calc_stat_ci <- function(vector, fun_name, conf = .95, h0 = true_value, num_samples = 20000){
+  require(bootstrap)
+  func <- get(fun_name)
+  samples <- vector - mean(vector) + h0 
+  samples <- bootstrap(samples, num_samples, func)$thetastar
+  lquantile <- (1 - conf) / 2
+  rquantile <- lquantile + conf
+  
+  if (is.na(conf)){
+    samples
+  } else {
+    quantile(samples, c(lquantile, rquantile)) 
+  }
+}
+
+# FOR_JON:
+# Plot of the bootstrap mean distributions versus the true value
+#
+# Firstly we see that the confidence interval for the stacked means is much wider compared to that of the dodged means.
+# Still, the stacked confidence interval actually captures the original mean, while the dodge confidence interval does not.
+# This means, that although it was easier to visually measure with the dodge chart type and that responses were within a 
+# tighter interval, they were confident aroung the wrong value!
+real_dodge_mean <- mean(dodge_results)
+real_stack_mean <- mean(stack_results)
+stack_bmeans_conf <- calc_stat_ci(stack_results, "mean")
+dodge_bmeans_conf <- calc_stat_ci(dodge_results, "mean")
+boot_means <- tibble(boot_means = c(calc_stat_ci(stack_results, "mean", conf = NA), calc_stat_ci(dodge_results, "mean", conf = NA)),
+                     chart_type = c(rep("Stacked", 20000), rep("Dodged", 20000)))
+plot.boot_means <- boot_means %>% ggplot(aes(x = boot_means, color = chart_type)) +
+  geom_density() + 
+  geom_vline(xintercept = stack_bmeans_conf[1], linetype = "dashed", color = "cyan3") + 
+  geom_vline(xintercept = stack_bmeans_conf[2], linetype = "dashed", color = "cyan3") +
+  geom_vline(xintercept = dodge_bmeans_conf[1], linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = dodge_bmeans_conf[2], linetype = "dashed", color = "red") + 
+  geom_vline(xintercept = real_dodge_mean, color = "red") + 
+  geom_vline(xintercept = real_stack_mean, color = "cyan3") + 
+  annotate("text", x = real_dodge_mean, y = .30, label = "True Sum Mean") +
+  annotate("text", x = real_stack_mean, y = .25, label = "True Sum Mean") +
+  labs(title = "Plot 4. Bootstrap mean test for sum of green bars\n95% confidence intervals and true sum means shown.",
+       x = "Bootstrap Mean",
+       color = "Chart Type")
+
+plot.boot_means
+f_test_results <- var.test(stack_results, dodge_results)
+```
+
+### Conclusion.
+
+For this experiment, we hypothesized that information presented in a stack plot it is more difficult to estimate accurately than information presented in a dodge plot. The results from the statistical analysis seem to contradict this hypothesis, but in an surprising way.
+
+While the estimations of dodge plot readers was more tightly distributed (more precise), a bootstrap means test shows that the true value of the green bar heights was not captured by the distribution, showing that the dodged chart readers were more precise but less accurate. On the other hand, the distribution of estimations from the stacked plot readers was more spread (less precise), but that distribution was able to capture the true sum of the green bars, and was thus more accurate. These results seem to indicate that presenting data in dodged bars format facilitates more precise, if more inaccurate, information estimation compared to presenting data in a stacked bar format.
+
+We do note however that the distribution of the dodged bar readers appear clustered around `100`, indicating that there might be some "hundreds" round up bias. The true value: `r true_value` might have been too closely convenient to `100` for readers of the dodged chart to more precisly refine their estimates.
+
+#### Citations.
+- Cairo, Alberto. The Truthful Art: Data, charts, and maps for communication. New Riders, 2016.
+
+```{r, echo=FALSE, message=FALSE}
+# FOR_JON:
+# This is an F test to compare two variances. Note that the p value is quite low, indicating that the variances
+# are probably un equal.
+#
+# This is probably the most concrete result we've attained. We can say that the dodged estimates have 
+# a significantly lower variance than the stacked results.
+devtools::session_info()
+```
