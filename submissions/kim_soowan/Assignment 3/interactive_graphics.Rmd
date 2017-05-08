@@ -106,6 +106,9 @@ Year <- rep(sort(unique(diaspora_ref$Year)), length(country_list))
 Country <- sort(rep(country_list, length(unique(diaspora_ref$Year))))
 diaspora_ref_groupNA <- data.frame(Year, Country)
 diaspora_ref_groupNA <- left_join(diaspora_ref_groupNA, diaspora_ref_group)
+
+#http://rstudio.github.io/dygraphs/index.html
+#library(dygraphs)
 ```
 
 ### Refugee Populations Outside of South Korea
