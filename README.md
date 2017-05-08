@@ -129,7 +129,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * Murray TBD
 1. Network visualization
 1. More D3
-    * Murray TBD
+    * Murray Ch 1-6
 1. Text visualization
 1. Final project presentations
 1. No class (Memorial Day)
