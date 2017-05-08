@@ -43,4 +43,3 @@ The final deliverables include:
 ## Getting started
 
 All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/assignment-invitations/3122b7fd7efd6b37dce698193b57c280).
-
