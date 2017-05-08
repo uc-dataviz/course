@@ -12,12 +12,58 @@ library(RColorBrewer)
 colourPalette <- brewer.pal(7, "Greens")
 library(rworldmap)
 data <- read.csv("~/Desktop/MasterGapminder.csv")
-n <- joinCountryData2Map(df, joinCode="NAME", nameJoinColumn="Country")
+n <- joinCountryData2Map(data, joinCode="NAME", nameJoinColumn="Country")
 mapDevice()
 mapCountryData(n, nameColumnToPlot="TotalFert2015", mapTitle="World Fertility",
-               colourPalette =colourPalette, catMethod = c(1.3,2.4,3.5,4.6,5.7,6.8,7.51),
+               colourPalette =colourPalette, catMethod = c(1.3,2.25,3.05,3.85,4.65,5.45,6.3,7.51),
                addLegend=TRUE,
                oceanCol="lightblue", missingCountryCol="darkgrey")
 #identifyCountries() #"interactive" function does not work, supposed to make clickable labels with other variable info -_-
+
+```
+
+
+
+
+```{r, echo = FALSE}
+##ggplot
+library(maps)
+library(ggplot2)
+library(dplyr)
+library(tibble)
+
+map("world")
+world <- map_data("world") %>%
+  as_tibble
+
+g2 <- ggplot(data, aes(map_id = Country)) +
+  geom_map(aes(fill = TotalFert2015), map = world) +
+  expand_limits(x = world$long, y = world$lat)
+g2 #Some countries missing
+
+#need to relabel Ivory Coast, USA, Republic of Congo, Macedonia, Slovakia, Laos
+
+
+
+
+
+#UGH, I TRIED...
+#cholorpleth = fill map #source: http://rmaps.github.io/blog/posts/animated-choropleths/index.html
+fert <- read.csv("~/Desktop/FertilityHistory2.csv", check.names = FALSE)
+
+library(reshape2)
+fertmelt <- melt(fert, "Country", variable.name = "Year", value.name = "Fertility")
+
+fertmelt <- subset(na.omit(fertmelt))
+
+#make fertility discrete and not continuous for fill
+fertmelt <- transform(fertmelt, fillKey = cut(Fertility, quantile(Fertility, seq(0, 1, 1/5)), labels = LETTERS[1:5]), Year = as.numeric(substr(Year, 1, 4)))
+
+fills = setNames(
+  c(RColorBrewer::brewer.pal(5, 'YlOrRd'), 'white'),
+  c(LETTERS[1:5], 'defaultFill')
+)
+
+
 
 ```
