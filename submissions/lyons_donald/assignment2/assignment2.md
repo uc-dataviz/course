@@ -13,13 +13,13 @@ Following the cue of Heer & Bostock (2010), we are using MTurk to collect respon
 
 **Graph shown in condition 1:**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/materials/control.jpg)
+![alt text](materials/control.jpg)
 
 **Graph shown in condition 2:**
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/materials/correct.jpg)
+![alt text](materials/correct.jpg)
 
 **Graph shown in condition 3:**
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/materials/stroop.jpg)
+![alt text](materials/stroop.jpg)
 
 
 Results
@@ -82,25 +82,25 @@ Parsing apart the mechanics of these results (either the difference in heights o
 	
 **Figure 1:  Pearson’s χ2 with accuracy recalling highest bar as DV**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_1.jpg)
+![alt text](data/fig_1.png)
 
 **Figure 2:  Pearson’s χ2 with accuracy recalling lowest bar as DV**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_2.jpg)
+![alt text](data/fig_2.png)
 
 **Figure 3:  Pearson’s χ2 with accuracy recalling second-lowest bar as DV**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_3.jpg)
+![alt text](data/fig_3.png)
 
 **Figure 4:  Pearson’s χ2 with question as predictor**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_4.jpg)
+![alt text](data/fig_4.png)
 
 **Figure 5:  Binomial logistic regression with question as predictor**
 
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/fig_5.jpg)
+![alt text](data/fig_5.png)
 
 
 **Figure 6**
  
-![alt text](https://github.com/dalyons3/dataviz/blob/master/submissions/lyons_donald/assignment2/data/assignment_2_graph.jpg)
+![alt text](data/assignment_2_graph.png)
