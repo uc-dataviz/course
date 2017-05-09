@@ -17,7 +17,7 @@ library(dplyr)
 library(tibble)
 
 #GDP, School Gender Ratio, and Fertility by Country
-data = read.csv("~/Desktop/MasterGapminder.csv")
+data = read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment3/MasterGapminder.csv")
 
 map("world")
 world <- map_data("world") %>%
@@ -33,7 +33,7 @@ print(g2)
 
 
 #New Data File only with Fertility Info By Year and Country
-fert <- read.csv("~/Desktop/FertilityHistory2.csv", check.names = FALSE)
+fert <- read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment3/FertilityHistory2.csv", check.names = FALSE)
 
 library(reshape2)
 fertmelt <- melt(fert, "Country", variable.name = "Year", value.name = "Fertility")
