@@ -27,7 +27,7 @@ ui <- fluidPage(titlePanel("How does education gender gap changes"),
                     # Auto play
                     tags$script("$(document).ready(function(){
                         setTimeout(function() {$('.slider-animate-button').click()},500);
-                                });"),    
+                                });"),   
                     plotOutput("continentMap", height = 200)
                     ),
                   mainPanel(

@@ -15,7 +15,8 @@ library(plotly)
 
 setwd("submissions/Liu_Guangyu/assignment3")
 
-# Data import and transformation
+# Prepare data for bubble chart
+## Data import and transformation
 import_gapminder <- function(filename, col_name){
   indicator <- read_excel(filename)
   names(indicator)[[1]] <- "country"
@@ -51,10 +52,13 @@ gdp <- filter(gdp, time >= 1970 & time <= 2009) %>%
   inner_join(pop)
 
 # Add education gender gap
-gdp_eduGap <- inner_join(gdp, edu_perc)
+gdp_eduGap <- inner_join(gdp, edu_perc) %>% 
+  arrange(year)
+
+write.csv(gdp_eduGap, file = "gdp_eduGap.csv")
 
 # Prepare data frame for map legend
-# Rename unmatched country names
+## Rename unmatched country names
 mapLegend <- map_data("world") %>% 
   mutate(region = ifelse(region == "Democratic Republic of the Congo", "Congo, Dem. Rep.",
                          ifelse(region == "Republic of Congo", "Congo, Rep.",
@@ -66,78 +70,9 @@ mapLegend <- map_data("world") %>%
                                                                    ifelse(region == "UK", "United Kingdom",
                                                                           ifelse(region == "USA", "United States",
                                                                                  ifelse(region == "Yemen", "Yemen, Rep.", region))))))))))) %>% 
-  rename(country = region) %>% 
+  rename(country = region)  %>% 
   group_by(country) %>% 
-  right_join(continent) 
-  ungroup()
-  
-mapCountry <- map_data("world") %>% 
-  select(region) %>% 
-  distinct()
-Diff <- anti_join(continent, mapCountry, by = c("country" = "region"))
+  left_join(continent) %>% 
+  ungroup() 
 
-write.csv(gdp_eduGap, file = "gdp_eduGap.csv")
 write.csv(mapLegend, file = "mapLegend.csv")
-
-########################################
-# Draw world map
-gdp_eduGap %>% 
-  filter(year == 2009) %>% 
-  rename(continent1 = continent) %>% 
-  joinCountryData2Map(joinCode = "NAME", nameJoinColumn = "country") %>% 
-  mapCountryData(nameColumnToPlot = "continent1",
-                 numCats = 5,
-                 catMethod = "categorical",
-                 colourPalette = c("royalblue1", "green1", "firebrick1", "yellow1", "orchid1"),
-                 addLegend = FALSE,
-                 borderCol = FALSE,
-                 missingCountryCol = "ivory2",
-                 mapTitle = "")
-
-gdp_eduGap <- read_csv("gdp_eduGap.csv")
-
-ggplot(mapLegend, aes(x = long, y = lat, group = group, fill = continent)) +
-  geom_polygon(color = "grey") +
-  scale_fill_manual(values = c("royalblue1", "green1", "firebrick1", "yellow1", "orchid1")) +
-  theme(legend.position = "none", 
-        panel.background = NULL, 
-        axis.text = element_blank(), 
-        axis.title = element_blank(),
-        axis.ticks = element_blank()) +
-  coord_map()
-
-testData <- filter(gdp_eduGap,
-                   year == 1990)
-
-p <- ggplot(testData, 
-       aes(x = gdp_per_capita, y = eduyrs_fofm)) +
-  geom_point(aes(size = population, 
-                 text = str_c(paste("Country:", country), 
-                              paste("Population: ", population),
-                              paste("GDP: ", gdp_per_capita),
-                              paste("female % male: ", round(eduyrs_fofm, 2), "%"),
-                              sep = '\n'), 
-                 fill = continent), 
-                 color = "grey17", shape = 21) +
-  geom_hline(yintercept = 100, color = "red", linetype = 2, size = 0.5) +
-  scale_size_continuous(range = c(0,30)) +
-  scale_x_continuous(name = "GDP  ($)", 
-                     trans = log2_trans(),
-                     breaks = trans_breaks("log2", n = 9, function(x) 250*(2^x))(c(1,300))) +
-  scale_y_continuous(name = "Gender ratio of years in school (female/male)  (%)") +
-  scale_fill_manual(name = "", 
-                    values = c("Asia" = "firebrick1", 
-                               "Europe" = "yellow1", 
-                               "Americas" = "green1",
-                               "Africa" = "royalblue1",
-                               "Oceania" = "orchid1")) +
-  coord_cartesian(
-    xlim = c(min(gdp_eduGap$gdp_per_capita,na.rm = TRUE), 
-             max(gdp_eduGap$gdp_per_capita, na.rm = TRUE)),
-    ylim = c(0, max(gdp_eduGap$eduyrs_fofm))
-    ) +
-  theme(legend.position = "none")
-
-ggplotly(p, tooltip = "text")
-
-

@@ -7,77 +7,81 @@ library(scales)
 
 server <- function(input, output){
   gdp_eduGap <- read.csv("gdp_eduGap.csv") %>% 
-    arrange(country)
+    arrange(year)
   mapLegend <- read.csv("mapLegend.csv")
   
+  # World map legend, which does not change over time
+  p2 <- ggplot(map_data("world"), aes(x = long, y = lat, group = group)) +
+    geom_polygon(fill = "ivory1", color = "ivory3") +
+    theme(legend.position = "none", 
+          panel.background = NULL, 
+          axis.text = element_blank(), 
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+  
+  # Calculate boundraries of the bubble chart
+  min_x = min(gdp_eduGap$gdp_per_capita,na.rm = TRUE)
+  max_x = max(gdp_eduGap$gdp_per_capita, na.rm = TRUE)
+  min_y = 0
+  max_y = max(gdp_eduGap$eduyrs_fofm, na.rm = TRUE)
+  
+  filterData <- gdp_eduGap
+  p1 <- ggplot(data = filterData, aes(x = gdp_per_capita, y = eduyrs_fofm, size = population)) +
+    geom_hline(yintercept = 100, color = "red", linetype = 2, size = 0.5) +
+    scale_size_continuous(range = c(0,30)) +
+    scale_x_continuous(name = "GDP per capita  ($)", 
+                       trans = log2_trans(),
+                       breaks = trans_breaks("log2", n = 9, function(x) 250*(2^x))(c(1,300)),
+                       position = "right") +
+    scale_y_continuous(name = "Gender ratio of years in school (female/male)  (%)") +
+    coord_cartesian(
+      xlim = c(min_x, max_x),
+      ylim = c(min_y, max_y)
+    ) +
+    theme(legend.position = "none")
+  
   output$bubbleChart <- renderPlotly({
-    filterData <- filter(gdp_eduGap, year == input$inputYear)
-    if (!is.null(input$inputCountry)){
-      filterData <- filter(filterData, country %in% input$inputCountry)
-    }
-    p <- ggplot(filterData, 
-              aes(x = gdp_per_capita, y = eduyrs_fofm, size = population)) +
-      geom_point(aes(text = str_c(paste("Country:", country), 
+    # Each year includes 131 countries. Use index rather than filter for optimization
+    filterData <- slice(gdp_eduGap, ((input$inputYear - 1970) * 131 + 1):((input$inputYear - 1970 + 1) * 131))
+    p1 <- p1 +
+      geom_point(data = filterData, aes(text = str_c(paste("Country:", country), 
                                   paste("Population: ", population),
                                   paste("GDP: ", gdp_per_capita),
                                   paste("Edu female % male: ", round(eduyrs_fofm, 2), "%"),
-                                  sep = '\n'), 
-                     fill = continent), 
-                 color = "grey17", shape = 21) +
-      geom_hline(yintercept = 100, color = "red", linetype = 2, size = 0.5) +
-      scale_size_continuous(range = c(0,30)) +
-      scale_x_continuous(name = "GDP  ($)", 
-                         trans = log2_trans(),
-                         breaks = trans_breaks("log2", n = 9, function(x) 250*(2^x))(c(1,300)),
-                         position = "right") +
-      scale_y_continuous(name = "Gender ratio of years in school (female/male)  (%)") +
+                                  sep = '\n'),
+                     fill = "ivory1"), color = "grey17", shape = 21)
+    if (!is.null(input$inputCountry)){
+      filterData <- filter(filterData, country %in% input$inputCountry)
+    }
+    p1 <- p1 +
+      geom_point(data = filterData, aes(text = str_c(paste("Country:", country), 
+                                                      paste("Population: ", population),
+                                                      paste("GDP: ", gdp_per_capita),
+                                                      paste("Edu female % male: ", round(eduyrs_fofm, 2), "%"),
+                                                      sep = '\n'),
+                                         fill = continent), color = "grey17", shape = 21) +
       scale_fill_manual(name = "", 
                         values = c("Asia" = "firebrick1", 
                                    "Europe" = "yellow1", 
                                    "Americas" = "green1",
                                    "Africa" = "royalblue1",
-                                   "Oceania" = "orchid1")) +
-      coord_cartesian(
-        xlim = c(min(gdp_eduGap$gdp_per_capita,na.rm = TRUE), 
-                 max(gdp_eduGap$gdp_per_capita, na.rm = TRUE)),
-        ylim = c(0, max(gdp_eduGap$eduyrs_fofm))
-      ) +
-      theme(legend.position = "none")
+                                   "Oceania" = "orchid1",
+                                   "NA" = "ivory1"))
     
-    ggplotly(p, tooltip = "text")
+    ggplotly(p1, tooltip = "text")
   })
   
   output$continentMap <- renderPlot({
-    p2 <- ggplot(mapLegend, aes(x = long, y = lat, group = group, fill = continent)) +
-      geom_polygon(color = "grey") +
-      scale_fill_manual(values = c("royalblue1", "green1", "firebrick1", "yellow1", "orchid1")) +
-      theme(legend.position = "none", 
-            panel.background = NULL, 
-            axis.text = element_blank(), 
-            axis.title = element_blank(),
-            axis.ticks = element_blank()) +
-      coord_map()
-
-#    ggplot(mapLegend, aes(x = long, y = lat, group = group, fill = continent)) +
-#      geom_polygon(color = "grey") +
-#      scale_fill_manual(name = "",
-#                        values = c("Africa" = "royalblue1", 
-#                                   "Americas" = "green1", 
-#                                   "Asia" = "firebrick1", 
-#                                   "Europe" = "yellow1", 
-#                                   "Oceania" = "orchid1")) +
-#      theme(legend.position = "none", 
-#            panel.background = NULL, 
-#            axis.text = element_blank(), 
-#            axis.title = element_blank(),
-#            axis.ticks = element_blank()) +
-#      coord_map()
-    
+    filterData <- mapLegend
     if (!is.null(input$inputCountry)){
       filterData <- filter(mapLegend, country %in% input$inputCountry)
-      p2 <- p2 +
-        geom_polygon(data = filterData, fill = ifelse(filterData$region == "Asia", "red", "white"))
     }
-    p2
-})
+    p2 +
+      geom_polygon(data = filterData, aes(fill = continent), color = NA) +
+      scale_fill_manual(values = c("Asia" = "firebrick1", 
+                                   "Europe" = "yellow1", 
+                                   "Americas" = "green1",
+                                   "Africa" = "royalblue1",
+                                   "Oceania" = "orchid1"))
+  })
 }
