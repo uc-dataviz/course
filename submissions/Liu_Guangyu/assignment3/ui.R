@@ -1,7 +1,9 @@
 library(shiny)
 library(plotly)
 library(tidyverse)
+library(maps)
 library(rworldmap)
+library(stringr)
 
 gdp_eduGap <- read.csv("gdp_eduGap.csv") %>% 
   arrange(country)
@@ -9,7 +11,7 @@ gdp_eduGap <- read.csv("gdp_eduGap.csv") %>%
 ui <- fluidPage(titlePanel("How does education gender gap changes"),
                 sidebarLayout(
                   sidebarPanel(
-                    selectInput(inputId = "inputCountry",
+                    selectizeInput(inputId = "inputCountry",
                                 label = "Select Countries",
                                 choices = gdp_eduGap$country,
                                 multiple = TRUE),
@@ -22,10 +24,14 @@ ui <- fluidPage(titlePanel("How does education gender gap changes"),
                                 sep = "",
                                 step = 1,
                                 value = 1970),
+                    # Auto play
+                    tags$script("$(document).ready(function(){
+                        setTimeout(function() {$('.slider-animate-button').click()},500);
+                                });"),    
                     plotOutput("continentMap", height = 200)
                     ),
                   mainPanel(
-                    plotlyOutput("bubbleChart", height = 600, width = "auto")
+                    plotlyOutput("bubbleChart", height = "auto", width = "auto")
                   ))
                 )
                 
