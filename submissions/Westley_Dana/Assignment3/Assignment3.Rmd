@@ -7,32 +7,17 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-
-#FAILED ATTEMPT 1
-library(RColorBrewer)
-colourPalette <- brewer.pal(7, "Greens")
-library(rworldmap)
-data <- read.csv("~/Desktop/MasterGapminder.csv")
-n <- joinCountryData2Map(data, joinCode="NAME", nameJoinColumn="Country")
-mapDevice()
-mapCountryData(n, nameColumnToPlot="TotalFert2015", mapTitle="World Fertility",
-               colourPalette =colourPalette, catMethod = c(1.3,2.25,3.05,3.85,4.65,5.45,6.3,7.51),
-               addLegend=TRUE,
-               oceanCol="lightblue", missingCountryCol="darkgrey")
-#identifyCountries() #"interactive" function does not work, supposed to make clickable labels with other variable info -_-
-
 ```
 
 
-
-
 ```{r, echo = FALSE}
-##ggplot
 library(maps)
 library(ggplot2)
 library(dplyr)
 library(tibble)
+
+#GDP, School Gender Ratio, and Fertility by Country
+data = read.csv("~/Desktop/MasterGapminder.csv")
 
 map("world")
 world <- map_data("world") %>%
@@ -41,10 +26,13 @@ world <- map_data("world") %>%
 g2 <- ggplot(data, aes(map_id = Country)) +
   geom_map(aes(fill = TotalFert2015), map = world) +
   expand_limits(x = world$long, y = world$lat)
+print(g2)
 #Some countries missing
+#needed to relabel Ivory Coast, USA, Republic of Congo, Democratic Republic of the Congo, Macedonia, Slovakia, Laos, South Sudan
 
-#need to relabel Ivory Coast, USA, Republic of Congo, Democratic Republic of the Congo, Macedonia, Slovakia, Laos, South Sudan
 
+
+#New Data File only with Fertility Info By Year and Country
 fert <- read.csv("~/Desktop/FertilityHistory2.csv", check.names = FALSE)
 
 library(reshape2)
@@ -54,19 +42,46 @@ g3 <- ggplot(fertmelt, aes(map_id = Country)) +
   geom_map(aes(fill = Fertility), map = world) +
   expand_limits(x = world$long, y = world$lat)
 
-g3
+print(g3)
+
+#animate
+
+library(gganimate)
+
+p <- ggplot(fertmelt, aes(map_id = "Country", frame = "Year")) +
+  geom_map(aes(fill = "Fertility"), map = world) +
+  expand_limits(x = world$long, y = world$lat) +
+  scale_fill_brewer(palette = "BuGn") +
+  labs(title = "Fertility rate",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "mollweide") +
+  theme(legend.position = "none")
+gganimate(p)
+#Error
+
+p1 <- ggplot(fertmelt, aes(Fertility, frame = Year)) + 
+  geom_bar()
+
+gganimate(p1)
+#Error 
+
+library(gapminder)
+
+gapminder
+
+summary(gapminder)
+#wrap facet
+#g4 <- ggplot(fertmelt, aes(map_id = Country)) +
+  #facet_wrap(~ Year) +
+  #geom_map(aes(fill = Fertility), map = world) +
+  #expand_limits(x = world$long, y = world$lat)
+#TOO MANY TAKES TOO LONG
+
+#plotly
+#library(plotly)
+#ggploty keeps crashing my R
 
 ```
 
-``` {r, include = FALSE}
 
-#UGH, I TRIED... FAILED ATTEMPT 2
-#cholorpleth = fill map #source: http://rmaps.github.io/blog/posts/animated-choropleths/index.html
-#make fertility discrete and not continuous for fill
-fertmelt <- transform(fertmelt, fillKey = cut(Fertility, quantile(Fertility, seq(0, 1, 1/5)), labels = LETTERS[1:5]), Year = as.numeric(substr(Year, 1, 4)))
-
-fills = setNames(
-  c(RColorBrewer::brewer.pal(5, 'YlOrRd'), 'white'),
-  c(LETTERS[1:5], 'defaultFill')
-)
-```
