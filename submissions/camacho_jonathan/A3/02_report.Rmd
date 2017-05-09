@@ -5,33 +5,57 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(tidyverse)
+library(plotly)
 ```
 
-Column {data-width=650}
+```{r}
+# Loads baltimore_service_calls.csv file. 
+countries_dataset <- as_tibble(read.csv(file = "./data/tidy_countries_dataset.csv", 
+                                             stringsAsFactors = FALSE))
+
+# Calculatting population density variable for each observation. 
+countries_density <- countries_dataset %>% 
+    select(country, continent.x, lifeExp, pop, areaInSqKm) %>%
+    mutate(pop_density = (pop / areaInSqKm))
+```
+
+
+Column {data-width=650}{.sidebar}
 -----------------------------------------------------------------------
 
-### Chart A
-
 ```{r}
+selectInput("n_breaks", label = "Number of bins:",
+            choices = c(10, 20, 35, 50), selected = 20)
 
+sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+            min = 0.2, max = 2, value = 1, step = 0.2)
 ```
 
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Chart B
+### Life Expectancy by Population Density
 
 ```{r}
-
+# Generating plot.
+p <- ggplot(countries_density, aes(pop_density, lifeExp)) +
+    geom_point(alpha = .2) +
+    geom_smooth() +
+    scale_x_log10() +
+    labs(title = "Life Expectancy by Population Density",
+         x = "Population Density (Millions/Kilometer^2)",
+         y = "Life Expectancy") +
+       theme_minimal()
+ggplotly(p)
 ```
+
 
 ### Chart C
 
-```{r}
-
-```
 
