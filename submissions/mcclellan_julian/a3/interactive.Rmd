@@ -1,10 +1,11 @@
 ---
-title: ""
+title: "Imports, Exports, and Foreign Direct Investment Country Comparison"
 output: 
   flexdashboard::flex_dashboard:
     vertical_layout: scroll
 runtime: shiny
 ---
+
 
 ```{r}
 library(tidyverse)
@@ -47,7 +48,9 @@ export_dat <- import_gapminder("~/dataviz/assignments/data/Exports (p of GDP).xl
   select(country, year, value) %>%
   rename(export_perc_gdp = value) 
 
-full_dat <- for_invest_in_dat %>%
+table_dat <- 
+
+table_dat <- for_invest_in_dat %>%
   merge(for_invest_out_dat, by = c("country", "year")) %>%
   merge(import_dat, by = c("country", "year")) %>%
   merge(export_dat, by = c("country", "year")) %>%
@@ -55,7 +58,9 @@ full_dat <- for_invest_in_dat %>%
          fdi_out = for_invest_out_perc_gdp,
          imports = import_perc_gdp,
          exports = export_perc_gdp) %>%
-  mutate(net_exports = exports - imports) %>%
+  mutate(net_exports = exports - imports)
+
+full_dat <- table_dat %>%
   gather(key = measure, value = perc_of_gdp,
          fdi_in,
          fdi_out,
@@ -123,6 +128,8 @@ numericInput("year_end", "Ending year", 2010, min = 1970, max = 2010,
              step = 1)
 ```
 
+---
+
 Compare measures in for a single country
 
 ```{r}
@@ -138,14 +145,16 @@ checkboxGroupInput("measures", "Trade measures",
                selected = c("fdi_in", "fdi_out", "net_exports"))
 ```
 
+---
+
 Compare a measure between two countries
 
 ```{r}
-selectInput("country_1", "Country 1", sort(unique(full_dat$country)),
+selectInput("country_1", "", sort(unique(full_dat$country)),
                 selected = "United States")
 
 
-selectInput("country_2", "Country 2", sort(unique(full_dat$country)),
+selectInput("country_2", "", sort(unique(full_dat$country)),
                 selected = "China")
 
 radioButtons("measure", "Trade measures",
@@ -161,7 +170,7 @@ twoCountries <- reactive({
 })
 ```
 
-Column
+Row
 -----------------------------------------------------------------------
 
 ### Single Country Comparison
@@ -192,8 +201,8 @@ renderPlot({
 })
 ```
 
-Column
------------------------------------------------------------------------
+<!-- Row -->
+<!-- ----------------------------------------------------------------------- -->
 
 ### Two Country Comparison
 
@@ -236,7 +245,50 @@ renderPlot({
 })
 ```
 
-Column
------------------------------------------------------------------------
 
-# 
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+   
+### Single Country Data
+
+```{r}
+singleCountryTab <- reactive({
+  full_dat %>%
+    filter(country == input$country_of_int,
+           (input$year_start <= year) & (year <= input$year_end),
+           measure %in% input$measures
+           ) %>%
+    mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                             ifelse(measure == "fdi_in", "FDI (in)", 
+                                    ifelse(measure == "net_exports", "Net Exports",
+                                           ifelse(measure == "exports", "Exports", "Imports"))))) %>%
+    spread(measure, perc_of_gdp)
+})
+renderTable(
+  singleCountryTab()
+  )
+```   
+ 
+### Country Comparison Data
+    
+```{r}
+twoCountryTab <- reactive({
+  full_dat %>%
+    filter(country %in% twoCountries(),
+           (input$year_start <= year) & (year <= input$year_end),
+           measure == input$measure
+           ) %>%
+    mutate(measure = ifelse(measure == "fdi_out", "FDI (out)", 
+                             ifelse(measure == "fdi_in", "FDI (in)", 
+                                    ifelse(measure == "net_exports", "Net Exports",
+                                           ifelse(measure == "exports", "Exports", "Imports"))))) %>%
+    spread(country, perc_of_gdp)# %>%
+    # rename(`% of GDP` = perc_of_gdp) %>%
+    # reorder(year, `% of GDP`)
+})
+
+renderTable(
+  twoCountryTab()
+  )
+```
