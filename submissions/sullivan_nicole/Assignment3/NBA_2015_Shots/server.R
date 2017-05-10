@@ -56,20 +56,20 @@ server <- function(input, output) {
       mutate(`Points earned` = as.factor(`Points earned`)) %>%
       ggplot(aes(`Touch Time`, `Shot Distance`, color = `Points earned`)) +
       geom_point(alpha = 0.6, size = 1) +
-      labs(title = "Pre-Shot Touch Time and Distance From Hoop",
+      labs(title = "Pre-Shot Touch Time & Distance From Hoop",
            x = "Touch Time (in sec.)",
            y = "Shot Distance (in ft.)",
            color = "Points") +
       scale_x_continuous(breaks = seq(0, 25, by = 5)) +
-      theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
+      theme(plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
+            plot.background = element_rect(fill = "gray20", color = "gray20"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
-            legend.text = element_text(color = "white"),
-            legend.title = element_text(color = "white"),
+            legend.text = element_text(color = "white", family = "Helvetica", size = 9),
+            legend.title = element_text(color = "white", family = "Helvetica", size = 9),
             legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, color = "white"),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
@@ -93,14 +93,14 @@ server <- function(input, output) {
       scale_x_discrete(limits = c("A", "H"), labels = c("Away", "Home")) +
       facet_wrap(~ Quarter) +
       theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
-            legend.text = element_text(color = "white"),
+            legend.text = element_text(color = "white", family = "Helvetica", size = 9),
             legend.title = element_blank(),
             legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, color = "white"),
+            plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
@@ -121,14 +121,14 @@ server <- function(input, output) {
            y = "Shot Distance (in ft.)") +
       facet_wrap(~ `Away/Home`) +
       theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
-            legend.text = element_text(color = "white"),
+            legend.text = element_text(color = "white", family = "Helvetica", size = 9),
             legend.title = element_blank(),
             legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, color = "white"),
+            plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
@@ -152,14 +152,14 @@ server <- function(input, output) {
            y = "Count") +
       facet_wrap(~ `Shot Type`) +
       theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
-            legend.text = element_text(color = "white"),
+            legend.text = element_text(color = "white", family = "Helvetica", size = 9),
             legend.title = element_blank(),
             legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, color = "white"),
+            plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
@@ -191,14 +191,14 @@ server <- function(input, output) {
          x = "Distance to Closest Defender (in ft.)",
          y = "Shot Distance (in ft.)") +
     theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
-          axis.text = element_text(color = "white"),
-          axis.title = element_text(color = "white"),
+          axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+          axis.title = element_text(color = "white", family = "Helvetica", size = 9),
           legend.background = element_rect(fill = "gray20"),
           legend.key = element_rect(color = "gray20"),
-          legend.text = element_text(color = "white"),
+          legend.text = element_text(color = "white", family = "Helvetica", size = 9),
           legend.title = element_blank(),
           legend.position = "bottom",
-          plot.title = element_text(hjust = 0.5, color = "white"),
+          plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
           panel.grid.major = element_line(color = "white", size = 0.8),
           panel.grid.major.x = element_blank(),
           panel.grid.minor.y = element_blank())
@@ -220,14 +220,14 @@ server <- function(input, output) {
            x = "Shot Type",
            y = "Count") +
       facet_wrap(~ `Shot Result`) +
-      theme(plot.title = element_text(hjust = 0.5, color = "white"),
+      theme(plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
             legend.title = element_blank(),
             plot.background = element_rect(fill = "gray20", color = "gray20"),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
             legend.text = element_text(color = "white"),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
@@ -251,11 +251,11 @@ server <- function(input, output) {
       theme(plot.background = element_rect(fill = "gray20", color = "gray20"),
             legend.background = element_rect(fill = "gray20"),
             legend.key = element_rect(color = "gray20"),
-            legend.text = element_text(color = "white"),
+            legend.text = element_text(color = "white", family = "Helvetica", size = 9),
             legend.title = element_blank(),
-            axis.text = element_text(color = "white"),
-            axis.title = element_text(color = "white"),
-            plot.title = element_text(hjust = 0.5, color = "white"),
+            axis.text = element_text(color = "white", family = "Helvetica", size = 8),
+            axis.title = element_text(color = "white", family = "Helvetica", size = 9),
+            plot.title = element_text(hjust = 0.5, color = "white", family = "Helvetica", size = 10),
             panel.grid.major = element_line(color = "white", size = 0.8),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.y = element_blank())
