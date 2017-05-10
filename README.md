@@ -126,10 +126,10 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * TA Ch 10
     * [Cartographers for social equality](https://www.youtube.com/watch?v=vVX-PrBRtTY)
 1. Introduction to D3
-    * Murray TBD
+    * Murray Ch 1-6
 1. Network visualization
 1. More D3
-    * Murray Ch 1-6
+    * Murray Ch 7-13
 1. Text visualization
 1. Final project presentations
 1. No class (Memorial Day)
