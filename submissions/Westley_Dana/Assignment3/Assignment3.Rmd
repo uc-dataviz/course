@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, echo = FALSE}
+```{r, include=FALSE}
 library(maps)
 library(ggplot2)
 library(tibble)
@@ -23,9 +23,14 @@ map("world")
 world <- map_data("world") %>%
   as_tibble
 
+library(RColorBrewer)
 g2 <- ggplot(data, aes(map_id = Country)) +
   geom_map(aes(fill = TotalFert2015), map = world) +
-  expand_limits(x = world$long, y = world$lat)
+  expand_limits(x = world$long, y = world$lat) + 
+  labs(title = "2015 World Fertility", x = "", y = "")+ 
+  scale_fill_gradient(low = "indianred1", high = "firebrick4", name = "Avg. No. of Children") + 
+  theme(plot.title = element_text(hjust = 0.5, size = 20)) + 
+  ylim(-75,100)
 print(g2)
 #Some countries missing
 #needed to relabel Ivory Coast, USA, Republic of Congo, Democratic Republic of the Congo, Macedonia, Slovakia, Laos, South Sudan
@@ -44,44 +49,16 @@ g3 <- ggplot(fertmelt, aes(map_id = Country)) +
 
 print(g3)
 
-#animate ATTEMPTS
-library(gganimate)
+```
 
-p1 <- ggplot(fertmelt, aes(map_id = "Country", frame = "Year")) +
-  geom_map(aes(fill = "Fertility"), map = world) +
-  expand_limits(x = world$long, y = world$lat) +
-  scale_fill_brewer(palette = "BuGn") +
-  labs(title = "Fertility rate",
-       fill = NULL) +
-  ggthemes::theme_map() +
-  coord_map(projection = "mollweide") +
-  theme(legend.position = "none")
-#gg_animate(p1)
-#Error
-
-p2 <- ggplot(fertmelt, aes(Fertility, frame = Year)) + 
-  geom_bar()
-
-#gg_animate(p2)
-#Error 
-
-library(gapminder)
-
-#Testing animation with pre-loaded gapminder dataset
-theme_set(theme_bw())
-p3 <- ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = continent, frame = year)) +
-  geom_point() +
-  scale_x_log10()
-#gg_animate(p3)
-#error
-
-
+#Interactive Visual
+```{r}
 #plotly
 library(plotly)
-#ggplotly(g2)
+ggplotly(g2)
 
 #ggploty keeps crashing my R, "Subscript out of bounds"
 
 ```
-
+#The Story
 
