@@ -243,7 +243,7 @@ server <- function(input, output) {
     
     player_touch <- teams() %>%
       ggplot(aes(Shooter, `Touch Time`, fill = `Shot Result`)) +
-      geom_boxplot(color = "pink") +
+      geom_boxplot(aes(color = `Shot Result`), alpha = 0.5) +
       coord_flip() +
       labs(title = "Player's Average Pre-Shot Touch Time",
            x = "Shooter",
