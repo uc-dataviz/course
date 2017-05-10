@@ -18,7 +18,7 @@ server <- function(input, output) {
     "Data used in this Shiny web app is from the NBA 2014-2015 Season Shot Logs.  The app is meant for exploration of player's likelihood of making or missing a shot, depending on the shot clock, distance from the hoop, distance from the nearest defender,
   the quarter, whether they were away or home - even which of their teammates were playing that game (see the 'By Team' tab).  One can see the obvious - that the farther players are from the hoop, the less likely they are to make a shot - and the not-so-obvious - that even players 
     lauded for their ability outside the paint (e.g. the Splash Brothers) missed threes more often than they made them.  Suggestions for exploration of the data:  look a player's or team's performance when playing very high performing or low performing teams in comparison (the Bulls,
-    for example, tend to perform beyond expectations when facing especially challenging teams - such as Golden State or the Cavs - but tend to underperform when pitted against much lower seeded teams - such as the Suns or the Lakers).   Or evaluate intra-player performance in a specific game - such as the Championship Finals; just check the 'Select Dates'
+    for example, tend to perform beyond expectations when facing especially challenging teams - such as Golden State or the Cavs - but tend to underperform when pitted against much lower seeded teams - such as the Suns or the Lakers).   Or evaluate intra-player performance in a specific game or games (such as the Championship Finals); just check the 'Select Dates'
 box in the 'By Player' tab."
   })
   
