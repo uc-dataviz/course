@@ -1,0 +1,14 @@
+---
+title: "Design Explanation"
+author: "Longxuan Wang"
+date: "May 9, 2017"
+output: github_document
+---
+
+## Story
+
+
+## Graphics
+
+
+## Interactivity
