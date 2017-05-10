@@ -73,8 +73,10 @@ ui <- fluidPage(
       tabPanel("Touch Time", icon = icon("hourglass-half"),
                plotlyOutput("player_touch_plot")),
       tabPanel("Raw Data", icon = icon("table"),
-               DT::dataTableOutput("dist_results"))))
-  )
-  )
+               DT::dataTableOutput("dist_results"))))))
+    ,
+    tabPanel("Background", br(),br(),
+             mainPanel(
+               textOutput("background")))
 )
 )
