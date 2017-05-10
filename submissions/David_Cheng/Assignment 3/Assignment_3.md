@@ -11,7 +11,7 @@ Armed forces personnel are active duty military personnel, including paramilitar
 Import the data
 ===============
 
-I used two datasets from the website of "gapminder". The first one includes the percentage of armed forces personel of total labour force. The second one inclueds the total number of armed forces personnel.
+I used two datasets from the website of "gapminder". The first one includes the percentage of armed forces personel over total labour force. The second one includes the total number of armed forces personnel.
 
 ``` r
 library(rworldmap)
@@ -69,10 +69,10 @@ all <- left_join(all, gapminder)
 The Status quo
 ==============
 
-The latest data I can get is the data of year 2008. I draw two tables below. The first one is the Top 10 in terms of Percent of labour force (2008). The second one is Top 10 in terms of Total Amount (2008).
+The latest data I can get is the data of year 2008. I draw two tables below. The first one is the Top 10 in terms of Percentage of armed forces personnel over labour force (2008). The second one is Top 10 in terms of Total Amount (2008).
 
-Armed forces personnel over labour force
-----------------------------------------
+Top 10: Armed forces personnel over labour force
+------------------------------------------------
 
 ``` r
 data2008_percent <- filter(all, year==2008) %>%
@@ -100,7 +100,7 @@ knitr::kable(data2008_percent, caption="'Top 10 in terms of Percent (2008)'")
 ``` r
 ggplot(data=data2008_percent)+
   geom_bar(mapping = aes(x=country, y=percent, fill=country), stat = "identity") +
-  ggtitle("Top 10 countries in terms of Percent (2008)")
+  ggtitle("Top 10 countries in terms of Percentage (2008)")
 ```
 
 ![](Assignment_3_files/figure-markdown_github/unnamed-chunk-3-1.png)
@@ -124,7 +124,7 @@ mp
 
 ![](Assignment_3_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-Obviously, Mid-Eastern is quite an unstable area. The Arabian countries and Israel are always in tensions. So they tend to keep a largy armed force. The case is same for North Korea. North Korea is prepared a war with the South and it is developing nuclear weapons.
+Obviously, Mid-Eastern is quite an unstable area. The Arabian countries and Israel are always in tensions. So they tend to keep large armed forces. The case is same for North Korea. North Korea is preparing a war with the South and it is developing nuclear weapons.
 
 The outlier is Singapore. It also has a large armed force in terms of the percentage.
 
@@ -140,30 +140,6 @@ arrange(desc(total)) %>%
   head(n=10)
 
 knitr::kable(data2008_total, caption='Top 10 in terms of Total Amount (2008)')
-```
-
-| country          |  year|    total|
-|:-----------------|-----:|--------:|
-| China            |  2008|  2885000|
-| India            |  2008|  2582000|
-| United States    |  2008|  1540000|
-| Russia           |  2008|  1476000|
-| Korea, Dem. Rep. |  2008|  1295000|
-| Pakistan         |  2008|   921000|
-| Egypt            |  2008|   866000|
-| Brazil           |  2008|   721000|
-| Korea, Rep.      |  2008|   692000|
-| Turkey           |  2008|   613000|
-
-``` r
-data2008_pop <- filter(all, year==2008) %>%
-arrange(desc(total)) %>%
-  select(-3) %>%
-  select(1:3) %>%
-  as.data.frame() %>%
-  head(n=10)
-
-knitr::kable(data2008_pop, caption='Top 10 in terms of Total Amount (2008)')
 ```
 
 | country          |  year|    total|
@@ -290,7 +266,7 @@ ggplot(data = data_gdp_2007)+
 
 ![](Assignment_3_files/figure-markdown_github/unnamed-chunk-10-2.png)
 
-For most countries both the percentage and total amount of armed forces have are positive correlated with per capita GDP.
+It seems, for most countries both the percentage and total amount of armed forces have are positive correlated with per capita GDP.
 
 However, when per capita GDP is high enough, the percentage and total amount of armed forces are tend to maintain at a fixed level.
 
@@ -346,17 +322,12 @@ summary(total_gdp_lm)
     ## Multiple R-squared:  0.0007259,  Adjusted R-squared:  -0.007205 
     ## F-statistic: 0.09153 on 1 and 126 DF,  p-value: 0.7627
 
-``` r
-data2007 <- filter(all, year==2005)
-ggplot(data=data2007)+
-geom_point(mapping = aes(x=gdpPercap, y=percent), na.rm = T)+
-  geom_smooth(mapping = aes(x=pop, y=percent), na.rm = T)
-```
-
-![](Assignment_3_files/figure-markdown_github/unnamed-chunk-13-1.png)
-
 GDP, Population and the Armed Forces Personnel
 ----------------------------------------------
+
+1.Regress the total number of Armed Forces Personnel on population and per capita GDP.
+
+2.Regress the percentage of Armed Forces Personnel over total labor force on population and per capita GDP.
 
 ``` r
 percentage_gdp_pop_lm <- lm(percent ~ pop * gdpPercap, data = data_gdp_2007)
@@ -411,3 +382,26 @@ summary(total_gdp_pop_lm)
     ##   (4 observations deleted due to missingness)
     ## Multiple R-squared:  0.8226, Adjusted R-squared:  0.8183 
     ## F-statistic: 191.6 on 3 and 124 DF,  p-value: < 2.2e-16
+
+Results:
+
+1.regress the percentage of Armed Forces Personnel over total labor force on population and per capita GDP The coefficient of population and per capita GDP are -7.292e-10 and 5.792e-06 respectively.
+
+2.Regress the Total number of Armed Forces Personnel over total labor force on population and per capita GDP. The coefficient of population and per capita GDP are 1.979e-03 and -1.589e+00 respectively.
+
+It's very interesting that I get two seemingly opposite results.
+
+The countries with larger populations tend to have more soldiers. That is quite obvious. The higher per capita GDP normally indicates a higher level of technology. Those countries can make up their shortage in total numbers of soldiers by their advanced technology. Therefore, the coefficient of per capita GDP is negative.
+
+As for the percentage of Armed Forces over total labor force, when a country has a larger population, it doesn't need to have a high percentage of armed forces personnel over total labor force. Assuming other conditions are the same, a country with a larger population only needs to have a little bit more soldiers than its enemies. It doesn't need to have the same percentage of armed force as its enemies. So the coefficient of population is negative. It is difficult to explain why the coefficient of per capita GDP is positive. If it means that a wealthier country can afford a high percentage of soldiers, then the explaination for the negative coefficient of per capita GDP in the other regression should be wrong.
+
+A possible explaination for the defect: countries have higher per capita GDP normally have less population, thus the total number of armed forces personnel is relatively small. However, those are the rich countries, so they can afford a larger proportion of army.
+
+Further Work
+------------
+
+There are so many variables may have relations with armed forces personnel. It's reasonable to take more variables into consideration.
+
+Also, the huge gap between the populations, per capita GDP and other variables among countries may lead to an inaccurate result of regression. This is a matter of mathematical methods.
+
+Besides, the geopolitical situations in different areas will have an influence on this issue.
