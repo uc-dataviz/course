@@ -1,10 +1,11 @@
 ---
 title: "Assignment 3: Interactive graphics with Gapminder"
-author: Camacho Jonathan
+author: Camacho Jonathan | Data Visualization | University of Chicago
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
     vertical_layout: fill
+  html_document: js
 runtime: shiny
 ---
 
@@ -61,17 +62,18 @@ select_continent <- reactive({
 })
 ```
 
-One of the This homework contains two part:
+#### Description
 
-- Question one: Merging of Gapminder and Geonames datasets into one. And plotting a graph showing the relationship between life expectancy and population density. 
+Demographers have pondered for decades the factors that affect populations’ life expectancy. In this brief analysis, I explore the connection between population density and life expectancy. I  expect to find a negative correlation between both variables. To conduct the analysis, I created an API that downloads data from the data set Gapminder; making the analysis fully reproducible. Furthermore, I use the data set Geonames create a tidy data set with conventional country names.
 
-The graph does not indicates a clear correlation between life expectancy and population density. 
 
-Similarly, the graph does not indicate a clear connection between life expectancy and the number of individuals living in proximity or population density. 
+The first plot, “Life Expectancy by Population Density,” does not indicate a clear negative correlation between life expectancy and population density. Contrary, it seems to suggest that as population density increases longevity increases; contrary to the expectations expresses above. Several factors can account for this findings. It is feasible that the expected relationship between population density and life expectancy is not present in the data set that I used. Similarly, life expectancy could be affected by other factors such as access to health care, proper nutrition, and subjective factors such as low levels of stress and high levels of happiness. The second plot, “Country Based Life Expectancy by Population Density” allows the user to select the continent to be plotted. Independently of the continent, the same findings hold along with the same possible explanations. 
 
-Use the Explore metros tab to explore neighborhood diversity for your chosen metropolitan area in 2010. The red line on the scatterplot represents a locally-weighted estimate of how diversity varies in the metropolitan area by distance from its urban core or cores. Click and drag on the scatterplot to highlight the corresponding Census tracts on the map below, and click on a Census tract on the map to generate a chart of race and ethnicity counts.
 
-Click the Compare over time tab to examine how locally-weighted estimates of neighborhood diversity by distance from the urban core has varied between the 1990, 2000, and 2010 Censuses, and view maps of these shifts over time. To learn more about the project, click the About tab.
+Several reasons guided my choice of graphical forms and method for delivery. I chose a scatter plot because the size of the data to be projected in the plot. Similarly, using points and a smooth line to represent data allowed me to show the effect of population density on life expectancy as a position-channel which is one of the most effective mental-visual tasks; allowing readers to extract information more accurately from plots. Furthermore, I modified the alpha parameter for the points to facilitate visualization when points overlap. 
+
+
+After noticing, in the first plot, the counter-intuitive relationship between pollution density and life expectancy, the question to follow is if the relationship is a global trend or is a regional trend. Thus, adding interactivity to the report allows the user to explore the pattern in different regions such as a continent. This possibility to interact with the data also enhances explorations, attention, and memorization of the findings. I wanted to show the patterns by countries, unfortunately, there are not enough data points in the data set for such visualization; thus, I used the continents.
 
 Column {data-width=350}
 -----------------------------------------------------------------------
