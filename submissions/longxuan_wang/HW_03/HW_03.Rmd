@@ -1,0 +1,137 @@
+---
+title: "HW 03"
+author: "Longxuan Wang"
+date: "May 8, 2017"
+output: html_document
+---
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message=FALSE)
+```
+
+## Overview
+
+In this project, I try to find out the impact of China's 2015 financial market crash.
+
+```{r package}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(readxl)
+library(purrr)
+library(data.table)
+library(fGarch)
+```
+
+## Data
+
+The data I use include futures prices and spot prices of CSI 300 index. 
+
+```{r data, cache=TRUE}
+#set path to the pdf folder
+path <- paste0(getwd(),"/Data")
+setwd(path)
+#select all xlsx files that contain information about index member stocks
+Futures <- read_csv("CSI 300 Futures.csv", skip = 1)
+Futures$Date[1] <- "4/16/2010"
+
+Futures_clean <- Futures%>%
+  mutate_at(vars(starts_with("PX")),funs(as.numeric))%>%
+  rename(date=Date, volume=PX_VOLUME, high=PX_HIGH, low=PX_LOW, mid=PX_MID, ask=PX_ASK, bid=PX_BID, close=PX_LAST)%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+Spot <- read_csv("CSI 300 Spot.csv", skip=1)
+Spot$Date[1] <- "4/16/2010"
+Spot_clean <- Spot%>%
+  rename(date=Date, volume=PX_VOLUME, close=PX_LAST)%>%
+  select(date, volume, close)%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+Policy <- read_csv("Policy.csv")
+Policy_clean <- Policy%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+```
+
+## Index
+
+```{r index}
+Futures_spot <- merge(Futures_clean, Spot_clean, by = "date")%>%
+  rename(Futures=close.x, Spot=close.y)
+plot_ly(Futures_spot, x = ~date) %>%
+  add_lines(y = ~Futures, name = "Futures") %>%
+  add_lines(y = ~Spot, name = "Spot") %>%
+  layout(
+    title = "Futures prices and spot prices deviate after market crash",
+    xaxis = list(
+      rangeslider = list(type = "date")),
+    yaxis = list(title = "Price"))
+```
+
+## Policies
+```{r stock}
+Spot_policy <- Spot_clean%>%
+  dplyr::filter(date > "2015/06/01" & date < "2015/11/01")%>%
+  left_join(Policy_clean)
+Policy_price <- merge(Spot_clean, Policy_clean)
+ax <- c(1,1,-1,-1,1,1)
+ay <- c(1,-1,-1,1,1,-1)
+Policy_price$ax <- ax
+Policy_price$ay <- ay
+Spot_policy%>%
+  plot_ly(x = ~date, y = ~close, mode = 'lines',
+    hoverinfo = 'text',
+    text = ~paste('Date: ', date,
+                  '</br>Policy: ', policy
+                  ))%>%
+    add_annotations(x = Policy_price$date,
+                  y = Policy_price$close,
+                  text = "Policy",
+                  xref = "x",
+                  yref = "y",
+                  showarrow = TRUE,
+                  arrowhead = 2,
+                  arrowsize = 0.5,
+                  ax = 20*Policy_price$ax,
+                  ay = -40*Policy_price$ay,
+                  # Styling annotations' text:
+                  font = list(color = "red",
+                              family = 'sans serif',
+                              size = 14))%>%
+    layout(
+      title = "Policy responses by the Chinese government",
+      yaxis = list(title = "price")
+    )
+```
+
+## Volume, volatility, and liquidity
+```{r market}
+garch1 <- garchFit(Futures ~ garch(1,1), data = Futures_spot, trace = FALSE)
+Futures_spot$futures_volatility <- garch1@h.t
+
+plot_ly(Futures_spot, x = ~date, y = ~volume.x, type = "bar") %>%
+  layout(
+    title = "Key market statistics",
+    xaxis = list(domain = c(0.1, 1)),
+    yaxis = list(title = "level"),
+    updatemenus = list(
+      list(
+        type="buttons",
+        y = 0.7,
+        buttons = list(
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$volume.x)),  
+               label = "Volume"),
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$futures_volatility)), 
+               label = "Volatility"),
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$ask-Futures_spot$bid)),  
+               label = "Bid-ask spread")))
+))
+```
+
+
