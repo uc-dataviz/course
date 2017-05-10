@@ -3,8 +3,7 @@ title: "Assignment 3: Interactive graphics"
 author: "Soo Wan Kim"
 date: "May 5, 2017"
 output:
-  html_document:
-    keep_md: true
+  html_document
 ---
 
 ## The North Korean Diaspora
