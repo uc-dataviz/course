@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
                       message=FALSE, 
+                      #make the graphs larger
                       out.width = "100%")
 ```
 
@@ -37,10 +38,12 @@ In most developed markets, a stock has two prices: one price in the futures mark
 #set path to the pdf folder
 path <- paste0(getwd(),"/Data")
 setwd(path)
-#select all xlsx files that contain information about index member stocks
+
+#read in the data 
 Futures <- read_csv("CSI 300 Futures.csv", skip = 1)
 Futures$Date[1] <- "4/16/2010"
 
+#data cleaning
 Futures_clean <- Futures%>%
   mutate_at(vars(starts_with("PX")),funs(as.numeric))%>%
   rename(date=Date, volume=PX_VOLUME, high=PX_HIGH, low=PX_LOW, mid=PX_MID, ask=PX_ASK, bid=PX_BID, close=PX_LAST)%>%
@@ -68,12 +71,15 @@ In the interactive graph below, you can see the futures price and the spot price
 ```{r index}
 Futures_spot <- merge(Futures_clean, Spot_clean, by = "date")%>%
   rename(Futures=close.x, Spot=close.y)
+
+#make first plot
 plot_ly(Futures_spot, x = ~date) %>%
   add_lines(y = ~Futures, name = "Futures") %>%
   add_lines(y = ~Spot, name = "Spot") %>%
   layout(
     title = "Futures prices and spot prices deviate after market crash",
     xaxis = list(
+      #add the range slider at the bottom
       rangeslider = list(type = "date")),
     yaxis = list(title = "Price"),
     legend = list(x = 0.1, y = 0.9))
@@ -90,6 +96,8 @@ Spot_policy <- Spot_clean%>%
   left_join(Policy_clean)
 
 Policy_price <- merge(Spot_clean, Policy_clean)
+
+#These are used for controlling the orientation of the arrows
 ax <- c(1,1,-1,-1,1,1)
 ay <- c(1,-1,-1,1,1,-1)
 Policy_price$ax <- ax
@@ -100,7 +108,8 @@ Spot_policy%>%
     text = ~paste('Date: ', date,
                   '</br>Policy: ', policy
                   ))%>%
-    add_annotations(x = Policy_price$date,
+  #add annotation according to policy time table  
+  add_annotations(x = Policy_price$date,
                   y = Policy_price$close,
                   text = "Policy",
                   xref = "x",
@@ -108,9 +117,10 @@ Spot_policy%>%
                   showarrow = TRUE,
                   arrowhead = 2,
                   arrowsize = 0.5,
+                  #control the orientation of each individual error
                   ax = 20*Policy_price$ax,
                   ay = -40*Policy_price$ay,
-                  # Styling annotations' text:
+                  # Styling annotations' text
                   font = list(color = "red",
                               family = 'sans serif',
                               size = 14))%>%
@@ -127,6 +137,8 @@ What was it that the Chinese government trying to achieve? Were those policies e
 First we look at volume, we see that after the turmoil trading volume returned to approximately the same level as before the bull market. As for volatility, it is obvious that after all those policies we see in the graph above market volatility still stayed at quite a high level compared with before the market crash. More strikingly, market volatility actually increased signigicantly after the last policy in September 2015. You can use your mouse to select that period of time and see the details. Furthermore, the bid-ask spread reached all time high. It indicates that the market has become extremely inefficient. This shows that the policies were not successful in reducing volatility and had the side effect of decreasing liquidity. 
 
 ```{r market}
+
+#fit a garch model to estimate daily volatility
 garch1 <- garchFit(Spot ~ garch(1,1), data = Futures_spot, trace = FALSE)
 Futures_spot$spot_volatility <- garch1@h.t
 
@@ -140,6 +152,7 @@ plot_ly(Futures_spot, x = ~date, y = ~volume.y, type = "bar") %>%
         type="buttons",
         x=0.8,
         y = 0.88,
+        #create buttons for different statistics
         buttons = list(
           list(method = "restyle",
                args = list("y", list(Futures_spot$volume.y)),  
