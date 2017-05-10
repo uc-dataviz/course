@@ -7,6 +7,8 @@ output:
     toc: yes
     toc_float: yes
     code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
 ---
 
 ```{r setup, include = FALSE}
@@ -428,6 +430,20 @@ SVG is a text-based format for drawing images. The SVG image is generated using 
 
 ## D3
 
+D3 (Data-Driven Documents) is a JavaScript library for creating data visualizations. You provide the data, and the documents are HTML or web-based documents built on HTML, CSS, and SVG. The basic process is:
+
+* Load data into the browser's memory
+* Bind data to elements within the document, creating new elements as needed
+* Transforming those elements by interpreting each element's bound datum and setting its visual properties accordingly
+* Transitioning elements between states in response to user input
+
+### When not to use D3
+
+D3 is a powerful visualization library.
+
+![](http://davidmmasters.com/wp-content/uploads/2016/07/with-great-power-comes-great-responsibility-spider-man-super-powers-abilities-voltaire-quote.jpg)
+
+But D3 doesn't do **exploratory** graphics well. It is not a quick and simple tool for generating lots of visualizations of data in rapid succession. `ggplot2` and R are still the best way to go at first (and frequently are sufficient for your graphing needs). 
 
 # Acknowledgments {.toc-ignore}
 
