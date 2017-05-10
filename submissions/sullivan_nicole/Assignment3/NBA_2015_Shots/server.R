@@ -116,7 +116,7 @@ server <- function(input, output) {
     shot_dist <- player() %>%
       mutate(`Shot Type` = as.factor(`Shot Type`)) %>%
       ggplot(aes(`Shot Type`, `Shot Distance`, fill = `Shot Result`)) +
-      geom_boxplot(color = `Shot Results`, alpha = 0.7) +
+      geom_boxplot(aes(color = `Shot Result`), alpha = 0.5) +
       labs(title = "Average Distance for Shot Type",
            y = "Shot Distance (in ft.)") +
       facet_wrap(~ `Away/Home`) +
