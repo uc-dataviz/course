@@ -29,7 +29,8 @@ g2 <- data %>%
   ggplot(aes(map_id = Country)) +
   geom_map(aes(fill = Fert_cut), map = world) +
   expand_limits(x = world$long, y = world$lat) + 
-  labs(title = "2015 World Fertility", x = "", y = "")+ 
+  labs(title = "2015 World Fertility", x = "", y = "") + 
+  theme_bw() +
   theme(plot.title = element_text(hjust = 0.5, size = 20)) + 
   scale_fill_brewer(palette = "Reds", na.value = "grey50", name = "Avg. No. of Children") +
   ylim(-75,100)
@@ -53,13 +54,17 @@ g3 <- ggplot(fertmelt, aes(map_id = Country)) +
 ```
 
 #Interactive Visual
-```{r, cache=TRUE}
+```{r, cache=TRUE, warning=FALSE, message=FALSE}
 #plotly
 library(plotly)
 ggplotly(g2)
 
-#ggploty keeps crashing my R, "Subscript out of bounds"
 
 ```
-#The Story
-While this interactive 
+#World Fertility
+This interactive visual shows the world filled in by fertility. As shown, the darker the region, the higher the average number of children for that country. Most of the western world is pretty low in fertility; parts of Asian and South America have slightly higher fertility, and some African countries clearly stick out on the map as highly fertile. It is easy to interpret fertility trends by looking at this map. As opposed to a list or non-map visualization, viewing this data in a map form allows the user to draw their own conclusions using geographic context. Since the map is a zoomed out view of the entire world, I decided the hover feature by passing the map through plotly would allow the user to view in more detail which country specifically they are looking at, and the precise value of that country's fertility score in 2015. The legend gives a range, but hovering allows for more precise detail should the user wish for a more in-depth understanding of the data. However, something strange happened to some of the country polygons when I passed the map through ggplotly. In a more polished version, I would look for a fix to maintain the countries' shape to match the static version of the map: 
+
+``` {r, echo=FALSE}
+
+print(g2)
+```
