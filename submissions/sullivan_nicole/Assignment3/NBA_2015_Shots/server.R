@@ -55,7 +55,7 @@ server <- function(input, output) {
    dist_points <- player()%>%
       mutate(`Points earned` = as.factor(`Points earned`)) %>%
       ggplot(aes(`Touch Time`, `Shot Distance`, color = `Points earned`)) +
-      geom_point() +
+      geom_point(alpha = 0.6, size = 1) +
       labs(title = "Pre-Shot Touch Time and Distance From Hoop",
            x = "Touch Time (in sec.)",
            y = "Shot Distance (in ft.)",
@@ -116,7 +116,7 @@ server <- function(input, output) {
     shot_dist <- player() %>%
       mutate(`Shot Type` = as.factor(`Shot Type`)) %>%
       ggplot(aes(`Shot Type`, `Shot Distance`, fill = `Shot Result`)) +
-      geom_boxplot(color = "gray") +
+      geom_boxplot(color = `Shot Results`, alpha = 0.7) +
       labs(title = "Average Distance for Shot Type",
            y = "Shot Distance (in ft.)") +
       facet_wrap(~ `Away/Home`) +
