@@ -185,7 +185,7 @@ server <- function(input, output) {
   defend_dist <- teams() %>%
     mutate(`Points earned` = as.factor(`Points earned`)) %>%
     ggplot(aes(`Distance to Closest Defender`, `Shot Distance`, color = `Points earned`)) +
-    geom_point(alpha = 0.6, size = 1) +
+    geom_point(alpha = 0.7, size = 1) +
     facet_wrap(~ Shooter) +
     labs(title = "Defensive Pressure and Shot Distance",
          x = "Distance to Closest Defender (in ft.)",
