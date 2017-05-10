@@ -13,8 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, echo = FALSE}
 library(maps)
 library(ggplot2)
-library(dplyr)
 library(tibble)
+library(dplyr)
 
 #GDP, School Gender Ratio, and Fertility by Country
 data = read.csv("~/Desktop/Data Visualization/DataViz/submissions/Westley_Dana/Assignment3/MasterGapminder.csv")
@@ -47,7 +47,7 @@ print(g3)
 #animate ATTEMPTS
 library(gganimate)
 
-p <- ggplot(fertmelt, aes(map_id = "Country", frame = "Year")) +
+p1 <- ggplot(fertmelt, aes(map_id = "Country", frame = "Year")) +
   geom_map(aes(fill = "Fertility"), map = world) +
   expand_limits(x = world$long, y = world$lat) +
   scale_fill_brewer(palette = "BuGn") +
@@ -56,37 +56,31 @@ p <- ggplot(fertmelt, aes(map_id = "Country", frame = "Year")) +
   ggthemes::theme_map() +
   coord_map(projection = "mollweide") +
   theme(legend.position = "none")
-#gganimate(p)
+#gg_animate(p1)
 #Error
 
-p1 <- ggplot(fertmelt, aes(Fertility, frame = Year)) + 
+p2 <- ggplot(fertmelt, aes(Fertility, frame = Year)) + 
   geom_bar()
 
-#gganimate(p1)
+#gg_animate(p2)
 #Error 
 
 library(gapminder)
 
+#Testing animation with pre-loaded gapminder dataset
 theme_set(theme_bw())
-p <- ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = continent, frame = year)) +
+p3 <- ggplot(gapminder, aes(gdpPercap, lifeExp, size = pop, color = continent, frame = year)) +
   geom_point() +
   scale_x_log10()
-#gganimate(p)
+#gg_animate(p3)
 #error
 
 
-
-#wrap facet
-#g4 <- ggplot(fertmelt, aes(map_id = Country)) +
-  #facet_wrap(~ Year) +
-  #geom_map(aes(fill = Fertility), map = world) +
-  #expand_limits(x = world$long, y = world$lat)
-#TOO MANY TAKES TOO LONG
-
 #plotly
 library(plotly)
+#ggplotly(g2)
 
-#ggploty keeps crashing my R
+#ggploty keeps crashing my R, "Subscript out of bounds"
 
 ```
 
