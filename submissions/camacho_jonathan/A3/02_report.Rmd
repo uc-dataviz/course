@@ -12,9 +12,11 @@ runtime: shiny
 library(flexdashboard)
 library(tidyverse)
 library(plotly)
+library(shiny)
 ```
 
 ```{r}
+# Data preparation. 
 # Loads baltimore_service_calls.csv file. 
 countries_dataset <- as_tibble(read.csv(file = "./data/tidy_countries_dataset.csv", 
                                              stringsAsFactors = FALSE))
@@ -23,19 +25,44 @@ countries_dataset <- as_tibble(read.csv(file = "./data/tidy_countries_dataset.cs
 countries_density <- countries_dataset %>% 
     select(country, continent.x, lifeExp, pop, areaInSqKm) %>%
     mutate(pop_density = (pop / areaInSqKm))
+
+# Creating vector for selectInput tool.
+countries_tool_vector <- unique(countries_density$country)
 ```
 
 
-Column {data-width=650}{.sidebar}
+Column {.sidebar}
 -----------------------------------------------------------------------
 
 ```{r}
-selectInput("n_breaks", label = "Number of bins:",
-            choices = c(10, 20, 35, 50), selected = 20)
+# Controls
+selectInput("countries", label = "Select Country",
+            choices = countries_tool_vector, selected = "United States")
 
-sliderInput("bw_adjust", label = "Bandwidth adjustment:",
-            min = 0.2, max = 2, value = 1, step = 0.2)
+# Set up data download
+data_for_dl <- reactive({
+  dat <- select(countries_density, country, continent = continent.x, lifeExp, pupulation = pop, areaInSqKm, pop_density)
+})
+
+output$downloadCSV <- downloadHandler(
+  filename = 'data.csv', 
+  content = function(file) {
+    write_csv(data_for_dl(), file)
+  }
+)
+
+downloadLink('downloadCSV', label = 'Download CSV for data')
+
+# Select data according to selectInput tool
+select_country <- reactive({
+       selected_data <- countries_density[countries_density$country == input$countries, ]
+       return(selected_data)
+})
 ```
+
+Use the Explore metros tab to explore neighborhood diversity for your chosen metropolitan area in 2010. The red line on the scatterplot represents a locally-weighted estimate of how diversity varies in the metropolitan area by distance from its urban core or cores. Click and drag on the scatterplot to highlight the corresponding Census tracts on the map below, and click on a Census tract on the map to generate a chart of race and ethnicity counts.
+
+Click the Compare over time tab to examine how locally-weighted estimates of neighborhood diversity by distance from the urban core has varied between the 1990, 2000, and 2010 Censuses, and view maps of these shifts over time. To learn more about the project, click the About tab.
 
 Column {data-width=350}
 -----------------------------------------------------------------------
@@ -44,18 +71,33 @@ Column {data-width=350}
 
 ```{r}
 # Generating plot.
-p <- ggplot(countries_density, aes(pop_density, lifeExp)) +
+all_data <- ggplot(countries_density, aes(pop_density, lifeExp)) +
     geom_point(alpha = .2) +
     geom_smooth() +
     scale_x_log10() +
-    labs(title = "Life Expectancy by Population Density",
-         x = "Population Density (Millions/Kilometer^2)",
+    labs(x = "Population Density (Millions/Kilometer^2)",
          y = "Life Expectancy") +
        theme_minimal()
-ggplotly(p)
+
+renderPlotly({
+all_data
+})
 ```
 
+### Country Based Life Expectancy by Population Density
+```{r}
+# Contry based plot.
+output$scatter <- renderPlotly({
+country_plot <- ggplot(select_country(), aes(pop_density, lifeExp)) +
+    geom_point(alpha = .2) +
+    geom_smooth() +
+    scale_x_log10() +
+    labs(x = "Population Density (Millions/Kilometer^2)",
+         y = "Life Expectancy") 
+})
 
-### Chart C
+plotlyOutput('scatter', width = "80%")
+```
+
 
 
