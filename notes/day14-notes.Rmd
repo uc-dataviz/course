@@ -669,6 +669,10 @@ Notice it is much faster to build this graph and requires far fewer lines of cod
 
 > Note that when drawing a bubble plot, you want to scale the points by area. However you have to define them in D3 by the radius. Make sure to perform the proper conversion before drawing the graph.
 
+# Examples of D3 graphics
+
+* [Popular Blocks](https://bl.ocks.org/)
+
 # Acknowledgments {.toc-ignore}
 
 * [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
