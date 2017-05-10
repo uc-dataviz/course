@@ -3,6 +3,7 @@ title: "Assignment3: Interactive graphics with Gapminder"
 output: 
   flexdashboard::flex_dashboard:
     vertical_layout: scroll
+    orientation: rows
 runtime: shiny
 ---
 
@@ -14,6 +15,7 @@ library(stringr)
 library(dplyr)
 library(plotly)
 library(scales)
+library(maps)
 
 gdp_eduGap <- read.csv("gdp_eduGap.csv") %>% 
   arrange(year)
@@ -49,50 +51,53 @@ p1 <- ggplot(data = gdp_eduGap, aes(x = gdp_per_capita, y = eduyrs_fofm, size = 
   theme(legend.position = "none")
 ```
 
-Column {.sidebar}
---------------------
+Introduction
+============================================
+
+The average year of schooling of a country is positively associated with its wealth. It is not difficult to understand, as GDP per capita increases, citizens have more money to afford education. Also, when people are poor, parents tend to only send the most "prospective" kids, usually boys, who are more likely to find jobs in the labor market, to school, and keep girls work at home. It is reasonable to expect girls stay longer at school as people get richer. The graph below, using data of 25 to 34 years old women's years in school as percent of men, shows this trend.      
+    
+In addition, several interesting point can be tell:    
+    
+- Lesotho, a country with below average GDP per capita, constantly has the highest female to male ratio in years of schooling. The educational achievement of female far exceeds that of male, which is different from most of the rest African countries. Large numbers of men emigrate to South Africa, thus leaving women take places in school and domestic government positions.    
+    
+- In 1970, the graph is much more segregated, with most Asian and African countries have large educational gender gap and low GDP per capita while most American and European countries have relatively small gender gap and high GDP per capita. In 2009, the educational gender gap in most countries has shrinked. More countries have female to male ratio in years of schooling approximate to 100.    
+    
+- Before 2000, the gender gap is closing, which means in countries whose female to male ratio is lower than 100 the ratio is increasing overtime, while few countries whose female to male ratio is larger than 100 the ratio is decreasing. After 2000, however, more countries have female to male ratios in years of schooling exceed 100 and keep increasing. This suggests an interesting point of gender equality in labor market for further investigation.    
+    
+You can explore the data and see other interesting findings.    
+    
+    
+Economic Development and Educational Gender Gap
+====================================
+
+Input {.sidebar}
+----------------------------------
 
 ```{r}
-#fillCol(height = 500, flex = c(NA, 1),
-#        sidebarLayout(
- #         sidebarPanel(
-        navbarPage("Educational Gender Gap and GDP per Capita",
-          tabPanel("Graph",
-                sidebarLayout(
-                  sidebarPanel(
-                    selectizeInput(inputId = "inputCountry",
-                                label = "Select Countries",
-                                choices = gdp_eduGap$country,
-                                multiple = TRUE),
-          sliderInput(inputId = "inputYear",
-                                label = "Year",
-                                min = min(gdp_eduGap$year, na.rm = TRUE),
-                                max = max(gdp_eduGap$year, na.rm = TRUE),
-                                animate = animationOptions(interval = 500, 
-                                                           loop = TRUE), 
-                                sep = "",
-                                step = 1,
-                                value = 1970),
-          # Auto play
-          tags$script("$(document).ready(function(){
-              setTimeout(function() {$('.slider-animate-button').click()},500);
-                      });"),   
-          plotOutput("continentMap", height = 200)
-        ),
-        mainPanel(
-        plotlyOutput("bubbleChart", height = "auto", width = "auto")
-        ),
-        fluid = TRUE
-      )
-          )
-        )
+selectizeInput(inputId = "inputCountry",
+    label = "Select Countries",
+    choices = gdp_eduGap$country,
+    multiple = TRUE)
+sliderInput(inputId = "inputYear",
+    label = "Year",
+    min = min(gdp_eduGap$year, na.rm = TRUE),
+    max = max(gdp_eduGap$year, na.rm = TRUE),
+    animate = animationOptions(interval = 500, 
+                               loop = TRUE), 
+    sep = "",
+    step = 1,
+    value = 1970)
+# Auto play
+tags$script("$(document).ready(function(){
+    setTimeout(function() {$('.slider-animate-button').click()},500);
+            });")  
+plotOutput("continentMap", height = 180)
 
 ```
-
-Column {.tabset}
----------------------------
-
-### Educational Gender Gap and GDP per Capita over Time
+    
+    
+Column
+----------------------------------
 
 ```{r}
 plotlyOutput("bubbleChart", height = "auto", width = "auto")
@@ -144,8 +149,12 @@ output$bubbleChart <- renderPlotly({
   })
 ```
 
-### Introduction
-The average year of schooling of a country is positively associated with its wealth. It is not difficult to understand, as GDP per capita increases, citizens have more money to afford education. Also, when people are poor, parents tend to only send the most "prospective" kids, usually boys, who are more likely to find jobs in the labor market, to school, and keep girls work at home. It is reasonable to expect girls stay longer at school as people get richer. This is generally the trend shown in the graph.      
+Explanation
+==============================
+In this assignment, I imitated the [Bubble Chart](http://www.gapminder.org/tools/#_locale_id=en;&chart-type=bubbles) made by Gapminder. The education data can be downloaded from their [data page](http://www.gapminder.org/data/), but the GDP per capita data on the data page has too many missing values, which is difficult to use. Thus, I employed the data Gapminder used to generate their Bubble Chart, which can be found [here](https://github.com/open-numbers/ddf--gapminder--gdp_per_capita_cppp), along with a description of how it is calculated.    
     
-In addition, several interesting point can be tell:
-- Lesotho, an African country
+There is a general trend between educational gender equality and economic development that in general, the gender gap is closing as time passed, but different countries have their own trend. By auto playing the animation, I tried to “build in” some linearity in the non-linear shiny app. The audiences are force to see the general trend and then explore the data themselves.    
+    
+I employed many features used in Gapminder’s Bubble Chart. For each country, in addition to the ratio of years of schooling and GDP per capita, which are mapped to the `y` and `x` axes, the population is denoted by the size of the bubble, the continent it belongs to is denoted by the color, its geographic position is projected on the map legend at the left bottom.     
+    
+Interactivity enhances the ability to communicate data a lot. First, animation is extremely useful in graphing longitudinal data. It visualizes the changing path of each country. Second, by selecting countries manually, the audience could compare the change of different countries they are interested. Third, the map legend show the geographic position of each country, which is useful when one is not familiar with a country’s name. Knowing a country locates in West Africa or North Africa, in East Asia or South East Asia, provides useful information for explanation or proposing hypotheses. 
