@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(ggthemes)
 library(plotly)
+library(dygraphs)
 
 theme_set(theme_minimal())
 
@@ -32,45 +33,48 @@ rownames(sk_arrivals) <- NULL
 colnames(sk_arrivals) <- headings
 sk_arrivals <- sk_arrivals[-1,]
 sk_arrivals$Year <- years
-sk_arrivals$YearLabels <- unlist(map(years, function(x) paste0("'",substr(x, 3,4))))
+#sk_arrivals$YearLabels <- unlist(map(years, function(x) paste0("'",substr(x, 3,4))))
 
 sk_arrivals <- sk_arrivals %>%
   transform(PropFemale = as.numeric(as.character(PropFemale))) %>%
   mutate(PercFemale = PropFemale * 100) %>%
-  transform(Year = as.numeric(Year))
+  transform(Year = as.numeric(Year)) %>%
+  select(-PropFemale)
 
 sk_arrivals_reshape <- sk_arrivals %>%
   gather(`NumMale`, `NumFemale`, `Total`, key = `SumType`, value = `Total`) %>%
   transform(Total = as.numeric(Total)) %>%
-  transform(SumType = ifelse(SumType == "NumMale", "Male", ifelse(SumType == "NumFemale", "Female", "All")))
+  transform(SumType = ifelse(SumType == "NumMale", "Male", 
+                             ifelse(SumType == "NumFemale", "Female", "All"))) %>%
+  rename(Gender = SumType)
 
 #worldwide
 
 diaspora <- read.csv("unhcr_popstats_export_time_series_2017_05_03_050911.csv", skip = 3, na.strings = "*") %>%
   select(-Origin)
-colnames(diaspora) <- c("Year", "Country", "PopulationType", "Total")
-
+colnames(diaspora) <- c("Year", "Country", "PopulationType", "Population")
 diaspora <- arrange(diaspora, Country)
 
 diaspora_ref <- diaspora %>%
   filter(PopulationType == "Refugees (incl. refugee-like situations)")
 
 country_sum <- diaspora_ref %>%
-  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  transform(Population = ifelse(is.na(Population), 0, Population)) %>%
   group_by(Country) %>%
-  summarize(sum = sum(Total)) %>%
+  summarize(sum = sum(Population)) %>%
   filter(sum > 0)
 
 country_list <- country_sum$Country
 
+#for making the worldwide population graph
 numbers_sum_ref <- diaspora_ref %>%
-  transform(Total = ifelse(is.na(Total), 0, Total)) %>%
+  transform(Population = ifelse(is.na(Population), 0, Population)) %>%
   group_by(Year) %>%
-  summarize(Total = sum(Total)) %>%
+  summarize(Population = sum(Population)) %>%
   mutate(Country = "All other countries") %>%
-  select(Year, Country, Total)
+  select(Year, Country, Population)
 
-
+#add south korea part of worldwide pop graph
 add_totals <- function(col) {
   total = col[1]
   totals_list = c(total)
@@ -84,20 +88,32 @@ add_totals <- function(col) {
 sk_arrivals_pop <- sk_arrivals %>%
   filter(Year < 2016) %>%
   select(Year)
-sk_arrivals_pop$Total <- add_totals(as.numeric(as.character(sk_arrivals$Total[-length(sk_arrivals$Total)])))
+sk_arrivals_pop$Population <- add_totals(as.numeric(as.character(sk_arrivals$Total[-length(sk_arrivals$Total)])))
 sk_arrivals_pop$Country <- "South Korea"
 
-numbers_sum_ref <- bind_rows(filter(numbers_sum_ref, Year > 1997), sk_arrivals_pop)
-numbers_sum_ref$Country <- as.factor(numbers_sum_ref$Country)
-numbers_sum_ref$Country <- factor(numbers_sum_ref$Country, levels = c("South Korea", "All other countries"))
+Year <- c(1999, 2000)
+Population <- c(NA, NA)
+Country <- rep("South Korea", 2)
+sk_missing <- data.frame(Year, Population, Country)
 
+sk_arrivals_pop <- bind_rows(sk_arrivals_pop, sk_missing) %>%
+  arrange(Year)
+
+numbers_sum_ref <- bind_rows(filter(numbers_sum_ref, Year > 1997), sk_arrivals_pop)
+
+#Summed total part of worldwide pop graph
 numbers_sum_tot <- numbers_sum_ref %>%
   group_by(Year) %>%
-  summarize(All = sum(Total)) %>%
-  transform(All = ifelse(All == 13, NA, All))
+  summarize(Population = sum(Population)) %>%
+  mutate(Country = "Total")
 
-numbers_sum_ref <- left_join(numbers_sum_ref, numbers_sum_tot, by = "Year")
+numbers_sum_ref <- bind_rows(numbers_sum_ref, numbers_sum_tot)
 
+numbers_sum_ref$Country <- as.factor(numbers_sum_ref$Country)
+numbers_sum_ref$Country <- factor(numbers_sum_ref$Country, 
+                                  levels = c("Total", "South Korea", "All other countries"))
+
+#by country
 diaspora_ref_group <- diaspora_ref %>%
   filter(Country %in% country_list) %>%
   select(-PopulationType)
@@ -107,8 +123,6 @@ Country <- sort(rep(country_list, length(unique(diaspora_ref$Year))))
 diaspora_ref_groupNA <- data.frame(Year, Country)
 diaspora_ref_groupNA <- left_join(diaspora_ref_groupNA, diaspora_ref_group)
 
-#http://rstudio.github.io/dygraphs/index.html
-#library(dygraphs)
 ```
 
 ### Refugee Populations Outside of South Korea
@@ -117,8 +131,7 @@ diaspora_ref_groupNA <- left_join(diaspora_ref_groupNA, diaspora_ref_group)
 
 ###North Korean Defectors Granted International Refugee Status or South Korean Citizenship
 
-
-ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) + 
+glob <- ggplot(numbers_sum_ref, aes(x=Year, y=Population, fill=Country)) + 
   geom_area(alpha = 0.6) + 
   geom_line(aes(Year, All), color = "#00BFC4", alpha = 0.4) + 
   scale_x_continuous(breaks = seq(numbers_sum_ref$Year[1],
@@ -132,6 +145,8 @@ ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) +
         panel.grid.minor = element_blank(),
         axis.text = element_text(color = "black")) + 
   scale_fill_manual(values = c("#00BFC4", "#F8766D"))
+
+ggplotly(glob)
 ```
 
 
@@ -139,7 +154,7 @@ ggplot(numbers_sum_ref, aes(x=Year, y=Total, fill=Country)) +
 
 ```{r}
 unhcr <- ggplot(filter(diaspora_ref_groupNA, Country %in% country_list),
-       aes(Year, Total)) + 
+       aes(Year, Population)) + 
   geom_line(aes(color = Country)) + 
   scale_x_continuous(breaks = seq(1994, 2015, 2)) +
   labs(title = "North Korean Defector Populations Outside of South Korea",
@@ -157,7 +172,7 @@ ggplotly(unhcr)
 ### South Korea, Yearly Arrivals
 
 ```{r}
-sk <- ggplot(sk_arrivals_reshape, aes(Year, Total)) + 
+sk <- ggplot(sk_arrivals_reshape, aes(Year, Population)) + 
   geom_line(aes(color = SumType)) + 
   scale_x_continuous(breaks = seq(sk_arrivals_reshape$Year[1],
                                   sk_arrivals_reshape$Year[length(sk_arrivals_reshape$Year)], 2)) + 
