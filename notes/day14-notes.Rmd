@@ -126,7 +126,7 @@ IDs are similar except elements can only be assigned one ID per element, and eac
 ### Resources
 
 * [HTML 4 Reference](http://htmlhelp.com/reference/html40/)
-* [HTML tutorials]](https://www.w3schools.com/html/default.asp)
+* [HTML tutorials](https://www.w3schools.com/html/default.asp)
 
 > Note that [Markdown](https://daringfireball.net/projects/markdown/syntax) is simply a (very) stripped down version of HTML. When you render an `.Rmd` file using the `html_document` output format, the Markdown syntax is converted to HTML elements.
 
@@ -441,7 +441,7 @@ D3 (Data-Driven Documents) is a JavaScript library for creating data visualizati
 
 D3 is a powerful visualization library.
 
-![](http://davidmmasters.com/wp-content/uploads/2016/07/with-great-power-comes-great-responsibility-spider-man-super-powers-abilities-voltaire-quote.jpg)
+![](images/with-great-power-comes-great-responsibility-spider-man-super-powers-abilities-voltaire-quote.jpg)
 
 But D3 doesn't do **exploratory** graphics well. It is not a quick and simple tool for generating lots of visualizations of data in rapid succession. `ggplot2` and R are still the best way to go at first (and frequently are sufficient for your graphing needs). 
 
