@@ -1,0 +1,254 @@
+---
+title: "Day 14 - Introduction to D3"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Define the major technology components of D3 graphics
+* Discuss when to use D3 vs. R-based graphics
+* Present examples of complex visualizations using D3
+* Review code for examples of basic D3 graphs
+* Identify how to integrate D3 graphics in R Markdown documents
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Major technology components of D3 graphics
+
+## HyperText Markup Language
+
+HTML is used to structure content in web browsers. Every single web site you visit relies on HTML to structure the page and present content. HTML documents are stored in plain-text files ending in `.html`, and as such can be edited in a basic text editor (or conveniently, RStudio). HTML is a language for structuring and rendering web content. As such, it is a way to **annotate** information, not **generate** information. It is not a replacement for a statistical programming language like R or a general programming language like Python or Java.^[BTW, Java $\neq$ JavaScript.]
+
+### Markup language
+
+```html
+<!DOCTYPE html>
+
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Hello World</title>
+</head>
+
+<body>
+
+<h1>Hello World</h1>
+
+<p>This is a paragraph, with <b>bold</b>, <i>italic</i>, <u>underlined</u>, and <strike>strikethrough</strike> text. Extra spacing does not matter, even
+
+line
+
+breaks.</p>
+
+</body>
+</html>
+```
+
+![](images/hello_world.png)
+
+* Elements - structured items of content in an HTML page
+* Tags - HTML commands used to generate elements
+    * Typically used in pairs
+
+#### Attributes
+
+HTML elements can be assigned **attributes** by including property/value pairs in the opening tag:
+
+```html
+<tagname property="value"></tagname>
+```
+
+This is similar to R functions and assigning values to arguments.
+
+#### Classes and IDs
+
+These are special types of attributes that are referenced to identify specific pieces of content. These are used in conjunction with CSS and JavaScript to alter how certain elements are visualized or presented on-screen.
+
+```html
+<p>Brilliant paragraph</p>
+<p>Insightful paragraph</p>
+<p class="awesome">Awe-inspiring paragraph</p>
+```
+
+When rendered in a web browser, the third paragraph is distinguished from the first two and can have special formatting applied to it.
+
+IDs are similar except elements can only be assigned one ID per element, and each ID value can be used only one on the page.
+
+```html
+<div id="content">
+    <div id="visualization"></div>
+    <div id="button"></div>
+</div>
+```
+
+#### DOM
+
+* **Document Object Module**
+* HTML documents are hierarchically structured with elements nested inside of other elements (e.g. nested list in R)
+
+```html
+<html>
+    <body>
+        <h1>Breaking News</h1>
+        <p></p>
+    </body>
+</html>
+```
+
+`body` is the parent element to both of its children, `h1` and `p` (which are siblings to each other). All elements on the page are descendants of `html`. We will use the hierarchy frequently when constructing visualizations to ensure only the proper elements receive specific styles.
+
+### Resources
+
+* [HTML 4 Reference](http://htmlhelp.com/reference/html40/)
+* [HTML tutorials]](https://www.w3schools.com/html/default.asp)
+
+> Note that [Markdown](https://daringfireball.net/projects/markdown/syntax) is simply a (very) stripped down version of HTML. When you render an `.Rmd` file using the `html_document` output format, the Markdown syntax is converted to HTML elements.
+
+## Cascading Style Sheets
+
+**Cascading style sheets** (CSS) style the visual presentation of DOM elements.
+
+```css
+body {
+    background-color: white;
+    color: black;
+}
+```
+
+CSS styles consist of **selectors** and **properties**.
+
+```css
+selector {
+    property: value;
+    property: value;
+    property: value;
+}
+```
+
+Selectors determine on which elements to operate. This is why using classes and IDs is important in your HTML code; they will determine how to apply the CSS.
+
+### Practice CSS selectors
+
+[Let's play a game together!](http://flukeout.github.io)
+
+### Properties and values
+
+See the book to identify the different types of property/value pairs you can generate.
+
+### Referencing styles
+
+Either you can embed the CSS rules in the head of your HTML document:
+
+```html
+<html>
+    <head>
+        <style type="text/css">
+
+            p {
+                font-size: 24px;
+                font-weight: bold;
+                background-color: red;
+                color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p>If I were to ask you, as a mere paragraph, would you say that I
+        have style?</p>
+    </body>
+</html>
+```
+
+Or store it in an external `.css` file:
+
+```html
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>If I were to ask you, as a mere paragraph, would you say that
+        I have style?</p>
+    </body>
+</html>
+```
+
+### Inheritance
+
+Many style properties are **inherited** by an element's descendants unless otherwise specified.
+
+```html
+<html>
+    <head>
+        <title></title>
+        <style type="text/css">
+
+            div {
+                background-color: red;
+                font-size: 24px;
+                font-weight: bold;
+                color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p>I am a sibling to the div.</p>
+        <div>
+            <p>I am a descendant and child of the div.</p>
+        </div>
+    </body>
+</html>
+```
+
+![Source: *Interactive Data Visualization for the Web*.](http://orm-chimera-prod.s3.amazonaws.com/1230000000345/images/idvw_0307.png)
+
+### Resources
+
+* [CSS reference](http://htmlhelp.com/reference/css/)
+* [CSS tutorials](https://www.w3schools.com/css/default.asp)
+
+## JavaScript
+
+
+## Scalable Vector Graphics
+
+
+## D3
+
+
+# Acknowledgments {.toc-ignore}
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
