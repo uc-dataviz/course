@@ -8,6 +8,5 @@ for (path in paths) {
 
 source("00_download_data.R")
 source("01_clean_data.R")
-#source("02_exploratory_analysis.R")
 rmarkdown::render("02_report.Rmd", output_dir = "output")
 

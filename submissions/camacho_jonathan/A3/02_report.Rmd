@@ -27,7 +27,7 @@ countries_density <- countries_dataset %>%
     mutate(pop_density = (pop / areaInSqKm))
 
 # Creating vector for selectInput tool.
-countries_tool_vector <- unique(countries_density$country)
+continents_tool_vector <- unique(countries_density$continent.x)
 ```
 
 
@@ -36,29 +36,38 @@ Column {.sidebar}
 
 ```{r}
 # Controls
-selectInput("countries", label = "Select Country",
-            choices = countries_tool_vector, selected = "United States")
+selectInput("continents", label = "Select Country",
+            choices = continents_tool_vector, selected = "Americas")
 
 # Set up data download
 data_for_dl <- reactive({
   dat <- select(countries_density, country, continent = continent.x, lifeExp, pupulation = pop, areaInSqKm, pop_density)
 })
 
-output$downloadCSV <- downloadHandler(
-  filename = 'data.csv', 
-  content = function(file) {
-    write_csv(data_for_dl(), file)
-  }
-)
-
-downloadLink('downloadCSV', label = 'Download CSV for data')
+# I could figure out why when rendering using runfile.R, the output object is not found.
+# output$downloadCSV <- downloadHandler(
+#   filename = 'data.csv',
+#   content = function(file) {
+#     write_csv(data_for_dl(), file)
+#   }
+# )
+# 
+# downloadLink('downloadCSV', label = 'Download CSV for data')
 
 # Select data according to selectInput tool
-select_country <- reactive({
-       selected_data <- countries_density[countries_density$country == input$countries, ]
+select_continent <- reactive({
+       selected_data <- countries_density[countries_density$continent.x == input$continents, ]
        return(selected_data)
 })
 ```
+
+One of the This homework contains two part:
+
+- Question one: Merging of Gapminder and Geonames datasets into one. And plotting a graph showing the relationship between life expectancy and population density. 
+
+The graph does not indicates a clear correlation between life expectancy and population density. 
+
+Similarly, the graph does not indicate a clear connection between life expectancy and the number of individuals living in proximity or population density. 
 
 Use the Explore metros tab to explore neighborhood diversity for your chosen metropolitan area in 2010. The red line on the scatterplot represents a locally-weighted estimate of how diversity varies in the metropolitan area by distance from its urban core or cores. Click and drag on the scatterplot to highlight the corresponding Census tracts on the map below, and click on a Census tract on the map to generate a chart of race and ethnicity counts.
 
@@ -67,7 +76,7 @@ Click the Compare over time tab to examine how locally-weighted estimates of nei
 Column {data-width=350}
 -----------------------------------------------------------------------
 
-### Life Expectancy by Population Density
+### Life Expectancy by Population Density 
 
 ```{r}
 # Generating plot.
@@ -87,17 +96,18 @@ all_data
 ### Country Based Life Expectancy by Population Density
 ```{r}
 # Contry based plot.
-output$scatter <- renderPlotly({
-country_plot <- ggplot(select_country(), aes(pop_density, lifeExp)) +
+renderPlotly({
+country_plot <- ggplot(select_continent(), aes(pop_density, lifeExp)) +
     geom_point(alpha = .2) +
     geom_smooth() +
     scale_x_log10() +
     labs(x = "Population Density (Millions/Kilometer^2)",
-         y = "Life Expectancy") 
+         y = "Life Expectancy") + 
+       theme_minimal()
 })
-
-plotlyOutput('scatter', width = "80%")
 ```
+
+
 
 
 
