@@ -84,7 +84,7 @@ server <- function(input, output) {
     }
     
     quarter <- ggplot(player(), aes(`Away/Home`, fill = `Shot Result`)) +
-      geom_bar(position = "dodge") +
+      geom_bar(position = "dodge", width = .2) +
       scale_fill_discrete(breaks = c("made","missed"), 
                           labels = c("Made", "Missed")) +
       labs(title = "Shot Accuracy By Quarter",
@@ -143,7 +143,7 @@ server <- function(input, output) {
     }
     
    type <- ggplot(player(), aes(`Away/Home`, fill = `Shot Result`)) +
-      geom_bar(position = "dodge") +
+      geom_bar(position = "dodge", width = 0.3) +
       scale_fill_discrete(breaks = c("made","missed"), 
                           labels = c("Made", "Missed")) +
       scale_x_discrete(limits = c("A", "H"), labels = c("Away", "Home")) +
@@ -185,7 +185,7 @@ server <- function(input, output) {
   defend_dist <- teams() %>%
     mutate(`Points earned` = as.factor(`Points earned`)) %>%
     ggplot(aes(`Distance to Closest Defender`, `Shot Distance`, color = `Points earned`)) +
-    geom_point() +
+    geom_point(alpha = 0.6, size = 1) +
     facet_wrap(~ Shooter) +
     labs(title = "Defensive Pressure and Shot Distance",
          x = "Distance to Closest Defender (in ft.)",
