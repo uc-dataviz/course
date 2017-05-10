@@ -235,9 +235,196 @@ Many style properties are **inherited** by an element's descendants unless other
 
 ## JavaScript
 
+**JavaScript** is an interpreted-scripting language that manipulates the DOM after a page is loaded into the browser. This enables dynamic content and interactivity, however all the work is done on the client-side (i.e. an individual's computer). Recall when I introduced Shiny that I said it was a server-side application. What I mean is that most of the heavy-lifting is done on the web server. JavaScript is used to update the content of the page in the web browser with updated graphs/tables/text/etc. However all of the computational work was performed on the server. In pure JavaScript web pages, all of the dynamic rendering is performed within the web browser. If your JavaScript code is inefficient or requires a lot of computing to render, it may slow down or crash the reader's web browser.
+
+### Data types
+
+#### Variables
+
+Variables store data. This could be a single number:
+
+```javascript
+var number = 5;
+```
+
+Or a string:
+
+```javascript
+defaultColor = "hot pink";
+```
+
+Or Boolean values:
+
+```javascript
+var thisIsALogicalValue = true;
+```
+
+### Arrays
+
+An **array** is similar to a vector in R. It stores multiple values and is defined by square brackets `[]`:
+
+```javascript
+var numbers = [ 5, 10, 15, 20, 25 ];
+```
+
+You retrieve individual elements using bracket notation:
+
+```javascript
+numbers[2] // returns 15
+```
+
+> Unlike R (and like Python), the first position in an array starts with zero, not 1.
+
+Arrays can contain any type of data. You can also mix data types in an array:
+
+```javascript
+var mishmash = [ 1, 2, 3, 4.5, 5.6, "oh boy", "say it isn't", true ];
+```
+
+### Objects
+
+Objects are a custom data structure in JavaScript and are used to store complex data. JavaScript does not make use of tabular data or spreadsheets, so you will see when importing these data files to generate visualizations you end up converting them into arrays. Data items are stored in objects using **properties** and **values**:
+
+```javascript
+var fruit = {
+    kind: "grape",
+    color: "red",
+    quantity: 12,
+    tasty: true
+};
+```
+
+To obtain individual elements from the object, we use **dot notation**:
+
+```javascript
+fruit.kind      //Returns "grape"
+fruit.color     //Returns "red"
+fruit.quantity  //Returns 12
+fruit.tasty     //Returns true
+```
+
+### Objects and arrays
+
+Objects and arrays can be combined to form any data structure you wish:
+
+```javascript
+var fruits = [
+    {
+        kind: "grape",
+        color: "red",
+        quantity: 12,
+        tasty: true
+    },
+    {
+        kind: "kiwi",
+        color: "brown",
+        quantity: 98,
+        tasty: true
+    },
+    {
+        kind: "banana",
+        color: "yellow",
+        quantity: 0,
+        tasty: true
+    }
+];
+```
+
+```javascript
+fruits[0].kind      ==  "grape"
+fruits[0].color     ==  "red"
+fruits[0].quantity  ==  12
+fruits[0].tasty     ==  true
+
+fruits[1].kind      ==  "kiwi"
+fruits[1].color     ==  "brown"
+fruits[1].quantity  ==  98
+fruits[1].tasty     ==  true
+
+fruits[2].kind      ==  "banana"
+fruits[2].color     ==  "yellow"
+fruits[2].quantity  ==  0
+fruits[2].tasty     ==  true
+```
+
+### Operators and control structures
+
+You can perform math:
+
+```javascript
++   //Add
+-   //Subtract
+*   //Multiply
+/   //Divide
+```
+
+Make comparisons:
+
+```javascript
+==  //Equal to
+!=  //Not equal to
+<   //Less than
+>   //Greater than
+<=  //Less than or equal to
+>=  //Greater than or equal to
+```
+
+And use control structures like `if` statements and `for` loops:
+
+```javascript
+if (test) {
+    //Code to run if true
+}
+
+for (initialization; test; update) {
+    //Code to run each time through the loop
+}
+```
+
+### Functions
+
+Yes, you can write functions in JavaScript.
+
+```javascript
+var calculateGratuity = function(bill) {
+    return bill * 0.2;
+};
+```
+
+This declares a new variable named `calculateGratuity`. Then, instead of assigning a simple number or string, we store an entire function in the variable. In the parentheses, we name `bill`, another variable to be used only by the function itself. `bill` is the expected input. When called, the function will take that input, multiply it by 0.2, and return the result as its output.
+
+### Resources
+
+* [JavaScript tutorials](https://www.w3schools.com/js/default.asp)
+* [Code Academy](https://www.codecademy.com/learn/javascript)
 
 ## Scalable Vector Graphics
 
+D3 uses SVG to generate and manipulate visualizations.
+
+<svg width="50" height="50">
+<circle cx="25" cy="25" r="22" fill="blue" stroke="gray" stroke-width="2"/>
+</svg>
+
+```svg
+<svg width="50" height="50">
+    <circle cx="25" cy="25" r="22" fill="blue" stroke="gray" stroke-width="2"/>
+</svg>
+```
+
+SVG is a text-based format for drawing images. The SVG image is generated using markup code and rendered within any HTML document.
+
+<svg width="220" height="220">
+<rect x="10" y="10" width="200" height="200" stroke="black" stroke-width="2" fill="#A9DC3A" opacity="0.5"/>
+<circle cx="110" cy="110" r="100" stroke="black" stroke-width="2" fill="#2FCAD8" opacity="0.5"/>
+</svg>
+
+```svg
+<svg width="220" height="220">
+<rect x="10" y="10" width="200" height="200" stroke="black" stroke-width="2" fill="#A9DC3A" opacity="0.5"/>
+<circle cx="110" cy="110" r="100" stroke="black" stroke-width="2" fill="#2FCAD8" opacity="0.5"/>
+</svg>
+```
 
 ## D3
 

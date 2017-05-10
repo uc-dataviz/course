@@ -465,9 +465,140 @@ breaks.<span class="kw">&lt;/p&gt;</span>
 </div>
 <div id="javascript" class="section level2">
 <h2>JavaScript</h2>
+<p><strong>JavaScript</strong> is an interpreted-scripting language that manipulates the DOM after a page is loaded into the browser. This enables dynamic content and interactivity, however all the work is done on the client-side (i.e. an individual’s computer). Recall when I introduced Shiny that I said it was a server-side application. What I mean is that most of the heavy-lifting is done on the web server. JavaScript is used to update the content of the page in the web browser with updated graphs/tables/text/etc. However all of the computational work was performed on the server. In pure JavaScript web pages, all of the dynamic rendering is performed within the web browser. If your JavaScript code is inefficient or requires a lot of computing to render, it may slow down or crash the reader’s web browser.</p>
+<div id="data-types" class="section level3">
+<h3>Data types</h3>
+<div id="variables" class="section level4">
+<h4>Variables</h4>
+<p>Variables store data. This could be a single number:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> number <span class="op">=</span> <span class="dv">5</span><span class="op">;</span></code></pre></div>
+<p>Or a string:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">defaultColor <span class="op">=</span> <span class="st">&quot;hot pink&quot;</span><span class="op">;</span></code></pre></div>
+<p>Or Boolean values:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> thisIsALogicalValue <span class="op">=</span> <span class="kw">true</span><span class="op">;</span></code></pre></div>
+</div>
+</div>
+<div id="arrays" class="section level3">
+<h3>Arrays</h3>
+<p>An <strong>array</strong> is similar to a vector in R. It stores multiple values and is defined by square brackets <code>[]</code>:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> numbers <span class="op">=</span> [ <span class="dv">5</span><span class="op">,</span> <span class="dv">10</span><span class="op">,</span> <span class="dv">15</span><span class="op">,</span> <span class="dv">20</span><span class="op">,</span> <span class="dv">25</span> ]<span class="op">;</span></code></pre></div>
+<p>You retrieve individual elements using bracket notation:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">numbers[<span class="dv">2</span>] <span class="co">// returns 15</span></code></pre></div>
+<blockquote>
+<p>Unlike R (and like Python), the first position in an array starts with zero, not 1.</p>
+</blockquote>
+<p>Arrays can contain any type of data. You can also mix data types in an array:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> mishmash <span class="op">=</span> [ <span class="dv">1</span><span class="op">,</span> <span class="dv">2</span><span class="op">,</span> <span class="dv">3</span><span class="op">,</span> <span class="fl">4.5</span><span class="op">,</span> <span class="fl">5.6</span><span class="op">,</span> <span class="st">&quot;oh boy&quot;</span><span class="op">,</span> <span class="st">&quot;say it isn't&quot;</span><span class="op">,</span> <span class="kw">true</span> ]<span class="op">;</span></code></pre></div>
+</div>
+<div id="objects" class="section level3">
+<h3>Objects</h3>
+<p>Objects are a custom data structure in JavaScript and are used to store complex data. JavaScript does not make use of tabular data or spreadsheets, so you will see when importing these data files to generate visualizations you end up converting them into arrays. Data items are stored in objects using <strong>properties</strong> and <strong>values</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> fruit <span class="op">=</span> <span class="op">{</span>
+    <span class="dt">kind</span><span class="op">:</span> <span class="st">&quot;grape&quot;</span><span class="op">,</span>
+    <span class="dt">color</span><span class="op">:</span> <span class="st">&quot;red&quot;</span><span class="op">,</span>
+    <span class="dt">quantity</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span>
+    <span class="dt">tasty</span><span class="op">:</span> <span class="kw">true</span>
+<span class="op">};</span></code></pre></div>
+<p>To obtain individual elements from the object, we use <strong>dot notation</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">fruit</span>.<span class="at">kind</span>      <span class="co">//Returns &quot;grape&quot;</span>
+<span class="va">fruit</span>.<span class="at">color</span>     <span class="co">//Returns &quot;red&quot;</span>
+<span class="va">fruit</span>.<span class="at">quantity</span>  <span class="co">//Returns 12</span>
+<span class="va">fruit</span>.<span class="at">tasty</span>     <span class="co">//Returns true</span></code></pre></div>
+</div>
+<div id="objects-and-arrays" class="section level3">
+<h3>Objects and arrays</h3>
+<p>Objects and arrays can be combined to form any data structure you wish:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> fruits <span class="op">=</span> [
+    <span class="op">{</span>
+        <span class="dt">kind</span><span class="op">:</span> <span class="st">&quot;grape&quot;</span><span class="op">,</span>
+        <span class="dt">color</span><span class="op">:</span> <span class="st">&quot;red&quot;</span><span class="op">,</span>
+        <span class="dt">quantity</span><span class="op">:</span> <span class="dv">12</span><span class="op">,</span>
+        <span class="dt">tasty</span><span class="op">:</span> <span class="kw">true</span>
+    <span class="op">},</span>
+    <span class="op">{</span>
+        <span class="dt">kind</span><span class="op">:</span> <span class="st">&quot;kiwi&quot;</span><span class="op">,</span>
+        <span class="dt">color</span><span class="op">:</span> <span class="st">&quot;brown&quot;</span><span class="op">,</span>
+        <span class="dt">quantity</span><span class="op">:</span> <span class="dv">98</span><span class="op">,</span>
+        <span class="dt">tasty</span><span class="op">:</span> <span class="kw">true</span>
+    <span class="op">},</span>
+    <span class="op">{</span>
+        <span class="dt">kind</span><span class="op">:</span> <span class="st">&quot;banana&quot;</span><span class="op">,</span>
+        <span class="dt">color</span><span class="op">:</span> <span class="st">&quot;yellow&quot;</span><span class="op">,</span>
+        <span class="dt">quantity</span><span class="op">:</span> <span class="dv">0</span><span class="op">,</span>
+        <span class="dt">tasty</span><span class="op">:</span> <span class="kw">true</span>
+    <span class="op">}</span>
+]<span class="op">;</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">fruits[<span class="dv">0</span>].<span class="at">kind</span>      <span class="op">==</span>  <span class="st">&quot;grape&quot;</span>
+fruits[<span class="dv">0</span>].<span class="at">color</span>     <span class="op">==</span>  <span class="st">&quot;red&quot;</span>
+fruits[<span class="dv">0</span>].<span class="at">quantity</span>  <span class="op">==</span>  <span class="dv">12</span>
+fruits[<span class="dv">0</span>].<span class="at">tasty</span>     <span class="op">==</span>  <span class="kw">true</span>
+
+fruits[<span class="dv">1</span>].<span class="at">kind</span>      <span class="op">==</span>  <span class="st">&quot;kiwi&quot;</span>
+fruits[<span class="dv">1</span>].<span class="at">color</span>     <span class="op">==</span>  <span class="st">&quot;brown&quot;</span>
+fruits[<span class="dv">1</span>].<span class="at">quantity</span>  <span class="op">==</span>  <span class="dv">98</span>
+fruits[<span class="dv">1</span>].<span class="at">tasty</span>     <span class="op">==</span>  <span class="kw">true</span>
+
+fruits[<span class="dv">2</span>].<span class="at">kind</span>      <span class="op">==</span>  <span class="st">&quot;banana&quot;</span>
+fruits[<span class="dv">2</span>].<span class="at">color</span>     <span class="op">==</span>  <span class="st">&quot;yellow&quot;</span>
+fruits[<span class="dv">2</span>].<span class="at">quantity</span>  <span class="op">==</span>  <span class="dv">0</span>
+fruits[<span class="dv">2</span>].<span class="at">tasty</span>     <span class="op">==</span>  <span class="kw">true</span></code></pre></div>
+</div>
+<div id="operators-and-control-structures" class="section level3">
+<h3>Operators and control structures</h3>
+<p>You can perform math:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">+</span>   <span class="co">//Add</span>
+<span class="op">-</span>   <span class="co">//Subtract</span>
+<span class="op">*</span>   <span class="co">//Multiply</span>
+<span class="ss">/   //Divide</span></code></pre></div>
+<p>Make comparisons:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">==</span>  <span class="co">//Equal to</span>
+<span class="op">!=</span>  <span class="co">//Not equal to</span>
+<span class="op">&lt;</span>   <span class="co">//Less than</span>
+<span class="op">&gt;</span>   <span class="co">//Greater than</span>
+<span class="op">&lt;=</span>  <span class="co">//Less than or equal to</span>
+<span class="op">&gt;=</span>  <span class="co">//Greater than or equal to</span></code></pre></div>
+<p>And use control structures like <code>if</code> statements and <code>for</code> loops:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="cf">if</span> (test) <span class="op">{</span>
+    <span class="co">//Code to run if true</span>
+<span class="op">}</span>
+
+<span class="cf">for</span> (initialization<span class="op">;</span> test<span class="op">;</span> update) <span class="op">{</span>
+    <span class="co">//Code to run each time through the loop</span>
+<span class="op">}</span></code></pre></div>
+</div>
+<div id="functions" class="section level3">
+<h3>Functions</h3>
+<p>Yes, you can write functions in JavaScript.</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="kw">var</span> calculateGratuity <span class="op">=</span> <span class="kw">function</span>(bill) <span class="op">{</span>
+    <span class="cf">return</span> bill <span class="op">*</span> <span class="fl">0.2</span><span class="op">;</span>
+<span class="op">};</span></code></pre></div>
+<p>This declares a new variable named <code>calculateGratuity</code>. Then, instead of assigning a simple number or string, we store an entire function in the variable. In the parentheses, we name <code>bill</code>, another variable to be used only by the function itself. <code>bill</code> is the expected input. When called, the function will take that input, multiply it by 0.2, and return the result as its output.</p>
+</div>
+<div id="resources-2" class="section level3">
+<h3>Resources</h3>
+<ul>
+<li><a href="https://www.w3schools.com/js/default.asp">JavaScript tutorials</a></li>
+<li><a href="https://www.codecademy.com/learn/javascript">Code Academy</a></li>
+</ul>
+</div>
 </div>
 <div id="scalable-vector-graphics" class="section level2">
 <h2>Scalable Vector Graphics</h2>
+<p>D3 uses SVG to generate and manipulate visualizations.</p>
+<svg width="50" height="50">
+<circle cx="25" cy="25" r="22" fill="blue" stroke="gray" stroke-width="2"></circle>
+</svg>
+<div class="sourceCode"><pre class="sourceCode svg"><code class="sourceCode xml"><span class="kw">&lt;svg</span><span class="ot"> width=</span><span class="st">&quot;50&quot;</span><span class="ot"> height=</span><span class="st">&quot;50&quot;</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;circle</span><span class="ot"> cx=</span><span class="st">&quot;25&quot;</span><span class="ot"> cy=</span><span class="st">&quot;25&quot;</span><span class="ot"> r=</span><span class="st">&quot;22&quot;</span><span class="ot"> fill=</span><span class="st">&quot;blue&quot;</span><span class="ot"> stroke=</span><span class="st">&quot;gray&quot;</span><span class="ot"> stroke-width=</span><span class="st">&quot;2&quot;</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span></code></pre></div>
+<p>SVG is a text-based format for drawing images. The SVG image is generated using markup code and rendered within any HTML document.</p>
+<svg width="220" height="220">
+<rect x="10" y="10" width="200" height="200" stroke="black" stroke-width="2" fill="#A9DC3A" opacity="0.5"></rect> <circle cx="110" cy="110" r="100" stroke="black" stroke-width="2" fill="#2FCAD8" opacity="0.5"></circle>
+</svg>
+<div class="sourceCode"><pre class="sourceCode svg"><code class="sourceCode xml"><span class="kw">&lt;svg</span><span class="ot"> width=</span><span class="st">&quot;220&quot;</span><span class="ot"> height=</span><span class="st">&quot;220&quot;</span><span class="kw">&gt;</span>
+<span class="kw">&lt;rect</span><span class="ot"> x=</span><span class="st">&quot;10&quot;</span><span class="ot"> y=</span><span class="st">&quot;10&quot;</span><span class="ot"> width=</span><span class="st">&quot;200&quot;</span><span class="ot"> height=</span><span class="st">&quot;200&quot;</span><span class="ot"> stroke=</span><span class="st">&quot;black&quot;</span><span class="ot"> stroke-width=</span><span class="st">&quot;2&quot;</span><span class="ot"> fill=</span><span class="st">&quot;#A9DC3A&quot;</span><span class="ot"> opacity=</span><span class="st">&quot;0.5&quot;</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;circle</span><span class="ot"> cx=</span><span class="st">&quot;110&quot;</span><span class="ot"> cy=</span><span class="st">&quot;110&quot;</span><span class="ot"> r=</span><span class="st">&quot;100&quot;</span><span class="ot"> stroke=</span><span class="st">&quot;black&quot;</span><span class="ot"> stroke-width=</span><span class="st">&quot;2&quot;</span><span class="ot"> fill=</span><span class="st">&quot;#2FCAD8&quot;</span><span class="ot"> opacity=</span><span class="st">&quot;0.5&quot;</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span></code></pre></div>
 </div>
 <div id="d3" class="section level2">
 <h2>D3</h2>
