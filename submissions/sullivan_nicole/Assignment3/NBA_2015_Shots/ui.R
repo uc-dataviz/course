@@ -13,7 +13,7 @@ ui <- fluidPage(
   tabPanel("By Player", icon = icon("male"),
     sidebarLayout(
       sidebarPanel(
-        textInput(inputId = "shooter_input", label = "Player's full name, sans caps", value = "jimmy butler"),
+        textInput(inputId = "shooter_input", label = "Enter player's full name, sans caps", value = "jimmy butler"),
         sliderInput(inputId = "defender_distance", label = "Distance from closest defender", min = 0, max = 53.2,
                     value = c(0, 8.5), post = "ft."),
         sliderInput(inputId = "shot_clock", label = "Shot Clock", min = 0, max = 24,
