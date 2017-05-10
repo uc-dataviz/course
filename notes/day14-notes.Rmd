@@ -445,8 +445,233 @@ D3 is a powerful visualization library.
 
 But D3 doesn't do **exploratory** graphics well. It is not a quick and simple tool for generating lots of visualizations of data in rapid succession. `ggplot2` and R are still the best way to go at first (and frequently are sufficient for your graphing needs). 
 
+# Basic chart types
+
+## Bar chart
+
+### First iteration
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+			
+	var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("rect")
+			.data(dataset)
+			.enter()
+			.append("rect")
+			.attr("x", 0)
+			.attr("y", 0)
+			.attr("width", 20)
+			.attr("height", 100);
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/13_making_a_bar_chart_rects.html)
+
+Major elements:
+
+* `w` and `h` - define the width and height of the bar chart
+* `dataset` - defines the data to be plotted. Here it is defined as the height of each bar
+* `svg` - creates an empty SVG element and adds it to the DOM
+* `svg.selectAll("rect")` - selects all the `rect`s in `svg` (which are not there yet, but we will put there)
+    * `.data(dataset)` - retrieves the values from `dataset`
+    * `.enter()` - creates placeholders for each of the values in `dataset`
+    * `.append("rect")` - creates a rectangle for each value in `dataset`
+    * `.attr()` - defines the attributes for each rectangle. In D3, rectangles are defined by four attributes: `x`, `y`, `width`, and `height`
+    
+The problem as you can see above is that each rectangle is drawn on top of one another. Instead, we need to spread them out across the (invisible) x-axis and rescale their widths so that they expand or contract to take up the appropriate amount of space on the axis depending on the number of bars.
+
+### Shift the bars on the x-axis
+
+```javascript
+var barPadding = 1;  // <-- New!
+
+.attr("x", function(d, i) {
+    return i * (w / dataset.length);
+})
+
+.attr("width", w / dataset.length - barPadding)
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/15_making_a_bar_chart_even.html)
+
+Okay, but now we also need to fix the height of each bar to the appropriate values:
+
+### Fix the height of each bar
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+	var barPadding = 1;
+			
+	var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+					11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("rect")
+	   .data(dataset)
+			.enter()
+			.append("rect")
+			.attr("x", function(d, i) {
+					return i * (w / dataset.length);
+			})
+			.attr("y", function(d) {
+					return h - (d * 4);
+			})
+			.attr("width", w / dataset.length - barPadding)
+			.attr("height", function(d) {
+					return d * 4;
+			});
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/17_making_a_bar_chart_heights.html)
+
+The differences here are:
+
+* SVG draws rectangles starting from the top-left corner. So if we want the bar chart to look normal and draw bars extending from the bottom (origin), we need to start the `y` attribute from `h - (d * 4)` - that is, start drawing it `(d * 4)` pixels down from the height `h` of the graph. Then the `height` of the bar is just the data value itself
+* Here the data value is scaled times 4 to draw a bigger graph (it draws the data values in absolute pixels, not relative percentage of the graph height)
+
+### Add color
+
+To change the color of the graph, add a `fill` attribute (like a `fill` aesthetic in `ggplot2`):
+
+```javascript
+.attr("fill", "teal");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/18_making_a_bar_chart_teal.html)
+
+To change the color of the bars based on the data values, write another function based on the data values that adjusts the `fill` attribute for each value in `dataset`:
+
+```javascript
+.attr("fill", function(d) {
+    return "rgb(0, 0, " + (d * 10) + ")";
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/19_making_a_bar_chart_blues.html)
+
+### Adding text
+
+Say you want to label the height of each bar with the data value. We can add a `text` element to the existing SVG element:
+
+```javascript
+	svg.selectAll("text")
+			.data(dataset)
+			.enter()
+			.append("text")
+			.text(function(d) {   \\print the text value
+				 return d;
+			})
+			.attr("x", function(d, i) {     \\ center the label in the middle of each bar
+			   return i * (w / dataset.length) + 5;
+			})
+			.attr("y", function(d) {    \\ draw the text inside the top of the bar
+			   return h - (d * 4) + 15;
+			})
+			.attr("font-family", "sans-serif")
+			.attr("font-size", "11px")
+			.attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/20_making_a_bar_chart_labels.html)
+
+* `svg.selectAll("text")` - add a text element to the existing `svg` element
+* All other attributes are customized to this graph to make the text legible
+
+The same basic graph drawn in `ggplot2`:
+
+```{r bar-chart}
+dataset <- data_frame(y = c(5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25)) %>%
+  mutate(x = row_number())
+
+# quick and dirty
+ggplot(dataset, aes(x, y, fill = y)) +
+  geom_col() +
+  geom_text(aes(label = y), color = "white", nudge_y = -1)
+
+# more exact
+ggplot(dataset, aes(x, y, fill = y)) +
+  geom_col() +
+  geom_text(aes(label = y), color = "white", nudge_y = -1) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+Notice it is much faster to build this graph and requires far fewer lines of code compared to D3. Again, this exemplifies why D3 is best for the final presentation of data, rather than initial exploration. Especially for something as simple as a basic bar chart, I'd rather go with `ggplot2`. That said, understanding these basics allows you to build more complex visualizations using D3.
+
+## Scatterplot
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+			
+	var dataset = [
+					[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+					[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+					];
+	
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("circle")
+	   .data(dataset)
+	   .enter()
+			.append("circle")
+			.attr("cx", function(d) {
+					return d[0];
+			})
+			.attr("cy", function(d) {
+					return d[1];
+			})
+			.attr("r", 5);
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/22_scatterplot.html)
+* `w` and `h` - set the width and height of the graph
+* `dataset` - set the data points. Because the data is now two-dimensional, it is stored in a nested array. Each observation is an array of length-two
+* `var svg` - initialize the svg element
+* `svg.selectAll("circle")` - select all the `circle` elements (which we are about to create)
+    * `.append("circle")` - create circles instead of rectangles
+    * `.attr("cx")` and `.attr("cy")` - identify x and y coordinates of the data points
+        * `d[0]` contains the `x` coordinate
+        * `d[1]` contains the `y` coordinate
+    * `.attr("r", 5);` - defines the radius of the circle to be drawn
+
+> Note that when drawing a bubble plot, you want to scale the points by area. However you have to define them in D3 by the radius. Make sure to perform the proper conversion before drawing the graph.
+
 # Acknowledgments {.toc-ignore}
 
+* [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
 
 # Session Info {.toc-ignore}
 
