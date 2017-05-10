@@ -8,7 +8,8 @@ library(stringr)
 gdp_eduGap <- read.csv("gdp_eduGap.csv") %>% 
   arrange(country)
 
-ui <- fluidPage(titlePanel("How does education gender gap changes"),
+ui <- navbarPage("Educational Gender Gap and GDP per Capita",
+          tabPanel("Graph",
                 sidebarLayout(
                   sidebarPanel(
                     selectizeInput(inputId = "inputCountry",
@@ -33,5 +34,7 @@ ui <- fluidPage(titlePanel("How does education gender gap changes"),
                   mainPanel(
                     plotlyOutput("bubbleChart", height = "auto", width = "auto")
                   ))
-                )
-                
+                ),
+          tabPanel("A Narrative"),
+          tabPanel("Explanation")
+)

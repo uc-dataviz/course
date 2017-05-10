@@ -52,8 +52,7 @@ gdp <- filter(gdp, time >= 1970 & time <= 2009) %>%
   inner_join(pop)
 
 # Add education gender gap
-gdp_eduGap <- inner_join(gdp, edu_perc) %>% 
-  arrange(year)
+gdp_eduGap <- inner_join(gdp, edu_perc) 
 
 write.csv(gdp_eduGap, file = "gdp_eduGap.csv")
 

@@ -25,8 +25,7 @@ server <- function(input, output){
   min_y = 0
   max_y = max(gdp_eduGap$eduyrs_fofm, na.rm = TRUE)
   
-  filterData <- gdp_eduGap
-  p1 <- ggplot(data = filterData, aes(x = gdp_per_capita, y = eduyrs_fofm, size = population)) +
+  p1 <- ggplot(data = gdp_eduGap, aes(x = gdp_per_capita, y = eduyrs_fofm, size = population)) +
     geom_hline(yintercept = 100, color = "red", linetype = 2, size = 0.5) +
     scale_size_continuous(range = c(0,30)) +
     scale_x_continuous(name = "GDP per capita  ($)", 
@@ -49,7 +48,7 @@ server <- function(input, output){
                                   paste("GDP: ", gdp_per_capita),
                                   paste("Edu female % male: ", round(eduyrs_fofm, 2), "%"),
                                   sep = '\n'),
-                     fill = "ivory1"), color = "grey17", shape = 21)
+                     fill = "ivory2"), color = "grey17", shape = 21)
     if (!is.null(input$inputCountry)){
       filterData <- filter(filterData, country %in% input$inputCountry)
     }
@@ -71,6 +70,7 @@ server <- function(input, output){
     ggplotly(p1, tooltip = "text")
   })
   
+  # Map legend
   output$continentMap <- renderPlot({
     filterData <- mapLegend
     if (!is.null(input$inputCountry)){
