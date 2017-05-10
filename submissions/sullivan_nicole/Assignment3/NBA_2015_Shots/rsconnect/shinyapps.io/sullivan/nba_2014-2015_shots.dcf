@@ -3,8 +3,8 @@ title: NBA 2014-2015 Shots
 account: sullivan
 server: shinyapps.io
 appId: 164086
-bundleId: 822780
+bundleId: 822786
 url: https://sullivan.shinyapps.io/nba_2014-2015_shots/
-when: 1494435043.22947
+when: 1494435326.25445
 asMultiple: FALSE
 asStatic: FALSE
