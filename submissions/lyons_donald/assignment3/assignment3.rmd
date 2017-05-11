@@ -1,5 +1,5 @@
 ## Making the csv
-#So I'm interested in plotting how the distribution of wealth looks across datapoints. Let's define the data sets as we need it, as well as use the provided gapminder import tool. Since I'm comparing variables for each specific timepoint, I want to make sure everything lines up.
+#####So I'm interested in plotting how the distribution of wealth looks across datapoints. Let's define the data sets as we need it, as well as use the provided gapminder import tool. Since I'm comparing variables for each specific timepoint, I want to make sure everything lines up.
 
 ```
 import_gapminder <- function(filename, inc_name = NA){
@@ -45,16 +45,20 @@ d[1] <- NULL
 > View(d)
 ```
 
-#Write the data to a csv for our app!
+#####Write the data to a csv for our app!
 
 ```
 write.csv(d, file="a3d.csv")
 ```
 
+#Making the Shiny
+
+```
 library(shiny)
 library(tidyverse)
 
 d <- read_csv("a3d.csv")
+```
 
 #####What I'm attempting to do here is allow people to choose a country and then have the option of choosing a year in which to see the distribution of wealth across the five groups. My initial plan was to use reactivity to make it such that selecting a country would then limit your choice of years to only those with data for that country. However, I have revised this to instead be selection of all years as I was getting a lot of errors otherwise.
 
