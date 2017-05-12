@@ -1,0 +1,56 @@
+---
+title: "Day 15 - Network visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Define core concepts of network theory
+* Summarize [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/) and it's use of netowrk analysis
+* Review the [*Love Actually*](http://varianceexplained.org/r/love-actually-network/) example
+* Identify core packages in R for network analysis
+* Demonstrate major types of network visualizations
+    * Node-edge diagrams
+    * Adjacency matrix
+    * Trees and hierarchies (aka dendrograms)
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+
+
+# Acknowledgments {.toc-ignore}
+
+* [Analyzing networks of characters in 'Love Actually'](http://varianceexplained.org/r/love-actually-network/)
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
