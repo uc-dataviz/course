@@ -128,6 +128,8 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Introduction to D3
     * Murray Ch 1-6
 1. Network visualization
+    * Munzner ch 9
+    * [Andris, Clio, et al. "The rise of partisanship and super-cooperators in the US House of Representatives." *PloS one* 10.4 (2015): e0123507.](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123507)
 1. More D3
     * Murray Ch 7-13
 1. Text visualization
