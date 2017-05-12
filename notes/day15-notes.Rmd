@@ -33,19 +33,104 @@ library(broom)
 library(stringr)
 library(modelr)
 library(forcats)
-library(ggmap)
-library(plotly)
+library(ggraph)
+library(igraph)
 
 options(digits = 3)
 set.seed(1234)
 theme_set(theme_minimal())
 ```
 
+# Network theory
 
+A **network** (also sometimes referred to as a **graph**) is a set of relationships. Networks contain a set of objects (**nodes**/**verticies**) and a mapping or description of relations between the nodes (**link**/**edge**). For example, a simple network contains two objects, 1 and 3, and one relationship, or edge, that links them:
+
+```{r undirected-edge, echo = FALSE}
+simple_net <- data_frame(from = 1, to = 2) %>%
+  graph_from_data_frame
+
+ggraph(simple_net) +
+  geom_edge_link() + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_void()
+```
+
+The above edge is an **undirected edge** - there is no directionality to the relationship between 1 and 2. A **directed edge** is an ordered pair of nodes, with an arrow drawn to indicate the directionality of the edge:
+
+```{r directed-edge, echo = FALSE}
+ggraph(simple_net) +
+  geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
+                 end_cap = circle(5, 'mm')) + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_void()
+```
+
+There are lots of ways to analyze and measure networks. Let's first look at two examples of network analysis applied to real-life data, then circle back and talk about packages for network visualization and analysis in R.
+
+# Studying political polarization through networks
+
+> [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)
+
+There is little argument that political polarization is occurring in the United States. Partisanship can be attributed to many causes, including:
+
+* Income inequality
+* Gerrymandering/redistricting
+* Activists involved in primary elections
+* Political realignment in the South
+* Electing more partisan members to Congress
+* Shift by existing members to ideological poles
+* Increasingly partisan media
+
+## Research design
+
+In this paper, the authors studying partisanship in the U.S. House of Representatives by examining relationships between legislators. On one hand, legislators are pressured by party leaders to vote with members of their own party with incentives such as committee assignments and campaign funding used to keep members in check. Alternatively, legislators have individual incentives to cooperate with members of the opposite political party (responsiveness to individual constituencies' concerns).
+
+Here, the authors measure the extent to which legislators form ideological relationships with members of the opposite party by examining cooperation rates between individual members of Congress on roll-call votes. In this research design, legislators are the **nodes** and the frequency of aggreement on roll call votes are the **edges**. Edges are calculated for each pair of legislators serving in a two-year term of Congress, resulting in nearly 6,000,000 pairs of legislators. The data is represented in matrix form with the rows and columns identifying each legislator-term observation and the cells identifying the frequency of voting together in that term. Therefore the network/graph is undirected (it doesn't matter the ordering of the pair, they will still have the same number of votes in agreement with one another).
+
+## Visualizing polarization
+
+Pairs are defined as either **cross-party** (comprised of a single Republican and a single Democrat) or **same-party** (comprised of two Democrats or two Republicans). We can then think of partisan affiliation as an **attribute** of each node, and the cross- or same-party pairing being an attribute of each edge.
+
+![Figure 2 from [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)](images/journal.pone.0123507.g002.PNG)
+
+This figure from the article is a fairly typical visualization of network data known as a **node-edge diagram**. Nodes are drawn as point marks and the edges connecting them are drawn as line marks. Drawing node-edge diagrams is tricky for the simple reason that you need to determine where to draw each node on a two-dimensional coordinate plane. The problem is that there is no inherent or meaningful value of x-y coordinates. In this data, there is no attribute/variable that tells us where to draw these nodes.
+
+Instead, node-edge diagrams rely on algorithms to determine spatial positioning in the visualization. There are many algorithms that can perform this task, but they typically consider **connectivity** and **distance**. Distance is defined as the number of edges along the shortest path connecting two nodes. Nodes that are tightly connected by shorter distances would therefore be grouped closer together in the visualization. Nodes that are loosely connected by many edges or links should be farther apart on the graph.
+
+### Force-directed placement
+
+One of the most common network layouts is **force-directed placement**.
+
+> [D3 example of a force-directed graph](https://bl.ocks.org/mbostock/4062045)
+
+In one variant, network elements are positioned according to a simulation of physical forces where nodes push away from each other while links act like springs that draw the endpoint nodes closer to each other. Typically this method places nodes randomly within the spatial region and iteratively refines the locations by gradually shifting nodes around until the layout improves and stabilizes.
+
+Under this method, absolute spatial position does not encode any meaningful value. The algorithm is designed to minimize distracting artifacts that might confuse the viewer (e.g. edge crossings, node overlaps), so spatial location is merely a side effect. While absolute position is meaningless, relative spatial location can be meaningful. Tightly interconnected groups of nodes should be drawn relatively close together, which could indicate a substantive clustering. However this could also be an artifact of the algorithm. Alternative measures such as **centrality** are more robust measures of relative node importance in a network.
+
+> Because these algorithms start with random placement, in order to exactly reproduce a network visualization you should remember to set your random number seed at the beginning of the script (`set.seed()` in R).
+
+In this graph, edges are drawn between legislators who agree above the Congress' threshold value of votes - this is defined as the average level of cooperation within each Congress. If the authors did not do this, every pair with at least one vote in agreement would have an edge drawn, making the graph even more complex.
+
+We also see that the authors encode additional information in the visualization through extra channels:
+
+* Partisan affiliation is indicated by coloring the nodes red (Republican) or blue (Democrat)
+* Each node is sized relative to its total connection, so larger nodes have more overall connections with other legislators
+* Edges are thicker if the pair agrees on more votes
+
+### Hairball node-edge diagrams
+
+Hairball diagrams are those with so many nodes and edges that the diagram becomes a jumbled mess and interpretation becomes extremely difficult. A general rule of thumb is that if the number of nodes is more than 4 times the number of edges, straight-forward force-directed placement will not be optimal.
+
+In this example, the individual network diagrams are pretty bad if you want to interpret them at the legislator level. For instance, consider the 2011 graph:
+
+[![2011 rise of partisanship](http://www.mamartino.com/projects/rise_of_partisanship/img/2011.jpg)](http://www.mamartino.com/projects/rise_of_partisanship/img/2011.jpg)
+
+Trying to track all the nodes and edges to identify legislators with the most ties (cooperative pairings) is downright impossible. There is just too much going on here. However, the visualization is very good at depicting the increasing partisanship in the U.S. House of Representatives. Democrats and Republicans are clustered together on the graph (partially the algorithm and partially the fact that legislators vote most frequently with members of their own party). It is easy to see that in the 1950s and 60s there were a lot of edges connecting legislators from both sides of the aisle. In fact we can even see more mixing of the nodes, where Republicans and Democrats are drawn more closely together on the grid. Over time, we can see both the number of cross-party edges decreasing and the spatial distance between the core Democrat and Republican clusters increasing, both outcomes of increased partisanship and decreasing cooperation.
 
 # Acknowledgments {.toc-ignore}
 
 * [Analyzing networks of characters in 'Love Actually'](http://varianceexplained.org/r/love-actually-network/)
+* [Kadushin, Charles. Introduction to Social Network Theory.](http://www.cin.ufpe.br/~rbcp/taia/Kadushin_Concepts.pdf)
 
 # Session Info {.toc-ignore}
 
