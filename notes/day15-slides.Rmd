@@ -1,0 +1,481 @@
+---
+title: "Network visualization"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "May 15, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggraph)
+library(igraph)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Network
+
+* Network/graph
+* Nodes/verticies
+* Links/edges
+
+## Undirected graph
+
+```{r undirected-edge, echo = FALSE}
+simple_net <- data_frame(from = 1, to = 2) %>%
+  graph_from_data_frame
+
+ggraph(simple_net) +
+  geom_edge_link() + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_graph()
+```
+
+## Directed graph
+
+```{r directed-edge, echo = FALSE}
+ggraph(simple_net) +
+  geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
+                 end_cap = circle(5, 'mm')) + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_graph()
+```
+
+## Political polarization
+
+* Income inequality
+* Gerrymandering/redistricting
+* Activists involved in primary elections
+* Political realignment in the South
+* Electing more partisan members to Congress
+* Shift by existing members to ideological poles
+* Increasingly partisan media
+
+## Political polarization
+
+* Partisanship networks in U.S. House
+* Varying incentives
+* Cooperation on roll-call votes
+* Nodes
+* Edges
+* Undirected network
+
+## Visualizing polarization
+
+* Cross-party pairs
+* Same-party pairs
+* Attributes
+
+----
+
+![Figure 2 from [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)](images/journal.pone.0123507.g002.PNG)
+
+## Force-directed placement
+
+> [D3 example of a force-directed graph](https://bl.ocks.org/mbostock/4062045)
+
+----
+
+![Figure 2 from [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)](images/journal.pone.0123507.g002.PNG)
+
+## Love Actually
+
+> [**Love Actually** trailer](https://www.youtube.com/watch?v=peiRtkXMYQ8&oref=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DpeiRtkXMYQ8&has_verified=1)
+
+```{r lines, include = FALSE}
+raw <- readLines("data/love_actually.txt")
+
+lines <- data_frame(raw = raw) %>%
+    filter(raw != "", !str_detect(raw, "(song)")) %>%
+    mutate(is_scene = str_detect(raw, " Scene "),
+           scene = cumsum(is_scene)) %>%
+    filter(!is_scene) %>%
+    separate(raw, c("speaker", "dialogue"), sep = ":", fill = "left") %>%
+    group_by(scene, line = cumsum(!is.na(speaker))) %>%
+    summarize(speaker = speaker[1], dialogue = str_c(dialogue, collapse = " "))
+```
+
+```{r cast, dependson = "lines", include = FALSE}
+cast <- read_csv(url("http://varianceexplained.org/files/love_actually_cast.csv"))
+
+lines <- lines %>%
+    inner_join(cast) %>%
+    mutate(character = paste0(speaker, " (", actor, ")"))
+lines[460:465,] %>%
+  knitr::kable(caption = "Example of tidied data")
+```
+
+## Speaker-by-scene matrix {.scrollable}
+
+```{r speaker_scene_matrix, dependson = "cast"}
+by_speaker_scene <- lines %>%
+  count(scene, character)
+by_speaker_scene
+
+library(reshape2)
+speaker_scene_matrix <- by_speaker_scene %>%
+  acast(character ~ scene, fun.aggregate = length)
+
+speaker_scene_matrix[1:5, 1:5]
+dim(speaker_scene_matrix)
+```
+
+## Hierarchical clustering {.scrollable}
+
+```{r h, dependson = "speaker_scene_matrix"}
+norm <- speaker_scene_matrix / rowSums(speaker_scene_matrix)
+
+h <- hclust(dist(norm, method = "manhattan"))
+
+ggdendro::ggdendrogram(h)
+```
+
+## Hierarchical clustering {.scrollable}
+
+```{r ordering, dependson = "h"}
+ordering <- h$labels[h$order]
+ordering
+```
+
+## Hierarchical clustering {.scrollable}
+
+```{r scenes, dependson = "speaker_scene_matrix"}
+scenes <- by_speaker_scene %>%
+    filter(n() > 1) %>%        # scenes with > 1 character
+    ungroup() %>%
+    mutate(scene = as.numeric(factor(scene)),
+           character = factor(character, levels = ordering))
+
+ggplot(scenes, aes(scene, character)) +
+    geom_point() +
+    geom_path(aes(group = scene))
+```
+
+## Adjacency matrix {.scrollable}
+
+```{r cooccur}
+non_airport_scenes <- speaker_scene_matrix[, colSums(speaker_scene_matrix) < 10]
+non_airport_scenes[1:5, 1:5]
+
+cooccur <- non_airport_scenes %*% t(non_airport_scenes)
+cooccur[1:5, 1:5]
+```
+
+## Adjacency matrix {.scrollable}
+
+```{r cooccur-graphics}
+heatmap(cooccur)
+```
+
+## Adjacency matrix {.scrollable}
+
+```{r cooccur-ggplot}
+cooccur %>%
+  as_tibble %>%
+  mutate(id1 = rownames(cooccur)) %>%
+  gather(id2, n, -id1) %>%
+  mutate_at(vars(id1, id2), funs(factor(., levels = ordering))) %>%
+  ggplot(aes(id1, id2, fill = n)) +
+  geom_tile() +
+  scale_fill_continuous(low = "white", high = "red") +
+  coord_fixed() +
+  labs(x = NULL,
+       y = NULL,
+       fill = NULL) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## Node-edge diagram {.scrollable}
+
+```{r g, dependson = "cooccur", echo = TRUE}
+g <- graph_from_adjacency_matrix(cooccur,
+                                 weighted = TRUE,
+                                 mode = "undirected",
+                                 diag = FALSE)
+g
+```
+
+## Node-edge diagram {.scrollable}
+
+```{r node-edge}
+ggraph(g) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none")
+```
+
+## R packages for networks
+
+* [`igraph`](http://igraph.org/r/)
+* [`ggnet2`](https://briatte.github.io/ggnet/)
+* [`ggnetwork`](https://cran.r-project.org/web/packages/ggnetwork/index.html)
+* [`ggraph`](https://github.com/thomasp85/ggraph)
+
+## Layout {.scrollable}
+
+```{r layouts}
+ggraph(g) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Default layout (Nicely) algorithm")
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Kamada and Kawai spring-based algorithm")
+
+ggraph(g, layout = "fr") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 500 iterations")
+
+ggraph(g, layout = "fr", niter = 100) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 100 iterations")
+
+ggraph(g, layout = "fr", niter = 10) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 10 iterations")
+
+ggraph(g, layout = "grid") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Grid algorithm")
+
+ggraph(g, layout = "star") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Star algorithm")
+```
+
+```{r layout-circle}
+ggraph(g, layout = "linear") + 
+  geom_edge_arc(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Linear algorithm")
+
+ggraph(g, layout = "linear", circular = TRUE) + 
+  geom_edge_arc(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Star algorithm (circular)")
+```
+
+----
+
+![Source: [Introduction to ggraph: Layouts](http://www.data-imaginist.com/2017/ggraph-introduction-layouts/)](http://www.data-imaginist.com/assets/images/2017-02-06-ggraph-introduction-layouts/unnamed-chunk-12-.gif)
+
+## Dendrograms {.scrollable}
+
+```{r dendrograms}
+dendrogram <- as.dendrogram(hclust(dist(iris[, 1:4])))
+
+ggraph(dendrogram, 'dendrogram') + 
+  geom_edge_elbow()
+
+ggraph(dendrogram, 'dendrogram', circular = TRUE) + 
+  geom_edge_elbow() + 
+  coord_fixed()
+```
+
+## Nodes {.scrollable}
+
+```{r scatter}
+ggraph(g, layout = "kk") +
+  geom_point(aes(x = x, y = y))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_point()
+```
+
+## `create_layout()`
+
+```{r create-layout}
+create_layout(g, layout = "kk")
+```
+
+## Nodes {.scrollable}
+
+```{r geom-node}
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_point()
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_text(aes(label = name))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_label(aes(label = name))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_label(aes(label = name), repel = TRUE)
+```
+
+## Communicating attributes of nodes
+
+```{r import-media-example, echo = FALSE}
+# example files obtained from http://kateto.net/network-visualization
+
+nodes <- read_csv("data/Dataset1-Media-Example-NODES.csv")
+links <- read_csv("data/Dataset1-Media-Example-EDGES.csv")
+
+links <- aggregate(links[,3], links[,-3], sum)
+links <- links[order(links$from, links$to),]
+
+net <- graph_from_data_frame(d = links, vertices = nodes, directed = TRUE)
+net
+```
+
+## Communicating attributes of nodes {.scrollable}
+
+```{r media-plot}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_label(aes(label = media), repel = TRUE) +
+  theme_graph()
+```
+
+## Color {.scrollable}
+
+```{r node-color}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label), size = 2) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+## Size {.scrollable}
+
+```{r node-size}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+## Edges {.scrollable}
+
+```{r edge-straight}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+```{r edge-fan}
+ggraph(net) +
+  geom_edge_fan() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+## Decorating edges {.scrollable}
+
+```{r edge-arrow}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm'))) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+```{r edge-arrow-adj}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm')) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+## Color {.scrollable}
+
+```{r edge-color}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm'),
+                aes(color = type)) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+```{r edge-color-adj}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm'),
+                aes(color = type)) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph() +
+  scale_color_brewer(palette = "Paired") +
+  scale_edge_color_brewer(palette = "Dark2")
+```
+
