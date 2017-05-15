@@ -173,7 +173,7 @@ dim(speaker_scene_matrix)
 
 ## Hierarchical clustering
 
-[**Hierarchical clustering**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) is a technique for identifying clusters or subgroups in a data set. [**Dendrograms**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) are a common visualization of these clusters. Observations which fuse into branches lower on the graph are generally similar to one another, whereas observations which fuse higher are less similar.
+[**Hierarchical clustering**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) is a technique for identifying clusters or subgroups in a data set. [**Dendrograms**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) are a common visualization of these clusters. Observations which fuse into branches lower on the graph are generally similar to one another, whereas observations which fuse higher are less similar. Similarity is defined generally by distance between observations; here, defined by how many scenes each pair of characters shares.
 
 ```{r h, dependson = "speaker_scene_matrix"}
 norm <- speaker_scene_matrix / rowSums(speaker_scene_matrix)
