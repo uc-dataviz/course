@@ -1,0 +1,294 @@
+---
+title: "Day 14 - Introduction to D3"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Review how to add scales and axes to D3 plots
+* Identify methods for updating graphs and transitioning
+* Define event listeners and identify potential events
+* Explain how to incorporate interactivity by binding event listeners
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Scales
+
+> Scales are functions that map from an input domain to an output range.
+
+**Scales** allow for D3 graphics to dynamically adjust to different absolute values in the data. This is equivalent to the `scale_*()` family of functions in `ggplot2` and the scale component of the layered grammar of graphics.
+
+D3 scales are functions with parameters that you define. D3 will not just assume a certain type of scale given the data values - you need to explicitly declare it. Scales themselves are not visual elements of the graph. That is, scales do not define axes that are drawn to visualize the scale along the x and y coordinates. For that, we still need to explicitly create an **axis** which is the visual representation of the scale.
+
+## Domains and ranges
+
+* Input domain - range of possible input data values. Identified by the actual values encoded in the variables
+* Output range - range of possible output values. In D3, this is frequently displayed as values in pixel units
+
+![](http://orm-chimera-prod.s3.amazonaws.com/1230000000345/images/idvw_0701.png)
+
+## Creating the scale
+
+D3's scale functions are accessed with `d3.scale` followed by the type of scale you want:
+
+```javascript
+var scale = d3.scale.linear();
+var scale = d3.scale.sqrt();
+var scale = d3.scale.log();
+var scale = d3.scale.ordinal();
+```
+
+To properly use these functions, we need to set a domain and a range by passing the values into `scale` as arguments (stored as arguments):
+
+```javascript
+scale.domain([100, 500]);
+scale.range([10, 350]);
+
+// chained together
+var scale = d3.scale.linear()
+                    .domain([100, 500])
+                    .range([10, 350]);
+                    
+scale(100);  //Returns 10
+scale(300);  //Returns 180
+scale(500);  //Returns 350
+```
+
+## Scaling the scatterplot
+
+To be flexible, we don't want to hard code the values for the domain and range. What happens if the data values change? We want the scale to automatically adjust. Remember the data for the scatter plot is stored as an array of arrays:
+
+```javascript
+var dataset = [
+                [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+                [410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+              ];
+```
+
+### `d3.min()` and `d3.max()`
+
+We can use `d3.min()` and `d3.max()` to calculate the minimum and maximum values in our data set. Because the x and y coordinates are stored as arrays within an array, we need to loop over each array, pull out the x coordinate, and then calculate the minimum and maximum values for all the x coordinates:
+
+```javascript
+d3.max(dataset, function(d) {
+    return d[0];  //References first value in each subarray
+});
+```
+
+`function(d)` is an anonymous **accessor** function which retrieves the first indexed value from each array in `dataset` (this is what `d` refers to). This is similar to the other anonymous functions we used to calculate the coordinates for plotting the scatterplot circles:
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];
+})
+.attr("cy", function(d) {
+    return d[1];
+})
+```
+
+### Setting up dynamic scales
+
+```javascript
+var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([0, w]);
+```
+
+* `xScale` - give it a meaningful name
+* Bottom of domain and range are hardcoded to `0`. You could calculate the minimum value in the dataset instead
+* Output range is set to `0` and `w`, the SVG's width
+
+```javascript
+var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([0, h]);
+```
+
+### Incorporating scaled values
+
+Now we need to update the coordinates for the `circle` for each data value:
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];  //Returns original value bound from dataset
+})
+
+.attr("cx", function(d) {
+    return xScale(d[0]);  //Returns scaled value
+})
+```
+
+And for the text labels:
+
+```javascript
+.attr("x", function(d) {
+    return xScale(d[0]);
+})
+.attr("y", function(d) {
+    return yScale(d[1]);
+})
+```
+
+The result is:
+
+```javascript
+			//Width and height
+			var w = 500;
+			var h = 100;
+			
+			var dataset = [
+							[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+							[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+						  ];
+			//Create scale functions
+			var xScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+								 .range([0, w]);
+			var yScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+								 .range([0, h]);
+	
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			svg.selectAll("circle")
+			   .data(dataset)
+			   .enter()
+			   .append("circle")
+			   .attr("cx", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("cy", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("r", function(d) {
+			   		return Math.sqrt(h - d[1]);
+			   });
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d[0] + "," + d[1];
+			   })
+			   .attr("x", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("y", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "red");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/02_scaled_plot.html)
+
+### Tweaking the graph
+
+We still need to make some adjustments to the graph:
+
+* Remember that SVGs are drawn from the top-down. We need to reverse `yScale` so greater values are higher up. To do that, change
+
+    ```javascript
+    .range([0, h]);
+    ```
+    
+    to
+    
+    ```javascript
+    .range([h, 0]);
+    ```
+
+* Add padding to the range so that elements near the borders are not cut off. Similar to adding padding previously:
+
+    ```javascript
+    xScale.range([padding, w - padding]);
+    yScale.range([h - padding, h]);
+    ```
+
+* Use a scale function to calculate the radius of each `circle` as the square root of its `y` value.
+
+    ```javascript
+    var rScale = d3.scale.linear()
+                         .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                         .range([2, 5]);
+    .attr("r", function(d) {
+        return rScale(d[1]);
+    });
+    ```
+
+* [Result with original data](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/05_scaled_plot_radii.html)
+* [Result with new data point](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/06_scaled_plot_big.html)
+* [Result with new SVG size](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/07_scaled_plot_large.html)
+
+
+# Axes
+
+
+# Updates, Transitions, and Motion
+
+
+# Interactivity
+
+
+## Event listeners
+
+
+## Binding event listeners
+
+
+### Hover to highlight
+
+
+### Click to sort
+
+
+### Adding tooltips
+
+
+# Layouts and geomapping
+
+
+# Examples of D3 graphics
+
+* [Popular Blocks](https://bl.ocks.org/)
+
+# Acknowledgments {.toc-ignore}
+
+* [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
