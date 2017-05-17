@@ -531,6 +531,169 @@ div.tocify {
 </div>
 <div id="updates-transitions-and-motion" class="section level1">
 <h1>Updates, Transitions, and Motion</h1>
+<p>Return to the bar chart:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">            <span class="co">//Width and height</span>
+            <span class="kw">var</span> w <span class="op">=</span> <span class="dv">600</span><span class="op">;</span>
+            <span class="kw">var</span> h <span class="op">=</span> <span class="dv">250</span><span class="op">;</span>
+            
+            <span class="kw">var</span> dataset <span class="op">=</span> [ <span class="dv">5</span><span class="op">,</span> <span class="dv">10</span><span class="op">,</span> <span class="dv">13</span><span class="op">,</span> <span class="dv">19</span><span class="op">,</span> <span class="dv">21</span><span class="op">,</span> <span class="dv">25</span><span class="op">,</span> <span class="dv">22</span><span class="op">,</span> <span class="dv">18</span><span class="op">,</span> <span class="dv">15</span><span class="op">,</span> <span class="dv">13</span><span class="op">,</span>
+                            <span class="dv">11</span><span class="op">,</span> <span class="dv">12</span><span class="op">,</span> <span class="dv">15</span><span class="op">,</span> <span class="dv">20</span><span class="op">,</span> <span class="dv">18</span><span class="op">,</span> <span class="dv">17</span><span class="op">,</span> <span class="dv">16</span><span class="op">,</span> <span class="dv">18</span><span class="op">,</span> <span class="dv">23</span><span class="op">,</span> <span class="dv">25</span> ]<span class="op">;</span>
+            <span class="kw">var</span> xScale <span class="op">=</span> <span class="va">d3</span>.<span class="va">scale</span>.<span class="at">ordinal</span>()
+                            .<span class="at">domain</span>(<span class="va">d3</span>.<span class="at">range</span>(<span class="va">dataset</span>.<span class="at">length</span>))
+                            .<span class="at">rangeRoundBands</span>([<span class="dv">0</span><span class="op">,</span> w]<span class="op">,</span> <span class="fl">0.05</span>)<span class="op">;</span>
+            <span class="kw">var</span> yScale <span class="op">=</span> <span class="va">d3</span>.<span class="va">scale</span>.<span class="at">linear</span>()
+                            .<span class="at">domain</span>([<span class="dv">0</span><span class="op">,</span> <span class="va">d3</span>.<span class="at">max</span>(dataset)])
+                            .<span class="at">range</span>([<span class="dv">0</span><span class="op">,</span> h])<span class="op">;</span>
+            
+            <span class="co">//Create SVG element</span>
+            <span class="kw">var</span> svg <span class="op">=</span> <span class="va">d3</span>.<span class="at">select</span>(<span class="st">&quot;body&quot;</span>)
+                        .<span class="at">append</span>(<span class="st">&quot;svg&quot;</span>)
+                        .<span class="at">attr</span>(<span class="st">&quot;width&quot;</span><span class="op">,</span> w)
+                        .<span class="at">attr</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> h)<span class="op">;</span>
+            <span class="co">//Create bars</span>
+            <span class="va">svg</span>.<span class="at">selectAll</span>(<span class="st">&quot;rect&quot;</span>)
+               .<span class="at">data</span>(dataset)
+               .<span class="at">enter</span>()
+               .<span class="at">append</span>(<span class="st">&quot;rect&quot;</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;x&quot;</span><span class="op">,</span> <span class="kw">function</span>(d<span class="op">,</span> i) <span class="op">{</span>
+                    <span class="cf">return</span> <span class="at">xScale</span>(i)<span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;y&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+                    <span class="cf">return</span> h <span class="op">-</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;width&quot;</span><span class="op">,</span> <span class="va">xScale</span>.<span class="at">rangeBand</span>())
+               .<span class="at">attr</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+                    <span class="cf">return</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;fill&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+                    <span class="cf">return</span> <span class="st">&quot;rgb(0, 0, &quot;</span> <span class="op">+</span> (d <span class="op">*</span> <span class="dv">10</span>) <span class="op">+</span> <span class="st">&quot;)&quot;</span><span class="op">;</span>
+               <span class="op">}</span>)<span class="op">;</span>
+            <span class="co">//Create labels</span>
+            <span class="va">svg</span>.<span class="at">selectAll</span>(<span class="st">&quot;text&quot;</span>)
+               .<span class="at">data</span>(dataset)
+               .<span class="at">enter</span>()
+               .<span class="at">append</span>(<span class="st">&quot;text&quot;</span>)
+               .<span class="at">text</span>(<span class="kw">function</span>(d) <span class="op">{</span>
+                    <span class="cf">return</span> d<span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;text-anchor&quot;</span><span class="op">,</span> <span class="st">&quot;middle&quot;</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;x&quot;</span><span class="op">,</span> <span class="kw">function</span>(d<span class="op">,</span> i) <span class="op">{</span>
+                    <span class="cf">return</span> <span class="at">xScale</span>(i) <span class="op">+</span> <span class="va">xScale</span>.<span class="at">rangeBand</span>() / <span class="dv">2</span><span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;y&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+                    <span class="cf">return</span> h <span class="op">-</span> <span class="at">yScale</span>(d) <span class="op">+</span> <span class="dv">14</span><span class="op">;</span>
+               <span class="op">}</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;font-family&quot;</span><span class="op">,</span> <span class="st">&quot;sans-serif&quot;</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;font-size&quot;</span><span class="op">,</span> <span class="st">&quot;11px&quot;</span>)
+               .<span class="at">attr</span>(<span class="st">&quot;fill&quot;</span><span class="op">,</span> <span class="st">&quot;white&quot;</span>)<span class="op">;</span></code></pre></div>
+<ul>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/02_bar_chart_with_scales.html">Result</a>
+<ul>
+<li>Changed the height and width of the chart</li>
+<li>Used an <strong>ordinal scale</strong> to handle positioning along the x-axis. Ordinal scales are a way of declaring x-coordinate positions for non-quantitiative variables and use the D3 <code>scale()</code> function to declare positions.</li>
+</ul></li>
+</ul>
+<div id="updating-data" class="section level2">
+<h2>Updating data</h2>
+<p>Because the bar graph is scalable to different data values, we should be able to dynamically change the data and have the graph be redrawn. The basic procedure is:</p>
+<ol style="list-style-type: decimal">
+<li>Modify the values in the dataset</li>
+<li>Rebind the values to the existing elements (overwriting the original values)</li>
+<li>Set new attribute values as needed to update the visual display</li>
+</ol>
+<p>Before this occurs, we need an <strong>event</strong> to occur that signals the change should take place <strong>after the page loads</strong>. This is different from R, where we can use the same basic <code>ggplot()</code> code to draw a graph with new data, but we have to rerun the script in order for the changes to take effect. This starts the road down interactivity.</p>
+<div id="interaction-via-event-listeners" class="section level3">
+<h3>Interaction via event listeners</h3>
+<p>Add this html to the <code>body</code>:</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;p&gt;</span>Click on this text to update the chart with new data values (once).<span class="kw">&lt;/p&gt;</span></code></pre></div>
+<p>And this to the D3 object:</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="ss">/On click, update with new data</span>
+<span class="ss">d3.select</span><span class="sc">(</span><span class="ss">&quot;p&quot;</span><span class="sc">)</span>
+<span class="ss">    .on</span><span class="sc">(</span><span class="ss">&quot;click&quot;, function</span><span class="sc">()</span><span class="ss"> {</span>
+
+<span class="ss">        //New values for dataset</span>
+<span class="ss">        dataset = </span><span class="sc">[ 11, 12, 15, 20, 18, 17, 16, 18, 23, 25,</span>
+<span class="sc">                    5, 10, 13, 19, 21, 25, 22, 18, 15, 13 ]</span><span class="ss">;</span>
+
+<span class="ss">        //Update all rects</span>
+<span class="ss">        svg.selectAll</span><span class="sc">(</span><span class="ss">&quot;rect&quot;</span><span class="sc">)</span>
+<span class="ss">           .data</span><span class="sc">(</span><span class="ss">dataset</span><span class="sc">)</span>
+<span class="ss">           .attr</span><span class="sc">(</span><span class="ss">&quot;y&quot;, function</span><span class="sc">(</span><span class="ss">d</span><span class="sc">)</span><span class="ss"> {</span>
+<span class="ss">                return h - yScale</span><span class="sc">(</span><span class="ss">d</span><span class="sc">)</span><span class="ss">;</span>
+<span class="ss">           }</span><span class="sc">)</span>
+<span class="ss">           .attr</span><span class="sc">(</span><span class="ss">&quot;height&quot;, function</span><span class="sc">(</span><span class="ss">d</span><span class="sc">)</span><span class="ss"> {</span>
+<span class="ss">                return yScale</span><span class="sc">(</span><span class="ss">d</span><span class="sc">)</span><span class="ss">;</span>
+<span class="ss">           }</span><span class="sc">)</span><span class="ss">;</span>
+
+<span class="ss">    }</span><span class="sc">)</span><span class="ss">;</span></code></pre></div>
+<ul>
+<li>First select the <code>p</code> element from the body of the HTML document</li>
+<li>When the <code>click</code> event occurs, we’re going to do something defined by the anonymous function to come. Event listeners happen all the time in JavaScript, click events are just one type.
+<ul>
+<li><code>dataset</code> is overwritten</li>
+<li>All the <code>rect</code> elements in <code>svg</code> are redrawn with the new height information</li>
+</ul></li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/03_updates_all_data.html">Result</a>
+<ul>
+<li>Forgot to update the text labels and fill color</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="va">svg</span>.<span class="at">selectAll</span>(<span class="st">&quot;rect&quot;</span>)
+   .<span class="at">data</span>(dataset)
+   .<span class="at">attr</span>(<span class="st">&quot;y&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+        <span class="cf">return</span> h <span class="op">-</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+         <span class="cf">return</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;fill&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>   <span class="co">// &lt;-- Down here!</span>
+         <span class="cf">return</span> <span class="st">&quot;rgb(0, 0, &quot;</span> <span class="op">+</span> (d <span class="op">*</span> <span class="dv">10</span>) <span class="op">+</span> <span class="st">&quot;)&quot;</span><span class="op">;</span>
+   <span class="op">}</span>)<span class="op">;</span>
+<span class="va">svg</span>.<span class="at">selectAll</span>(<span class="st">&quot;text&quot;</span>)
+   .<span class="at">data</span>(dataset)
+   .<span class="at">text</span>(<span class="kw">function</span>(d) <span class="op">{</span>
+         <span class="cf">return</span> d<span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;x&quot;</span><span class="op">,</span> <span class="kw">function</span>(d<span class="op">,</span> i) <span class="op">{</span>
+         <span class="cf">return</span> <span class="at">xScale</span>(i) <span class="op">+</span> <span class="va">xScale</span>.<span class="at">rangeBand</span>() / <span class="dv">2</span><span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;y&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+         <span class="cf">return</span> h <span class="op">-</span> <span class="at">yScale</span>(d) <span class="op">+</span> <span class="dv">14</span><span class="op">;</span>
+   <span class="op">}</span>)<span class="op">;</span></code></pre></div></li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/04_updates_all_data_fixed.html">New result</a></li>
+</ul>
+</div>
+</div>
+<div id="transitions" class="section level2">
+<h2>Transitions</h2>
+<p>You may not want the change to occur instantaneously. Instead, let’s smooth it out by using</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">.<span class="at">transition</span>()
+
+<span class="co">//Update all rects</span>
+<span class="va">svg</span>.<span class="at">selectAll</span>(<span class="st">&quot;rect&quot;</span>)
+   .<span class="at">data</span>(dataset)
+   .<span class="at">transition</span>()    <span class="co">// &lt;-- This is new! Everything else here is unchanged.</span>
+   .<span class="at">attr</span>(<span class="st">&quot;y&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+        <span class="cf">return</span> h <span class="op">-</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;height&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+        <span class="cf">return</span> <span class="at">yScale</span>(d)<span class="op">;</span>
+   <span class="op">}</span>)
+   .<span class="at">attr</span>(<span class="st">&quot;fill&quot;</span><span class="op">,</span> <span class="kw">function</span>(d) <span class="op">{</span>
+        <span class="cf">return</span> <span class="st">&quot;rgb(0, 0, &quot;</span> <span class="op">+</span> (d <span class="op">*</span> <span class="dv">10</span>) <span class="op">+</span> <span class="st">&quot;)&quot;</span><span class="op">;</span>
+   <span class="op">}</span>)<span class="op">;</span></code></pre></div>
+<ul>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/05_transition.html">Result</a></li>
+</ul>
+<p>The result is a smooth transition and interpolation between the old and new version of the image. You can also control things such as the <code>.duration()</code>, or how long the transition should take. This is just added to the chain of updating the svg object. You can also change the type of motion using different <code>ease()</code> parameters:</p>
+<ul>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/09_ease_linear.html">Linear</a></li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/10_ease_circle.html">Circle</a></li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/11_ease_elastic.html">Elastic</a></li>
+<li><a href="https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/12_ease_bounce.html">Bounce</a></li>
+</ul>
+<p>You can also <code>delay()</code> when the transition begins. The key thing to remember is that all these transition elements must be added to the chain before the actual modifications to the svg object are coded.</p>
+<p>There’s lots more to do with transitions. See the book for more details.</p>
+</div>
 </div>
 <div id="interactivity" class="section level1">
 <h1>Interactivity</h1>
