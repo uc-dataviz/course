@@ -249,8 +249,97 @@ We still need to make some adjustments to the graph:
 * [Result with new data point](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/06_scaled_plot_big.html)
 * [Result with new SVG size](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/07_scaled_plot_large.html)
 
-
 # Axes
+
+Much like scales, D3 axes are functions whose parameters you define. Rather than returning a value, they generate visual elements of the axis, including lines, labels, and ticks.
+
+## Setting up an axis
+
+Use `d3.svg.axis()` to create a generic axis function:
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom");
+```
+
+* Assigns the x-axis to a variable
+* Assigns it a scale
+* Orients labels to appear on the bottom of the axis
+
+To generate the axis and add it to the plot, we need to `call()` the `xAxis` function.
+
+```javascript
+svg.append("g")
+    .call(xAxis);
+```
+
+* Reference the `svg` element
+* `append()` a new `g` element to it. `g` is a group element that are invisible, but group together common elements. Think of an axis - it includes a line across the graph, tick marks, text labels, etc. We want them grouped together so we can apply common styles and aesthetics to the entire axis.
+* `call()` takes the incoming `g` group and sends it to the `xAxis` function (variable). It's like a basic chaining operation in R.
+* Remember that SVGs are drawn one element at a time. If you draw the axis first, other visual elements of the graph can be drawn over top of it. Typically this is not desired and you want the axis to be on top, so add it at the end of your code after the other elements in the SVG are generated. Again, similar to adding layers in `ggplot()`
+
+* [Result - not pretty](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/01_axes.html)
+
+## Cleaning it up
+
+We need to assign the axis (`g` element) to a **class* so we can alter its aesthetics with CSS:
+
+```javascript
+svg.append("g")
+    .attr("class", "axis") //Assign "axis" class
+    .call(xAxis);
+```
+
+Then add some CSS styles in the `<head>` of the page (or in an external file):
+
+```css
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+```
+
+* The first chunk applies to the axis path and line, changing the `fill` to `none`, the line stroke color to `black`, and giving it `crispEdges`
+* The axis text changes its font family and size
+
+To move the axis to the bottom of the graph, we **transform** it:
+
+```javascript
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + (h - padding) + ")")
+    .call(xAxis);
+```
+
+This is a new `transform` attribute that `translate()`s the x and y coordinates of the axis. Here, we just want to change the vertical position of the graph, so the first argument is `0`.
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/02_axes_bottom.html)
+
+## Check for ticks
+
+We can adjust the number of ticks when creating the axis:
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);  //Set rough # of ticks
+```
+
+This will create approximately 5 tick marks. However D3 will interpret this as a suggestion and pick the optimal number of human-readable values. In this case, D3 will choose 7 ticks so it can round each tick label to the nearest 100 value (e.g. 100, 200, 300).
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/03_axes_clean.html)
+* [Result with y-axis](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/04_axes_y.html)
+
+
 
 
 # Updates, Transitions, and Motion
