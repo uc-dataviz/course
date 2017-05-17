@@ -25,7 +25,7 @@ Students are expected to have prior programming experience; this is not an intro
 | [Assignment 1](assignments/assignment-1.md) | 15 |
 | [Assignment 2](assignments/assignment-2.md) | 15 |
 | [Assignment 3](assignments/assignment-3.md) | 15 |
-| Assignment 4 | 15 |
+| [Assignment 4](assignments/assignment-4.md) | 15 |
 | [Final project](assignments/final-project.md) | 30 |
 | Participation | 10 |
 | **Total Points** | 100 |
@@ -64,11 +64,11 @@ Readings for the course will come primarily from the following books, as well as
 | May 1 | M | Interactivity |  |
 | May 3 | W | Interactivity (cont.) |  |
 | May 8 | M | Geospatial visualization |  |
-| May 10 | W | Introduction to D3 | Assignment 3 |
+| May 10 | W | Introduction to D3 | [Assignment 3](assignments/assignment-3.md) |
 | May 15 | M | Network visualization |  |
 | May 17 | W | More D3 |  |
-| May 22 | M | Text visualization | Assignment 4 |
-| May 24 | W | Final project presentations | Present [final project](assignments/final-project.md) |
+| May 22 | M | Text visualization |  |
+| May 24 | W | Final project presentations | [Assignment 4](assignments/assignment-4.md) / Present [final project](assignments/final-project.md) |
 | May 29 | M | No class (Memorial Day) |  |
 | May 31 | W | Final project presentations | Present [final project](assignments/final-project.md) |
 | June 4 | Su |  | Submit [final project](assignments/final-project.md) |
