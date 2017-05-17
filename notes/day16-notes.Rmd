@@ -1,5 +1,5 @@
 ---
-title: "Day 14 - Introduction to D3"
+title: "Day 16 - More D3"
 output:
   html_document:
     highlight: pygments
@@ -518,24 +518,300 @@ There's lots more to do with transitions. See the book for more details.
 
 # Interactivity
 
+To make D3 graphics interactive, we have to bind changes onto **event listeners**. These are the JavaScript events that can trigger client-side dynamic events. This could be things such as a new input from the user via the keyboard, mouse, or touch screen. For instance, any time you move your mouse across the screen, an event is recorded. Hence we get things like [this](http://students.brown.edu/seeing-theory/).
+
+We just did this in the last section to update the bar graph's data values:
+
+```javascript
+d3.select("p")
+    .on("click", function() {
+        //Do something on click
+    });
+```
+
+This binds an event listener to the `p` paragraph element. Whenever the `click` event occurred on the `p` element, the anonymous function is triggered. If we clicked [anywhere else on the page](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/05_transition.html), the event does not happen. It only works when applied to the specified `p` element.
+
+Any interaction is a basic two step process:
+
+1. Bind the event listener
+1. Define the resulting behavior
 
 ## Event listeners
 
+* [Different types of event listeners](https://www.quirksmode.org/dom/events/)
 
 ## Binding event listeners
 
+Starting bar graph:
+
+```javascript
+			//Width and height
+			var w = 600;
+			var h = 250;
+			
+			var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(dataset)])
+							.range([0, h]);
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			//Create bars
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+			//Create labels
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/01_start.html)
+
+In the last example, the data changed only in reaction to an event on a single `p` element. Hence we use `d3.select("p")`. To bind event listeners to multiple elements, use `selectAll()` to select multiple elements and pass them to `on()`:
+
+```javascript
+//Create bars
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …   //Set attributes (omitted here)
+   .on("click", function(d) {
+       //This will run whenever *any* bar is clicked
+   });
+```
+
+This interaction is generated in the code that originally generated the `rect` elements of the bar graph. Whenever one of the `rect` elements is clicked upon by the user, the anonymous function will be run. You can continue to reference `d` (each data value) or `i` (each index value of the data) in the anonymous function, or not.
 
 ### Hover to highlight
 
+To highlight a bar when the mouse hovers over it, we wait for the `mouseover` event to occur:
+
+```javascript
+.on("mouseover", function() {
+        //Do something on mouseover of any bar
+});
+```
+
+Now when this event occurs, we need to decide what behavior will result. We want to change the color of "this" bar (and not the other ones). To do that, we select `this` element an change its fill to orange:
+
+```javascript
+.on("mouseover", function() {
+        d3.select(this)
+          .attr("fill", "orange");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/04_mouseover.html)
+
+Nice except the bar now stays orange. To change it back to blue, we need to listen for the `mouseout` event:
+
+```javascript
+.on("mouseout", function(d) {
+        d3.select(this)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/05_mouseout.html)
+
+To smooth the transition, add `transition()` and `duration()` elements:
+
+```javascript
+.on("mouseout", function(d) {
+    d3.select(this)
+      .transition()
+      .duration(250)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result]()
 
 ### Click to sort
 
+Sorting data provides different views of the data, potentially a powerful tool in data visualization. To do this with the bar chart, add an event listener for the `click` event which binds to an anonymous function that calls a new function which we will create called `sortBars()`:
+
+```javascript
+…
+.on("click", function() {
+        sortBars();
+});
+```
+
+> Notice that `sortBars` is not declared until the end of the document. This is fine because `sortBars()` doesn't actually run until the `click` event, which can only happen after the entire HTML page (and associated JavaScript) is run.
+
+Now we define `sortBars`:
+
+```javascript
+var sortBars = function() {
+
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                 return d3.ascending(a, b);
+           })
+           .transition()
+           .duration(1000)
+           .attr("x", function(d, i) {
+                 return xScale(i);
+           });
+
+};
+```
+
+* We now `selectAll("rect")` (the different elements of the bar chart) and sort the original `rect` elements based on their bound data values
+* We compare every combination of `a` and `b` data values based on the different elements and go through them until the array elements are sorted. Here we sort them `d3.ascending()`
+* With the new order in place, we transition to the new ordering and adjust the `x` attribute based on the new order of the data values
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/07_sort.html)
+
+Still need to fix the text label position (easy) and the color shading (harder). See the book for the example code.
+
+More interestingly, how do we sort it in multiple directions? For instance, why not sort it descending instead? Conceptually, this is not too difficult. We need to store the current state of the graph sorting (ascending or descending).
+
+```javascript
+var sortOrder = false;
+```
+
+Then in the `sortBars()` function, flip the value of `sortOrder` and use an if-else conditional expression to determine whether to sort ascending or descending:
+
+```javascript
+var sortBars = function() {
+        //Flip value of sortOrder
+        sortOrder = !sortOrder;
+        
+        ...
+        }
+```
+
+```javascript
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                        if (sortOrder) {
+                                return d3.ascending(a, b);
+                        } else {
+                                return d3.descending(a, b);
+                        }
+                })
+                …
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/09_resort.html)
 
 ### Adding tooltips
 
+Tooltips use small overlays to present data values. This is what is generated by `ggplotly()` to add the detailed information to interactive graphs.
 
-# Layouts and geomapping
+#### Default browser tooltips
 
+These look ugly and are default, but they get the job done. To do this, inject a `title` element into whatever element should have the tooltip applied. For a bar chart, this would look like:
+
+```javascript
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …
+   .append("title")
+   .text(function(d) {
+         return d;
+   });
+```
+
+`append()` creates the new `title` element and then `text()` fills the content (here with `d` the bound data value). To append text to the numeric value, paste (concatenate) a text string in the anonymous function:
+
+```javascript
+   .append("title")
+   .text(function(d) {
+         return "This value is " + d;
+   });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/12_browser_tooltip_text.html)
+
+#### SVG element tooltips
+
+These are SVG elements used to include the labels:
+
+```javascript
+.on("mouseover", function(d) {
+
+//Get this bar's x/y values, then augment for the tooltip
+var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
+var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
+
+//Create the tooltip label
+svg.append("text")
+  .attr("id", "tooltip")
+  .attr("x", xPosition)
+  .attr("y", yPosition)
+  .attr("text-anchor", "middle")
+  .attr("font-family", "sans-serif")
+  .attr("font-size", "11px")
+  .attr("font-weight", "bold")
+  .attr("fill", "black")
+  .text(d);
+
+})
+
+.on("mouseout", function() {
+
+//Remove the tooltip
+d3.select("#tooltip").remove();
+
+})
+```
+
+* On a mouseover event:
+    * Use `parseFloat()` to calculate where to position the labels
+    * Create the tooltip as a `text` element as we've done before
+* On a mouseout event, remove the tooltip elements
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/13_svg_tooltip.html)
+
+#### HTML div tooltips
+
+Create tooltips as HTML `div` elements.
+
+* [Example](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/14_div_tooltip.html)
+
+Gets more fancy having to create some additional HTML and CSS styling rules. Otherwise, the D3 is pretty simple, just need to update the `tooltip` elements. Note that here, we use D3 to modify not just SVG elements by directly change HTML elements.
 
 # Examples of D3 graphics
 
