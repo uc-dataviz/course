@@ -32,7 +32,7 @@ import_gapminder <- function(filename, inc_name = NA){
 (import_gapminder("data/indicator hiv estimated prevalence% 15-49 (1).xlsx"))
 ```
 
-    ## # A tibble: 9,075 × 4
+    ## # A tibble: 9,075 x 4
     ##                  country  year                                 variable
     ##                    <chr> <int>                                    <chr>
     ##  1              Abkhazia  1979 Estimated HIV Prevalence% - (Ages 15-49)
@@ -53,7 +53,7 @@ import_gapminder <- function(filename, inc_name = NA){
                   inc_name = "hiv_15_49"))
 ```
 
-    ## # A tibble: 9,075 × 4
+    ## # A tibble: 9,075 x 4
     ##                  country  year  variable      value
     ##                    <chr> <int>     <chr>      <dbl>
     ##  1              Abkhazia  1979 hiv_15_49         NA
@@ -93,7 +93,7 @@ In addition to the visualization and accompanying narrative, write an approximat
 Submission details
 ------------------
 
-Submit your visualization and analysis as a single R Markdown document rendered using the `html_document` output format. If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io) and include a link to it in your submission. Include your design explanation in a separate document. Your folder in the repo should also contain a copy of the generated data file and documentation of the survey and the treatment/condition versions of your graphic.
+Submit your visualization and analysis as a single R Markdown document rendered using the `html_document` output format. If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io) and include a link to it in your submission. Include your design explanation in a separate document.
 
 Your submission is due by **1:30pm on Wednesday, May 10th**.
 
