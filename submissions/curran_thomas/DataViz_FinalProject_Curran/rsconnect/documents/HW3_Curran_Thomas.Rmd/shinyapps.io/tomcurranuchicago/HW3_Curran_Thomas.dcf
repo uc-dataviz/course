@@ -1,0 +1,11 @@
+name: HW3_Curran_Thomas
+title: HW3_Curran_Thomas
+account: tomcurranuchicago
+server: shinyapps.io
+appId: 179380
+bundleId: 822972
+url: https://tomcurranuchicago.shinyapps.io/hw3_curran_thomas/
+when: 1494440666.06726
+asMultiple: TRUE
+asStatic: FALSE
+ignoredFiles: HW2_Curran_Thomas.Rmd
