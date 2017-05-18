@@ -1,0 +1,116 @@
+---
+title: "Assignment 3: Interactive graphics with Gapminder"
+author: Camacho Jonathan | Data Visualization | University of Chicago
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+  html_document: js
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(plotly)
+library(shiny)
+```
+
+```{r}
+# Data preparation. 
+# Loads baltimore_service_calls.csv file. 
+countries_dataset <- as_tibble(read.csv(file = "./data/tidy_countries_dataset.csv", 
+                                             stringsAsFactors = FALSE))
+
+# Calculatting population density variable for each observation. 
+countries_density <- countries_dataset %>% 
+    select(country, continent.x, lifeExp, pop, areaInSqKm) %>%
+    mutate(pop_density = (pop / areaInSqKm))
+
+# Creating vector for selectInput tool.
+continents_tool_vector <- unique(countries_density$continent.x)
+```
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+# Controls
+selectInput("continents", label = "Select Country",
+            choices = continents_tool_vector, selected = "Americas")
+
+# Set up data download
+data_for_dl <- reactive({
+  dat <- select(countries_density, country, continent = continent.x, lifeExp, pupulation = pop, areaInSqKm, pop_density)
+})
+
+# I could figure out why when rendering using runfile.R, the output object is not found.
+# output$downloadCSV <- downloadHandler(
+#   filename = 'data.csv',
+#   content = function(file) {
+#     write_csv(data_for_dl(), file)
+#   }
+# )
+# 
+# downloadLink('downloadCSV', label = 'Download CSV for data')
+
+# Select data according to selectInput tool
+select_continent <- reactive({
+       selected_data <- countries_density[countries_density$continent.x == input$continents, ]
+       return(selected_data)
+})
+```
+
+#### Description
+
+
+Demographers have pondered for decades the factors that affect populations’ life expectancy. In this brief analysis, I explore the connection between population density and life expectancy. I expect to find a negative correlation between both variables. The data for this analysis was extracted using an API that downloads data from the data set Gapminder; making the analysis entirely reproducible. The Gapminder dataset was merged with variables from the Geonames dataset to create a tidy data set with conventional country names.
+
+
+The first graph, “Life Expectancy by Population Density,” does not indicate a clear negative correlation between life expectancy and population density. Contrary, it seems to suggest that as population density increases longevity increases; contrary to the expectations expressed above. Several factors can account for this findings. It is feasible that the expected relationship between population density and life expectancy is not present in the dataset. Similarly, life expectancy could be positively affected by other factors such as access to health care, proper nutrition, and subjective factors; such as low levels of stress and high levels of happiness; outweighing the negative effect of population dentition of life expectancy. The second graph, “Country Based Life Expectancy by Population Density” allows the user to select the continent to be graphed. Independently of the continent, the same findings and possible explanations hold. Population density does not seem to be negatively correlated with life expectancy, but both variables seem to be positively correlated. 
+
+
+Several reasons guided my choice of graphical forms and method for delivery the graphs. I chose a scatter plot because of the size of the data, a number of data points to be projected in the graph. Furthermore, using points and smooth lines to represent data allowed me to show the effect of population density on life expectancy as a position channel which is one of the most effective mental-visual tasks; allowing readers to extract information more accurately from graphs. Furthermore, I modified the alpha parameter for the points to facilitate visualization when points overlap. 
+
+
+After noticing, in the first graph, the counter-intuitive relationship between population density and life expectancy, the question to ask is if the found link is a global trend or is a regional trend. I considered adding interactivity to the graphs as a good way to facilitate the users’ exploration of this question in the data. Thus, users can select the continent for which they want the graph to reflect the relationship between population density and life expectancy. Moreover, allowing the user to interact with the data also enhances explorations, attention, and memorization of the findings. A better approach would have been showing country patterns. Unfortunately, there are not enough data points, at the country level, in the data set for such visualization.
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Life Expectancy by Population Density 
+
+```{r}
+# Generating plot.
+all_data <- ggplot(countries_density, aes(pop_density, lifeExp)) +
+    geom_point(alpha = .2) +
+    geom_smooth() +
+    scale_x_log10() +
+    labs(x = "Population Density (Millions/Kilometer^2)",
+         y = "Life Expectancy") +
+       theme_minimal()
+
+renderPlotly({
+all_data
+})
+```
+
+### Country Based Life Expectancy by Population Density
+```{r}
+# Contry based plot.
+renderPlotly({
+country_plot <- ggplot(select_continent(), aes(pop_density, lifeExp)) +
+    geom_point(alpha = .2) +
+    geom_smooth() +
+    scale_x_log10() +
+    labs(x = "Population Density (Millions/Kilometer^2)",
+         y = "Life Expectancy") + 
+       theme_minimal()
+})
+```
+
+
+
+
+
