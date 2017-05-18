@@ -1,0 +1,214 @@
+IDENTIFICATION_INFORMATION
+
+  Citation
+    Citation_Information
+      Originator: Center for Spatial Analysis (University of Oklahoma)
+      Publication_Date: 20170501
+      Title: State-wide School Districts
+      Geospatial_Data_Presentation_Form: Map
+      Publication_Information
+        Publication_Place: Norman, Oklahoma
+        Publisher: Center for Spatial Analysis (University of Oklahoma)
+      Larger_Work_Citation
+        Citation_Information
+          Originator: Center for Spatial Analysis (University of Oklahoma)
+          Publication_Date: 20170501
+          Title: State-wide School Districts
+          Publication_Information
+            Publication_Place: Norman, Oklahoma
+            Publisher: Center for Spatial Analysis (University of Oklahoma) 
+          Other_Citation_Details: None
+  Description
+    Abstract:
+      This is an ArcView shapefile of State-wide school districts
+      for Oklahoma State. Boundaries are based on information provided 
+      by the Oklahoma Department of Education. This State-wide shape 
+      file is created by dissolving the State-wide school districts shape file 
+      on the Av_sdcode attribute field.
+    Purpose:
+      This school district data set was prepared by the Center for Spatial Analysis 
+      at the University of Oklahoma in cooperation with the Oklahoma State 
+      Department of Education and Oklahoma Tax Commission Ad Valorem 
+      Division for the purpose of capturing data related to the public school 
+      district boundaries for the State of Oklahoma. 		
+  Time_Period_of_Content
+    Time_Period_Information
+      Range_of_Dates/Times
+        Beginning_Date: 20020701
+        Ending_Date: 20100728
+    Currentness_Reference: 20100728
+  Status
+    Progress: Complete
+    Maintenance_and_Update_Frequency: As needed
+  Spatial_Domain
+    Bounding_Coordinates
+      West_Bounding_Coordinate: -103.0026
+      East_Bounding_Coordinate: -94.4312
+      North_Bounding_Coordinate: 37.0008
+      South_Bounding_Coordinate: 33.6158
+  Keywords
+    Theme
+      Theme_Keyword_Thesaurus: None
+      Theme_Keyword: School Districts
+      Theme_Keyword: Oklahoma State
+    Place
+      Place_Keyword_Thesaurus: None
+      Place_Keyword: Oklahoma State
+  Access_Constraints: This data is for general public use.
+  Use_Constraints: None
+  Native_Data_Set_Environment
+    Arc/Info for Windows NT
+    
+DATA_QUALITY_INFORMATION
+
+  Lineage
+    Process_Step
+      Process_Description: Unknown
+      Process_Date: Unknown
+    Source_Information
+      Source_Contribution: Unknown
+      Type_of_Source_Media: Unknown
+      Source_Citation
+        Citation_Information
+          Originator: Center for Spatial Analysis (University of Oklahoma)
+          Publication_Date: 20100728
+          Title: State-wide School Districts
+      Source_Time_Period_of_Content
+        Time_Period_Information
+          Range_of_Dates/Times
+            Beginning_Date: 20020701
+            Ending_Date: 20100728
+        Source_Currentness_Reference: 20020701; later revision is ongoing and continuous 
+      Source_Citation_Abbreviation: Unknown 
+  Attribute_Accuracy
+    Attribute_Accuracy_Report:
+      The attribute information contains school district names and ad valorem school 
+      district code particular to each individual school district within a county as 
+      verified by the Oklahoma State Department of Education and Oklahoma Tax Commission.
+  Logical_Consistency_Report:
+      The school district boundaries were originally derived from TIGER/Line
+      2000 files of the Bureau of the Census. TIGER/Line files were originally 
+      digitized at a scale of 1:100,000 to an accuracy of 160 ft. School District 
+      boundaries were verified against school district maps provided by the Oklahoma 
+      State Department of Education. Updates and corrections to those boundaries are 
+      continually made as necessary.
+  Completeness_Report:
+    The compiler embodies the syntax of the 1998 version of the Content Standard 
+    for Digital Geospatial Metadata, known as FGDC-STD-001-1998 and also supports 
+    the Biological Data Profile of that standard, FGDC-STD-001.1-1999. Local extensions 
+    to the standard are permitted and a mechanism is provided 
+    that allows these extensions to be described to the compiler.
+  Positional_Accuracy
+    Horizontal_Positional_Accuracy
+      Horizontal_Positional_Accuracy_Report: accuracy of 160 ft.
+    Vertical_Positional_Accuracy
+      Vertical_Positional_Accuracy_Report: accuracy of 160 ft.
+
+SPATIAL_DATA_ORGANIZATION_INFORMATION
+
+  Direct_Spatial_Reference_Method: Vector
+  Point_and_Vector_Object_Information
+    SDTS_Terms_Description
+      SDTS_Point_and_Vector_Object_Type: GT-polygon composed of chains
+      Point_and_Vector_Object_Count: 512
+
+SPATIAL_REFERENCE_INFORMATION
+
+  Horizontal_Coordinate_System_Definition
+    Geographic
+      Latitude_Resolution: 160 ft. 
+      Longitude_Resolution: 160 ft.  
+      Geographic_Coordinate_Units: Decimal Degrees
+    Geodetic_Model
+      Horizontal_Datum_Name: North American Datum of 1983
+      Ellipsoid_Name: GRS1980
+      Semi-major_Axis: 6378137
+      Denominator_of_Flattening_Ratio: 294.98
+
+ENTITY_AND_ATTRIBUTE_INFORMATION
+
+  Detailed_Description
+    Entity_Type
+      Entity_Type_Label: SchoolDistrict.shp
+      Entity_Type_Definition: Polygon Shapefile Attribute Table
+      Entity_Type_Definition_Source: None
+    Attribute
+      Attribute_Label: Sd_name
+      Attribute_Definition: School District Name
+      Attribute_Definition_Source: User Defined
+      Attribute_Domain_Values
+        Unrepresentable_Domain: Character field
+    Attribute
+      Attribute_Label: Av_sdcode
+      Attribute_Definition: Ad Valorem School District Code
+      Attribute_Definition_Source: User Defined
+      Attribute_Domain_Values
+        Unrepresentable_Domain: Character field
+
+DISTRIBUTION_INFORMATION
+
+  Distributor
+    Contact_Information
+      Contact_Organization_Primary
+        Contact_Organization: Center for Spatial Analysis
+        Contact_Person: Scott March
+      Contact_Position: GIS Specialist
+      Contact_Address
+        Address_Type: mailing and physical address
+        Address: 3100 Monitor, Suite 180
+        City: Norman
+        State_or_Province: OK
+        Postal_Code: 73072
+        Country: U.S.
+      Contact_Voice_Telephone: (405) 325-5480  
+      Contact_Facsimile_Telephone: (405) 579-5985
+      Contact_Electronic_Mail_Address: scmarch@ou.edu
+      Hours_of_Service: 8-5pm Mon-Fri.
+  Resource_Description:
+       GIS data set  Distribution_Liability:
+       Users must assume responsibility to
+       determine the usablitiy of this data for their purposes
+  Standard_Order_Process
+    Digital_Form
+      Digital_Transfer_Information
+        Format_Name: ArcView Shapefile format
+      Digital_Transfer_Option
+       Online_Option
+         Computer_Contact_Information
+           Network_Address
+             Network_Resource_Name: http://geo.ou.edu
+       Offline_Option  
+         Offline_Media: 3.5 floppy, zip disk, CD-ROM
+         Recording_Format: ISO 9660
+         Compatibility_Information: ISO 9660 format allows the 
+           CDROM to be read by most computer operating systems.
+    Fees: Data is free. Some fees may apply to offline requests to cover
+              reproduction costs.
+
+METADATA_REFERENCE_INFORMATION
+
+  Metadata_Date: 20100728
+  Metadata_Review_Date: 20100728
+  Metadata_Contact
+    Contact_Information
+      Contact_Organization_Primary
+        Contact_Organization: Center for Spatial Analysis
+        Contact_Person: Azhar Mahmood
+      Contact_Position: GIS Specialist
+      Contact_Address
+        Address_Type: Mailing and physical address
+        Address: 3100 Monitor, Suite 180
+        City: Norman
+        State_or_Province: OK
+        Postal_Code: 73072
+        Country: U.S.
+      Contact_Voice_Telephone: (405) 325-0301 
+      Contact_Facsimile_Telephone: (405) 579-5985
+      Contact_Electronic_Mail_Address: azmahmood@ou.edu
+      Hours_of_Service: 8-5pm Mon-Fri
+  Metadata_Standard_Name: FGDC CSDGM
+  Metadata_Standard_Version: FGDC-STD-001-1998
+  Metadata_Time_Convention: local time
+  Metadata_Extensions
+    Online_Linkage: http://www.esri.com/metadata/esriprof80.html
+    Profile_Name: ESRI Metadata Profile
