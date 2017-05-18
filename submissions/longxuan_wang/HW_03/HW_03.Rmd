@@ -1,0 +1,169 @@
+---
+title: "HW 03"
+author: "Longxuan Wang"
+date: "May 8, 2017"
+output: html_document
+---
+
+```{r global_options, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message=FALSE, 
+                      #make the graphs larger
+                      out.width = "100%")
+```
+
+## Overview
+
+In the summer of 2015, the Chinese stock market reached its highest level since the 2008 global financial crisis after a steep climb. However, the bull market was short-lived. Within two month after the peak on June 12th, CSI 300, one of the most widely quoted market indexes, would lose more than 40% of its peak value. Chinese regulators soon found a target of blame: the futures market. China Financial Futures Exchange (CFFEX), where stock market index futures were traded, has since put forward drastic measures to constrain trading activities in those futures contracts.
+
+Before we touch on the supposed rationales of Chinese government's regulatory policies, a brief background on the difference between the spot market and the futures market will be helpful. Eventually, through this project, I want to argue that those policies are eventually ineffective.
+
+```{r package}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(readxl)
+library(purrr)
+library(data.table)
+library(fGarch)
+```
+
+## Futures market vs. spot market
+
+In most developed markets, a stock has two prices: one price in the futures market and another in the spot market. The stock prices we usually talk about are spot market prices. However, you can also buy stocks in the futures market, where you pay the futures prices but you will not actually own the stock until a designated time in the future. According to finance theory and countless empirical reasearch, the futures price and the spot price of a stock is well guarded by mathematical formula. The two prices can only deviate within a very slim margin under normal market conditions.  
+
+```{r data, cache=TRUE}
+#set path to the pdf folder
+path <- paste0(getwd(),"/Data")
+setwd(path)
+
+#read in the data 
+Futures <- read_csv("CSI 300 Futures.csv", skip = 1)
+Futures$Date[1] <- "4/16/2010"
+
+#data cleaning
+Futures_clean <- Futures%>%
+  mutate_at(vars(starts_with("PX")),funs(as.numeric))%>%
+  rename(date=Date, volume=PX_VOLUME, high=PX_HIGH, low=PX_LOW, mid=PX_MID, ask=PX_ASK, bid=PX_BID, close=PX_LAST)%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+Spot <- read_csv("CSI 300 Spot.csv", skip=1)
+Spot$Date[1] <- "4/16/2010"
+Spot_clean <- Spot%>%
+  rename(date=Date, volume=PX_VOLUME, close=PX_LAST)%>%
+  select(date, volume, close)%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+Policy <- read_csv("Policy.csv")
+Policy_clean <- Policy%>%
+  mutate(date=as.Date(date, "%m/%d/%Y"))
+
+```
+
+## The market crash and deviation of the two prices
+
+In the interactive graph below, you can see the futures price and the spot price of the Chinese financial market, as represented by the most widely quoted market index, CSI 300 index. After the 2008 global financial crisis, the Chinese stock market stayed at a very low until the end of 2014. You can see from the graph a steep climb and then a steep decline that marked the short-lived bull market in the first half of 2015. What's striking is that the two lines, i.e. the two prices, deviated from each other to unprecedented levels after the stock market crash. You can use the range slider at the bottom of the graph to focus on different periods and see more closely the deviations. 
+
+
+
+```{r index}
+Futures_spot <- merge(Futures_clean, Spot_clean, by = "date")%>%
+  rename(Futures=close.x, Spot=close.y)
+
+#make first plot
+plot_ly(Futures_spot, x = ~date) %>%
+  add_lines(y = ~Futures, name = "Futures") %>%
+  add_lines(y = ~Spot, name = "Spot") %>%
+  layout(
+    title = "Futures prices and spot prices deviate after market crash",
+    xaxis = list(
+      #add the range slider at the bottom
+      rangeslider = list(type = "date")),
+    yaxis = list(title = "Price"),
+    legend = list(x = 0.1, y = 0.9))
+```
+
+## Policies
+
+What caused the deviation we see in the graph above? According to finance theory, stock market crash alone should not have caused it. It must be the result of significant policy changes. That is indeed what happened. In the graph below, you can view the most significant policy changes by hovering your mouse over the point where I marked as "policy". All the major policies are announced within a short period of time between July and September. So for the graph below I focus specically on that range. 
+
+
+```{r stock}
+Spot_policy <- Spot_clean%>%
+  dplyr::filter(date > "2015/06/01" & date < "2015/11/01")%>%
+  left_join(Policy_clean)
+
+Policy_price <- merge(Spot_clean, Policy_clean)
+
+#These are used for controlling the orientation of the arrows
+ax <- c(1,1,-1,-1,1,1)
+ay <- c(1,-1,-1,1,1,-1)
+Policy_price$ax <- ax
+Policy_price$ay <- ay
+Spot_policy%>%
+  plot_ly(x = ~date, y = ~close, mode = 'lines',
+    hoverinfo = 'text',
+    text = ~paste('Date: ', date,
+                  '</br>Policy: ', policy
+                  ))%>%
+  #add annotation according to policy time table  
+  add_annotations(x = Policy_price$date,
+                  y = Policy_price$close,
+                  text = "Policy",
+                  xref = "x",
+                  yref = "y",
+                  showarrow = TRUE,
+                  arrowhead = 2,
+                  arrowsize = 0.5,
+                  #control the orientation of each individual error
+                  ax = 20*Policy_price$ax,
+                  ay = -40*Policy_price$ay,
+                  # Styling annotations' text
+                  font = list(color = "red",
+                              family = 'sans serif',
+                              size = 14))%>%
+    layout(
+      title = "Policy responses by the Chinese government",
+      yaxis = list(title = "price")
+    )
+```
+
+## Volume, volatility, and liquidity
+
+What was it that the Chinese government trying to achieve? Were those policies effective? Chinese regulators at the time reasoned that constraints on futures trading should decrease the volatility of the futures market and as a result slow down the market crash. In the graph below we examine whether the policies were successful in decreasing volatility. Furthermore, I show you the change in trading volumes as well as in liquidity, as measured by bid-ask spread. A lower bid-ask spread indicates higher liquidity. 
+
+First we look at volume, we see that after the turmoil trading volume returned to approximately the same level as before the bull market. As for volatility, it is obvious that after all those policies we see in the graph above market volatility still stayed at quite a high level compared with before the market crash. More strikingly, market volatility actually increased signigicantly after the last policy in September 2015. You can use your mouse to select that period of time and see the details. Furthermore, the bid-ask spread reached all time high. It indicates that the market has become extremely inefficient. This shows that the policies were not successful in reducing volatility and had the side effect of decreasing liquidity. 
+
+```{r market}
+
+#fit a garch model to estimate daily volatility
+garch1 <- garchFit(Spot ~ garch(1,1), data = Futures_spot, trace = FALSE)
+Futures_spot$spot_volatility <- garch1@h.t
+
+
+plot_ly(Futures_spot, x = ~date, y = ~volume.y, type = "bar") %>%
+  layout(
+    title = "Key market statistics",
+    yaxis = list(title = "level"),
+    updatemenus = list(
+      list(
+        type="buttons",
+        x=0.8,
+        y = 0.88,
+        #create buttons for different statistics
+        buttons = list(
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$volume.y)),  
+               label = "Volume"),
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$spot_volatility)), 
+               label = "Volatility"),
+          list(method = "restyle",
+               args = list("y", list(Futures_spot$ask-Futures_spot$bid)),  
+               label = "Bid-ask spread")))
+))
+```
+
+
