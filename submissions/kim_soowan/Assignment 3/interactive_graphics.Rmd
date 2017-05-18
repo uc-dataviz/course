@@ -1,0 +1,292 @@
+---
+title: "Assignment 3: Interactive graphics"
+author: "Soo Wan Kim"
+date: "May 5, 2017"
+output:
+  html_document
+---
+
+## The North Korean Diaspora
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(ggthemes)
+library(plotly)
+library(stringr)
+
+theme_set(theme_minimal())
+
+setwd("~/GitHub/dataviz/submissions/kim_soowan/Assignment 3")
+
+###########################################
+# yearly defector arrivals in South Korea #
+###########################################
+
+#note: the data comes in wide form
+sk_arrivals <- read_csv("NKDefectorArrivals(2017.3).csv") %>%
+  select(-Sum, -`17.3`)
+
+headings <- sk_arrivals$Year
+years <- c("1998", "2001", "2002", "2003", "2004", "2005", "2006", 
+           "2007", "2008", "2009", "2010", "2011", "2012", "2013", 
+           "2014", "2015", "2016")
+
+#transpose data set and reset row & column names
+sk_arrivals <- as.data.frame(t(sk_arrivals))
+rownames(sk_arrivals) <- NULL
+colnames(sk_arrivals) <- headings
+sk_arrivals <- sk_arrivals[-1,]
+sk_arrivals$Year <- years
+#sk_arrivals$YearLabels <- unlist(map(years, function(x) paste0("'",substr(x, 3,4))))
+
+#Tidy data
+sk_arrivals <- sk_arrivals %>%
+  transform(PropFemale = as.numeric(as.character(PropFemale))) %>%
+  mutate(PercFemale = PropFemale * 100) %>%
+  transform(Year = as.numeric(Year)) %>%
+  select(-PropFemale)
+
+sk_arrivals_reshape <- sk_arrivals %>%
+  gather(`NumMale`, `NumFemale`, `Total`, key = `SumType`, value = `Total`) %>%
+  transform(Total = as.numeric(Total)) %>%
+  transform(SumType = ifelse(SumType == "NumMale", "Male", 
+                             ifelse(SumType == "NumFemale", "Female", "All"))) %>%
+  rename(Gender = SumType)
+
+#############################################
+# documented defector populations by status #
+#############################################
+
+diaspora <- read.csv("unhcr_popstats_export_time_series_2017_05_03_050911.csv", skip = 3, na.strings = "*") %>%
+  select(-Origin)
+colnames(diaspora) <- c("Year", "Country", "PopulationType", "Population")
+diaspora <- arrange(diaspora, Country)
+
+diaspora_ref <- diaspora %>%
+  filter(PopulationType == "Refugees (incl. refugee-like situations)")
+
+# exclude data where population is NA or 0 for any given year within a country (e.g. Angola)
+country_sum <- diaspora_ref %>%
+  transform(Population = ifelse(is.na(Population), 0, Population)) %>%
+  group_by(Country) %>%
+  summarize(sum = sum(Population)) %>%
+  filter(sum > 0)
+
+country_list <- country_sum$Country
+
+#international refugee population
+numbers_sum_ref <- diaspora_ref %>%
+  transform(Population = ifelse(is.na(Population), 0, Population)) %>%
+  group_by(Year) %>%
+  summarize(Population = sum(Population)) %>%
+  mutate(Status = "International refugee") %>%
+  select(Year, Status, Population)
+
+#South Korean national population
+add_totals <- function(col) { #function to turn yearly arrivals into yearly population
+  total = col[1]
+  totals_list = c(total)
+  for (i in seq_along(col[-1])) {
+    total = total + col[i]
+    totals_list = c(totals_list, total)
+  }
+  return(totals_list)
+}
+
+sk_arrivals_pop <- sk_arrivals %>%
+  filter(Year < 2016) %>%
+  select(Year)
+sk_arrivals_pop$Population <- add_totals(as.numeric(as.character(sk_arrivals$Total[-length(sk_arrivals$Total)])))
+sk_arrivals_pop$Status <- "South Korean national"
+
+# account for missing data in MoU/South Korea dataset
+Year <- c(1999, 2000)
+Population <- c(NA, NA)
+Status <- rep("South Korean national", 2)
+sk_missing <- data.frame(Year, Population, Status)
+
+sk_arrivals_pop <- bind_rows(sk_arrivals_pop, sk_missing) %>%
+  arrange(Year)
+
+numbers_sum_ref <- bind_rows(filter(numbers_sum_ref, Year > 1997), sk_arrivals_pop)
+
+# All documented refugee populations
+numbers_sum_tot <- numbers_sum_ref %>%
+  group_by(Year) %>%
+  summarize(Population = sum(Population)) %>%
+  mutate(Status = "All") %>%
+  select(Year, Status, Population)
+
+numbers_sum_ref <- bind_rows(numbers_sum_ref, numbers_sum_tot)
+
+numbers_sum_ref$Status <- as.factor(numbers_sum_ref$Status)
+numbers_sum_ref$Status <- factor(numbers_sum_ref$Status, 
+                                  levels = c("All", "South Korean national", "International refugee"))
+
+################################################
+# International refugee populations by country #
+################################################
+
+diaspora_ref_group <- diaspora_ref %>%
+  filter(Country %in% country_list) %>%
+  select(-PopulationType)
+
+# account for missing data
+Year <- rep(sort(unique(diaspora_ref$Year)), length(country_list))
+Country <- sort(rep(country_list, length(unique(diaspora_ref$Year))))
+diaspora_ref_groupNA <- data.frame(Year, Country)
+diaspora_ref_groupNA <- left_join(diaspora_ref_groupNA, diaspora_ref_group)
+```
+
+In this assignment I visualize the growth and geographical spread of a small segment of North Korean defectors, specifically those granted South Korean citizenship or refugee status outside of Korea. Obtaining exact figures on the larger North Korean defector population is infeasible, as most are undocumented and actively avoid identification. Using interactive plots, I show several trends within the worldwide population of documented North Korean defectors. Specifically, I show that:
+
+* The number of documented North Korean defectors has risen considerably since the late 1990s
+* The vast majority live in South Korea
+* Of those who settle elsewhere, most choose developed countries in the West such as the UK or Canada
+* The death of Kim Jong Il and consequent security measures appear to have negatively impacted defection rates
+* Female defectors greatly outnumber male defectors
+
+### Research questions and background
+
+I seek to address the following questions:
+
+* How large is the population of North Korean defectors and how has it grown or declined over time?
+* Where do defectors live?
+* What factors affect the rates of defection?
+
+Getting precise measures to answer the first question is extremely difficult, not least due to the secretive nature of the defection process itself. Most North Koreans are not permitted to leave the country under any circumstances. Doing so without official authorization, which is largely unobtainable for non-elites, is considered a capital crime, and punishments range from imprisonment to torture and sometimes death. Crossing into South Korea by sea or through the fortified Demilitarized Zone is nearly impossible. Thus, most defections happen at the North Korean-Chinese border. However, while in China defectors remain at constant risk of deportation back to North Korea. Thus, most stay hidden by necessity until they successfully travel to a third country such as Thailand or Mongolia. Conservative estimates of the North Korean population in China run in the thousands to tens of thousands, while other estimates place it in the hundreds of thousands to low millions. The Chinese government does not publicly disclose the number of defectors forcibly returned to North Korea, and as such the number of repatriated defectors and repeat defectors is unknown. In addition, the undocumented status of North Korean defectors leaves them particularly vulnerable to trafficking, homelessness, domestic violence, and other dangers; an unknown number of defectors die or go missing before reaching safety. Thus, the only measures of North Korean defector population size that we can obtain with reasonable precision are those of defectors who successfully obtained government protection, such as those admitted to South Korea or resettled as refugees in other countries.
+
+Once the population of interest is limited to individuals who successfully received recognition as South Korean nationals or refugees, answering the second question is relatively feasible. South Korea's Ministry of Unification releases figures on defector arrivals in South Korea and related demographic information on a quarterly basis. The UN Refugee Agency (UNHCR) website includes a database of global refugee populations by year and country. From these sources, one can arrive at tentative estimates of defector populations in each country. These figures are unlikely to be exact, however, as defectors can and do move from country to country. In particular, defectors may choose to obtain South Korean citizenship first and move to another country later or vice versa. If immigrating as South Korean nationals, they are not necessarily treated differently from other South Koreans despite their unusual circumstances. The UN data also does not perfectly correspond to official figures from national governments. [The US State Departments reported 186 North Korean refugees living in the US by 2015](http://www.upi.com/Top_News/World-News/2015/08/04/State-Department-186-North-Korean-refugees-now-reside-in-the-United-States/7571438739326/), but the UN data reports 19 for that year. Reasons for the discrepancy are unclear, but may involve differences in the respective definitions of refugee status or simply measurement error.
+
+The primary causes of defection from the 1990s to the present have arguably been hunger and poor economic conditions in North Korea. The famine of the 1990s killed hundreds of thousands. As the state distribution system broke down, many North Koreans crossed into China to seek food and work. While many moved in and out, some chose to leave North Korea permanently. Conditions in North Korea have improved significantly since the early 2000s, but North Korea is still demonstrably poor compared to neighboring China and South Korea. In addition, illegal inter-border smuggling networks and burgeoning black market activity are credited with a growing awareness of the outside world and dissatisfaction with the North Korean regime among North Koreans. However, defection rates are also a function of the North Korean government's efforts to keep them as low as possible. Various news sources reported heightened border security in North Korea after the death of Kim Jong Il, as his son cracked down on threats to the regime's stability.
+
+### Data
+
+The data used in the visualizations are from two sources: the [UNHCR Population Statistics Database](http://popstats.unhcr.org/en/overview#_ga=2.8528317.984464671.1494395603-40744193.1493779803) maintained by the UN Refugee Agency and the [yearly defector arrivals data](http://eng.unikorea.go.kr/content.do?cmsid=3892) published by South Korea's Ministry of Unification. The data are used separately or in conjunction to show trends in North Korean defector populations by year.
+
+### Visualizations and analysis
+
+#### Defector population growth and legal status
+
+```{r by_status}
+glob <- ggplot(numbers_sum_ref, aes(x=Year, y=Population, linetype=Status, color=Status)) + 
+  geom_line() + 
+  geom_point() + 
+  scale_x_continuous(breaks = seq(numbers_sum_ref$Year[1],
+                                  numbers_sum_ref$Year[length(numbers_sum_ref$Year)], 2)) +
+  labs(title = "Documented North Korean defector populations\nby legal status, 1998 - 2015",
+       y = "Number of defectors",
+       color = c("Status"),
+       caption = "Sources: UNHCR, Ministry of Unification") + 
+  theme(legend.position = c(0.15, 0.45), 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black"))
+
+pglob <- plotly_build(glob)
+
+pglob$x$layout$legend$x <- 0.08
+pglob$x$layout$legend$y <- 0.93
+pglob$x$layout$legend$bgcolor <- NA
+pglob$x$layout$legend$borderwidth <- 0.4
+pglob$x$layout$legend$bordercolor <- "rgba(0,0,0,1)"
+pglob$x$data[[1]]$name <- "All"
+pglob$x$data[[1]]$legendgroup <- "All"
+pglob$x$data[[2]]$name <- "South Korean national"
+pglob$x$data[[2]]$legendgroup <- "South Korean national"
+pglob$x$data[[3]]$name <- "International refugee"
+pglob$x$data[[3]]$legendgroup <- "International refugee"
+
+pglob$x$data[[1]]$text <- str_replace_all(pglob$x$data[[1]]$text,
+                                      pattern = "Status: All<br />Status: All", "Status: All")
+pglob$x$data[[2]]$text <- str_replace_all(pglob$x$data[[2]]$text,
+                                      pattern = "Status: South Korean national<br />Status: South Korean national", "Status: South Korean national")
+pglob$x$data[[3]]$text <- str_replace_all(pglob$x$data[[3]]$text,
+                                      pattern = "Status: International refugee<br />Status: International refugee", "Status: International refugee")
+
+pglob
+```
+
+The graph above shows that the global population of formally recognized North Korean defectors has **increased** since 1998, more than tripling since the mid-2000s. However, taken together the number of documented defectors does not reach 30,000 - a tiny fraction out of the total North Korean population of 25 million (2015 figure, World Bank). The vast majority obtained South Korean citizenship rather than petitioning for asylum in another country. Taken together, the population of international North Korean refugees as recorded by the UN does not reach 2000 at its peak.
+
+#### Defector refugee populations by country
+
+```{r ir_by_country}
+unhcr <- ggplot(filter(diaspora_ref_groupNA, Country %in% country_list),
+       aes(Year, Population)) + 
+  geom_line(aes(color = Country, linetype = Country)) +
+  geom_point(aes(color = Country), size = 0.9) + 
+  scale_x_continuous(breaks = seq(1994, 2015, 2)) +
+  labs(title = "North Korean defectors granted international refugee status\nby country of residence, 1994 - 2015",
+       y = "Number of defectors",
+       caption = "Sources: UNHCR") + 
+  theme(legend.position = "None", 
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black"))
+
+punhcr <- plotly_build(unhcr)
+
+punhcr$x$layout$showlegend <- FALSE
+
+punhcr
+```
+
+The greatesr number live in the UK, followed by other Western developed nations such as Canada and Germany. France stands out in that it apparently had a population of 146 North Korean refugees in 2014 and then none the next year. It could be that the defectors in France mass-migrated all at once, or stayed in France under a temporary status before transferring elsewhere. Also, it could be due to measurement error. Russia stands out from among the top destinations which largely consist of wealthy Western states, but the high number is not surprising given that Russia is an immediate neighbor to North Korea and China. In fact, the number is probably quite low compared to the number of North Koreans living or working there illegally. 
+
+#### Factors affecting defection rates: yearly arrivals in South Korea
+
+```{r sk_arrivals}
+sk <- ggplot(sk_arrivals_reshape, aes(Year, Total)) + 
+  geom_line(aes(color = Gender)) + 
+  geom_point(aes(color = Gender), size = 1) + 
+  scale_x_continuous(breaks = seq(sk_arrivals_reshape$Year[1],
+                                  sk_arrivals_reshape$Year[length(sk_arrivals_reshape$Year)], 2)) + 
+  geom_vline(xintercept = 2011, color = "#999999", linetype = 2, size = 0.3) + 
+  annotate(geom = "text", x = 2009.2, y = 1430, label = "Kim Jong Il dies", size = 3) + 
+  labs(title = "North Korean defector arrivals in South Korea\nby gender, 1998 - 2016",
+       y = "New Arrivals",
+       color = c(""),
+       caption = "Source: Ministry of Unification") + 
+  theme(panel.grid.minor = element_blank(),
+        axis.text = element_text(color = "black"))
+
+psk <- plotly_build(sk)
+
+psk$x$layout$legend$x <- 0.085
+psk$x$layout$legend$y <- 0.93
+psk$x$layout$legend$bgcolor <- NA
+psk$x$layout$legend$borderwidth <- 0.4
+psk$x$layout$legend$bordercolor <- "rgba(0,0,0,1)"
+perc <- str_c("<br />% Female:", sk_arrivals$PercFemale, sep = " ")
+psk$x$data[[1]]$text <- str_c(psk$x$data[[1]]$text, perc, sep = "")
+psk
+```
+
+There is a clear drop in the number of arrivals after 2011, which is the year Kim Jong Il died. Kim Jong Un formally took office in April of 2012, but the regime took immediate security measures after the elder Kim's passing to curtail defections. The reduction in yearly arrivals persists in the years following 2011. However, improving economic conditions in North Korea likely contributed to the overall decrease as well.
+
+An interesting trend is that most of the defectors from year to year are female. This could be be caused by a variety of factors, including North Korean men's longer and more involved mandatory military service which limits their mobility, and possibly North Korean women's greater susceptibility to influence by South Korean media. The only exceptions are 1998 and 2001, where 12% and 46% of defectors arriving in South Korea were female, respectively. In later years, the percentage female are 55 or higher. Whatever factors causing more women to (successfully) defect than men appear to have grown stronger in influence over the years.
+
+### Design Description
+
+In terms of aesthetics, I wanted the graphs to look clean and uncluttered while being easy to read. Thus, in addition to using `theme_minimal()` I spaced the year axis with two-year gaps and removed the minor grid lines. In each case I either removed the legend or placed it inside the plot to reduce unused white space and make the plot itself as large as possible.
+
+Also, to avoid misleading interpretations from missing data, I used points as well as lines to depict the data. This way, values for a given year are plotted regardless whether there are values in the following year, as in plot 1. In addition, the viewer can clearly see where there are missing data. For plots 1 and 2 I manipulated the data so that lines do not extend across missing data points, to more truthfully represent the available information. However, for plot 3 I did not, because I wanted to draw attention to the increase in the number of female arrivals and the corresponding decrease in the number of male arrivals in the early years.
+
+#### Plot 1: Defector population growth and status distribution
+
+The story in this plot is that the population of documented North Korean defectors has greatly increased since the late 1990s, and also that the vast majority of defectors obtain South Korean citizenship rather than applying for refugee status elsewhere. I depict this via a simple line plot with a separate line for each of the two status groups as well as the sum of their values. Admittedly, the choice was driven largely by practicality and ease of programming. I originally had a stacked area plot to emphasize both the overall population growth and the greater proportion of South Korean nationals, but introducing interactivity made it less attractive in that the hover annotations for South Korean nationals and the total sums would show up at the same time since the lines overlapped. Using a line plot cleanly separates most of the annotations while still depicting the important trends. 
+
+I differentiate the status groups from one another using two channels, color and linetype. Using two channels rather than one adds to the distinctiveness of each line and also adds some variety to an otherwise very simple and monotone graph.
+
+The interactive features of the graph allow the user to hover over specific points and get the exact populations for a status group in a given year. This mostly reduces dependence on the axes and gridlines to ascertain values.
+
+#### Plot 2: Defector refugee populations by country
+
+This plot is more exploratory, as the viewer is free to examine each country line as he or she wishes. I distinguish trends by country by using different combinations of color and linetype for each country. I did not include a legend because firstly, the user can simply hover over the points to see the country name, and secondly, there are too many countries for a legend to be useful. The main advantage of applying different colors and line types is that the user can more easily distinguish between country lines as he or she zooms in on different parts of the plot. The zoom and panning features are especially useful for this plot due to the large number of lines and clustering near the bottom.
+
+#### Plot 3: Yearly arrivals in South Korea
+
+The story for this graph is that the number of defectors arriving in South Korea decreased after the death of Kim Jong Il and the subsequent political shifts and also that North Korean defectors are mostly female. The first part of the story is highlighted by the vertical line intersecting 2011, labeled "Kim Jong Il dies". The line separates the graph into two parts: the pre-Kim Jong Un era and the Kim Jong Un era. Initially I wanted to make the separation more noticeable by shading part of the background, but could not get `geom_rect()` and `geom_polygon()` to produce rectangles using `ggplotly`. The second part of the story is shown in a straightforward way via separate lines by gender. I use color to differentiate between gender groups. I did not use a second channel as in plot 1 because the plot already had enough variation and dynamism on account of the craggy movement of the lines and the dashed vertical line. Adding more channels would have simply been distracting.
+
+The two main benefits of interactivity in this graph are that 1. the user can get exact values for number of arrivals in each group for each year without depending on the axes or gridlines, and 2. the hover annotations show information not visually depicted elsewhere on the graph. Mainly, by hovering over the points along the "All" line the user can get information on the proportion of female defectors out of the total each year. It is possible to estimate the value just by looking at the vertical distance between points, but having the annotations removes the need.
