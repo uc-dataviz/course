@@ -1,0 +1,233 @@
+---
+title: "Day 17 - text visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Identify the basic workflow for conducting text analysis
+* Descriptive text visualization
+    * Wordclouds
+    * N-gram viewers
+        * Google
+        * [How The Internet* Talks](https://projects.fivethirtyeight.com/reddit-ngram/?keyword=triggered.safe_space.sjw.snowflake&start=20071015&end=20161231&smoothing=10)
+* More complex text visualization
+    * Geospatial visualization
+        * [Which Curse Words Are Popular In Your State? Find Out From These Maps.](http://www.huffingtonpost.com/entry/which-curse-words-are-popular-in-your-state_us_55a80662e4b04740a3df54b8)
+        * [Hate Map](http://users.humboldt.edu/mstephens/hate/hate_map.html)
+        * [Soda vs. Pop with Twitter](http://blog.echen.me/2012/07/06/soda-vs-pop-with-twitter/)
+    * Network analysis
+        [How every #GameOfThrones episode has been discussed on Twitter](https://interactive.twitter.com/game-of-thrones/#?episode=60)
+* Even more complex methods
+    * Sentiment analysis
+    * Latent semantic analysis
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggraph)
+library(igraph)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Basic workflow for text analysis
+
+* Obtain your text sources
+* Extract documents and move into a corpus
+* Transformation
+* Extract features
+* Perform analysis
+
+## Obtain your text sources
+
+Text data can come from lots of areas:
+
+* Web sites
+    * Twitter
+* Databases
+* PDF documents
+* Digital scans of printed materials
+
+The easier to convert your text data into digitally stored text, the cleaner your results and fewer transcription errors.
+
+## Extract documents and move into a corpus
+
+A **text corpus** is a large and structured set of texts. It typically stores the text as a [raw character string](http://r4ds.had.co.nz/strings.html) with meta data and details stored with the text.
+
+## Transformation
+
+Examples of typical transformations include:
+
+* Tagging segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
+* Standard text processing - we want to remove extraneous information from the text and standardize it into a uniform format. This typically involves:
+    * Converting to lower case
+    * Removing punctuation
+    * Removing numbers
+    * Removing **stopwords** - common parts of speech that are not informative such as *a*, *an*, *be*, *of*, etc.
+    * Removing domain-specific stopwords
+    * Stemming - reduce words to their word stem
+        * "Fishing", "fished", and "fisher" -> "fish"
+
+## Extract features
+
+Feature extraction involves converting the text string into some sort of quantifiable measures. The most common approach is the **bag-of-words model**, whereby each document is represented as a vector which counts the frequency of each term's appearance in the document. You can combine all the vectors for each document together and you create a *term-document matrix*:
+
+* Each row is a document
+* Each column is a term
+* Each cell represents the frequency of the term appearing in the document
+
+However the bag-of-word model ignores **context**. You could randomly scramble the order of terms appearing in the document and still get the same term-document matrix.
+
+## Perform analysis
+
+At this point you now have data assembled and ready for analysis. There are several approaches you may take when analyzing text depending on your research question. Basic approaches include:
+
+* Word frequency - counting the frequency of words in the text
+* Collocation - words commonly appearing near each other
+* Dictionary tagging - locating a specific set of words in the texts
+
+More advanced methods include **document classification**, or assigning documents to different categories. This can be **supervised** (the potential categories are defined in advance of the modeling) or **unsupervised** (the potential categories are unknown prior to analysis). You might also conduct **corpora comparison**, or comparing the content of different groups of text. This is the approach used in plagiarism detecting software such as [Turn It In](http://turnitin.com/). Finally, you may attempt to detect clusters of document features, known as **topic modeling**.
+
+# Descriptive text visualization
+
+## Wordclouds
+
+# Wordclouds
+
+So far we've used basic plots from `ggplot2` to visualize our text data. However we could also use a **word cloud** to represent our text data. Also known as a **tag cloud**, word clouds visually represent text data by weighting the importance of each word, typically based on frequency in the text document. We can use the `wordcloud` package in R to generate these plots based on our tidied text data.
+
+To draw the wordcloud, we need the data in tidy text format, so one-row-per-term. For example, here is a wordcloud of a set of tweets related to `#rstats`:
+
+```{r}
+library(twitteR)
+```
+
+```{r}
+# You'd need to set global options with an authenticated app
+setup_twitter_oauth(getOption("twitter_api_key"),
+                    getOption("twitter_api_token"))
+```
+
+```{r wordcloud-rstats}
+library(wordcloud)
+
+# get tweets
+rstats <- searchTwitter('#rstats', n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+rstats_token <- rstats %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+rstats_token %>%
+  count(word) %>%
+  filter(word != "#rstats") %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+Or tweets by [Pope Francis](https://twitter.com/Pontifex):
+
+```{r wordcloud-pope}
+# get tweets
+pope <- userTimeline("Pontifex", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+pope_token <- pope %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+pope_token %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+We can even use wordclouds to compare words or tokens through the `comparison.cloud()` function. For instance, how do the tweets by Donald Trump compare to Pope Francis? In order to make this work, we need to convert our tidy data frame into a matrix first using the `acast()` function from `reshape2`, then use that for `comparison.cloud()`.
+
+```{r wordcloud-pope-trump}
+library(reshape2)
+
+# get fresh trump tweets
+trump <- userTimeline("realDonaldTrump", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+trump_token <- trump %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
+  count(word, person) %>%
+  acast(word ~ person, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 100, colors = c("blue", "red"))
+```
+
+The size of a word's text is in proportion to its frequency within its category (i.e. proportion of all Trump tweets or all pope tweets). We can use this visualization to see the most frequent words/hashtags by President Trump and Pope Francis, but the sizes of the words are not comparable across sentiments.
+
+## N-gram viewers
+
+An **n-gram** is a contiguous sequence of $n$ items from a given sequence of text or speech.
+
+* n-gram of size 1 = unigram
+* n-gram of size 2 = bigram
+* n-gram of size 3 = trigram
+* n-gram of size 4 = four-gram, etc.
+
+This starts to incorporate context into our visualization. Rather than assuming all words/tokens are unique and independent from one another, n-grams of size 2 and up join together pairs or combinations of words in order to identify frequency within a document.
+
+### Examples of n-gram viewers
+
+* [Google Books Ngram Viewer](https://books.google.com/ngrams)
+    * ["Fuck"](https://books.google.com/ngrams/graph?content=Fuck&case_insensitive=on&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t4%3B%2CFuck%3B%2Cc0%3B%2Cs0%3B%3Bfuck%3B%2Cc0%3B%3BFuck%3B%2Cc0%3B%3BFUCK%3B%2Cc0)
+    * ["the Great War" vs. "the World War" vs. "World War I"](https://books.google.com/ngrams/graph?content=the+Great+War%2Cthe+World+War%2CWorld+War+I&year_start=1900&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cthe%20Great%20War%3B%2Cc0%3B.t1%3B%2Cthe%20World%20War%3B%2Cc0%3B.t1%3B%2CWorld%20War%20I%3B%2Cc0)
+    * ["upward trend"](https://books.google.com/ngrams/graph?content=upward+trend&year_start=1850&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cupward%20trend%3B%2Cc0)
+    * ["love" vs. "hope" vs. "faith" vs. "sex"](https://books.google.com/ngrams/graph?content=love%2Chope%2Cfaith%2Csex&year_start=1700&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Clove%3B%2Cc0%3B.t1%3B%2Chope%3B%2Cc0%3B.t1%3B%2Cfaith%3B%2Cc0%3B.t1%3B%2Csex%3B%2Cc0)
+    * ["President"](https://books.google.com/ngrams/graph?content=President&year_start=1750&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2CPresident%3B%2Cc0)
+    * ["prime the pump"](https://books.google.com/ngrams/graph?content=prime+the+pump&year_start=1880&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cprime%20the%20pump%3B%2Cc0)
+    * ["merry Christmas" vs. "happy holidays"](https://books.google.com/ngrams/graph?content=merry+Christmas%2Chappy+holidays&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cmerry%20Christmas%3B%2Cc0%3B.t1%3B%2Chappy%20holidays%3B%2Cc0)
+    * ["telephone" vs. "telegram" vs. "television" vs. "radio" vs. "internet"](https://books.google.com/ngrams/graph?content=telephone%2C+telegram%2C+television%2C+radio%2C+internet&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Ctelephone%3B%2Cc0%3B.t1%3B%2Ctelegram%3B%2Cc0%3B.t1%3B%2Ctelevision%3B%2Cc0%3B.t1%3B%2Cradio%3B%2Cc0%3B.t1%3B%2Cinternet%3B%2Cc0)
+    * [Calendar of Meaningful Dates](https://www.xkcd.com/1140/)
+* [How The Internet* Talks](https://projects.fivethirtyeight.com/reddit-ngram/?keyword=triggered.safe_space.sjw.snowflake&start=20071015&end=20161231&smoothing=10)
+
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+
