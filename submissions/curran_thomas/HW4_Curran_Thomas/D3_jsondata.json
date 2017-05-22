@@ -1,0 +1,422 @@
+[
+ {
+   "year": 1952,
+   "continent": "Africa",
+   "avg_life": 39.1355,
+   "avg_pop": 4570009.635,
+   "avg_gdpPercap": 1252.572466
+ },
+ {
+   "year": 1952,
+   "continent": "Americas",
+   "avg_life": 53.27984,
+   "avg_pop": 13806097.84,
+   "avg_gdpPercap": 4079.062552
+ },
+ {
+   "year": 1952,
+   "continent": "Asia",
+   "avg_life": 46.31439394,
+   "avg_pop": 42283556.09,
+   "avg_gdpPercap": 5195.484004
+ },
+ {
+   "year": 1952,
+   "continent": "Europe",
+   "avg_life": 64.4085,
+   "avg_pop": 13937361.53,
+   "avg_gdpPercap": 5661.057435
+ },
+ {
+   "year": 1952,
+   "continent": "Oceania",
+   "avg_life": 69.255,
+   "avg_pop": 5343003,
+   "avg_gdpPercap": 10298.08565
+ },
+ {
+   "year": 1957,
+   "continent": "Africa",
+   "avg_life": 41.26634615,
+   "avg_pop": 5093033.423,
+   "avg_gdpPercap": 1385.236062
+ },
+ {
+   "year": 1957,
+   "continent": "Americas",
+   "avg_life": 55.96028,
+   "avg_pop": 15478156.64,
+   "avg_gdpPercap": 4616.043733
+ },
+ {
+   "year": 1957,
+   "continent": "Asia",
+   "avg_life": 49.31854424,
+   "avg_pop": 47356987.85,
+   "avg_gdpPercap": 5787.73294
+ },
+ {
+   "year": 1957,
+   "continent": "Europe",
+   "avg_life": 66.70306667,
+   "avg_pop": 14596345.03,
+   "avg_gdpPercap": 6963.012816
+ },
+ {
+   "year": 1957,
+   "continent": "Oceania",
+   "avg_life": 70.295,
+   "avg_pop": 5970988,
+   "avg_gdpPercap": 11598.52246
+ },
+ {
+   "year": 1962,
+   "continent": "Africa",
+   "avg_life": 43.31944231,
+   "avg_pop": 5702247.404,
+   "avg_gdpPercap": 1598.078825
+ },
+ {
+   "year": 1962,
+   "continent": "Americas",
+   "avg_life": 58.39876,
+   "avg_pop": 17330810.16,
+   "avg_gdpPercap": 4901.54187
+ },
+ {
+   "year": 1962,
+   "continent": "Asia",
+   "avg_life": 51.56322303,
+   "avg_pop": 51404763.09,
+   "avg_gdpPercap": 5729.369625
+ },
+ {
+   "year": 1962,
+   "continent": "Europe",
+   "avg_life": 68.53923333,
+   "avg_pop": 15345171.83,
+   "avg_gdpPercap": 8365.486814
+ },
+ {
+   "year": 1962,
+   "continent": "Oceania",
+   "avg_life": 71.085,
+   "avg_pop": 6641759,
+   "avg_gdpPercap": 12696.45243
+ },
+ {
+   "year": 1967,
+   "continent": "Africa",
+   "avg_life": 45.33453846,
+   "avg_pop": 6447874.788,
+   "avg_gdpPercap": 2050.363801
+ },
+ {
+   "year": 1967,
+   "continent": "Americas",
+   "avg_life": 60.41092,
+   "avg_pop": 19229864.92,
+   "avg_gdpPercap": 5668.253496
+ },
+ {
+   "year": 1967,
+   "continent": "Asia",
+   "avg_life": 54.66364,
+   "avg_pop": 57747360.61,
+   "avg_gdpPercap": 5971.173374
+ },
+ {
+   "year": 1967,
+   "continent": "Europe",
+   "avg_life": 69.7376,
+   "avg_pop": 16039298.6,
+   "avg_gdpPercap": 10143.82376
+ },
+ {
+   "year": 1967,
+   "continent": "Oceania",
+   "avg_life": 71.31,
+   "avg_pop": 7300207,
+   "avg_gdpPercap": 14495.02179
+ },
+ {
+   "year": 1972,
+   "continent": "Africa",
+   "avg_life": 47.45094231,
+   "avg_pop": 7305375.788,
+   "avg_gdpPercap": 2339.615674
+ },
+ {
+   "year": 1972,
+   "continent": "Americas",
+   "avg_life": 62.39492,
+   "avg_pop": 21175368.4,
+   "avg_gdpPercap": 6491.334139
+ },
+ {
+   "year": 1972,
+   "continent": "Asia",
+   "avg_life": 57.31926909,
+   "avg_pop": 65180977.21,
+   "avg_gdpPercap": 8187.468699
+ },
+ {
+   "year": 1972,
+   "continent": "Europe",
+   "avg_life": 70.77503333,
+   "avg_pop": 16687835.3,
+   "avg_gdpPercap": 12479.57525
+ },
+ {
+   "year": 1972,
+   "continent": "Oceania",
+   "avg_life": 71.91,
+   "avg_pop": 8053050,
+   "avg_gdpPercap": 16417.33338
+ },
+ {
+   "year": 1977,
+   "continent": "Africa",
+   "avg_life": 49.58042308,
+   "avg_pop": 8328096.558,
+   "avg_gdpPercap": 2585.938508
+ },
+ {
+   "year": 1977,
+   "continent": "Americas",
+   "avg_life": 64.39156,
+   "avg_pop": 23122707.96,
+   "avg_gdpPercap": 7352.007126
+ },
+ {
+   "year": 1977,
+   "continent": "Asia",
+   "avg_life": 59.61055636,
+   "avg_pop": 72257986.55,
+   "avg_gdpPercap": 7791.31402
+ },
+ {
+   "year": 1977,
+   "continent": "Europe",
+   "avg_life": 71.93776667,
+   "avg_pop": 17238817.7,
+   "avg_gdpPercap": 14283.97911
+ },
+ {
+   "year": 1977,
+   "continent": "Oceania",
+   "avg_life": 72.855,
+   "avg_pop": 8619500,
+   "avg_gdpPercap": 17283.95761
+ },
+ {
+   "year": 1982,
+   "continent": "Africa",
+   "avg_life": 51.59286538,
+   "avg_pop": 9602857.442,
+   "avg_gdpPercap": 2481.59296
+ },
+ {
+   "year": 1982,
+   "continent": "Americas",
+   "avg_life": 66.22884,
+   "avg_pop": 25211636.8,
+   "avg_gdpPercap": 7506.737088
+ },
+ {
+   "year": 1982,
+   "continent": "Asia",
+   "avg_life": 62.61793939,
+   "avg_pop": 79095017.64,
+   "avg_gdpPercap": 7434.135157
+ },
+ {
+   "year": 1982,
+   "continent": "Europe",
+   "avg_life": 72.8064,
+   "avg_pop": 17708896.7,
+   "avg_gdpPercap": 15617.89655
+ },
+ {
+   "year": 1982,
+   "continent": "Oceania",
+   "avg_life": 74.29,
+   "avg_pop": 9197425,
+   "avg_gdpPercap": 18554.70984
+ },
+ {
+   "year": 1987,
+   "continent": "Africa",
+   "avg_life": 53.34478846,
+   "avg_pop": 11054502.12,
+   "avg_gdpPercap": 2282.668991
+ },
+ {
+   "year": 1987,
+   "continent": "Americas",
+   "avg_life": 68.09072,
+   "avg_pop": 27310158.84,
+   "avg_gdpPercap": 7793.400261
+ },
+ {
+   "year": 1987,
+   "continent": "Asia",
+   "avg_life": 64.85118182,
+   "avg_pop": 87006689.76,
+   "avg_gdpPercap": 7608.226508
+ },
+ {
+   "year": 1987,
+   "continent": "Europe",
+   "avg_life": 73.64216667,
+   "avg_pop": 18103138.67,
+   "avg_gdpPercap": 17214.31073
+ },
+ {
+   "year": 1987,
+   "continent": "Oceania",
+   "avg_life": 75.32,
+   "avg_pop": 9787207.5,
+   "avg_gdpPercap": 20448.04016
+ },
+ {
+   "year": 1992,
+   "continent": "Africa",
+   "avg_life": 53.62957692,
+   "avg_pop": 12674644.56,
+   "avg_gdpPercap": 2281.810333
+ },
+ {
+   "year": 1992,
+   "continent": "Americas",
+   "avg_life": 69.56836,
+   "avg_pop": 29570964.16,
+   "avg_gdpPercap": 8044.934406
+ },
+ {
+   "year": 1992,
+   "continent": "Asia",
+   "avg_life": 66.53721212,
+   "avg_pop": 94948248.21,
+   "avg_gdpPercap": 8639.690248
+ },
+ {
+   "year": 1992,
+   "continent": "Europe",
+   "avg_life": 74.4401,
+   "avg_pop": 18604759.9,
+   "avg_gdpPercap": 17061.56808
+ },
+ {
+   "year": 1992,
+   "continent": "Oceania",
+   "avg_life": 76.945,
+   "avg_pop": 10459825.5,
+   "avg_gdpPercap": 20894.04589
+ },
+ {
+   "year": 1997,
+   "continent": "Africa",
+   "avg_life": 53.59826923,
+   "avg_pop": 14304480.46,
+   "avg_gdpPercap": 2378.759555
+ },
+ {
+   "year": 1997,
+   "continent": "Americas",
+   "avg_life": 71.15048,
+   "avg_pop": 31876016.4,
+   "avg_gdpPercap": 8889.300863
+ },
+ {
+   "year": 1997,
+   "continent": "Asia",
+   "avg_life": 68.02051515,
+   "avg_pop": 102523803,
+   "avg_gdpPercap": 9834.093295
+ },
+ {
+   "year": 1997,
+   "continent": "Europe",
+   "avg_life": 75.50516667,
+   "avg_pop": 18964804.93,
+   "avg_gdpPercap": 19076.7818
+ },
+ {
+   "year": 1997,
+   "continent": "Oceania",
+   "avg_life": 78.19,
+   "avg_pop": 11120715,
+   "avg_gdpPercap": 24024.17517
+ },
+ {
+   "year": 2002,
+   "continent": "Africa",
+   "avg_life": 53.32523077,
+   "avg_pop": 16033152.23,
+   "avg_gdpPercap": 2599.385159
+ },
+ {
+   "year": 2002,
+   "continent": "Americas",
+   "avg_life": 72.42204,
+   "avg_pop": 33990910.48,
+   "avg_gdpPercap": 9287.677107
+ },
+ {
+   "year": 2002,
+   "continent": "Asia",
+   "avg_life": 69.23387879,
+   "avg_pop": 109145521.3,
+   "avg_gdpPercap": 10174.0904
+ },
+ {
+   "year": 2002,
+   "continent": "Europe",
+   "avg_life": 76.7006,
+   "avg_pop": 19274128.97,
+   "avg_gdpPercap": 21711.73242
+ },
+ {
+   "year": 2002,
+   "continent": "Oceania",
+   "avg_life": 79.74,
+   "avg_pop": 11727414.5,
+   "avg_gdpPercap": 26938.77804
+ },
+ {
+   "year": 2007,
+   "continent": "Africa",
+   "avg_life": 54.80603846,
+   "avg_pop": 17875763.31,
+   "avg_gdpPercap": 3089.032605
+ },
+ {
+   "year": 2007,
+   "continent": "Americas",
+   "avg_life": 73.60812,
+   "avg_pop": 35954847.36,
+   "avg_gdpPercap": 11003.03163
+ },
+ {
+   "year": 2007,
+   "continent": "Asia",
+   "avg_life": 70.72848485,
+   "avg_pop": 115513752.3,
+   "avg_gdpPercap": 12473.02687
+ },
+ {
+   "year": 2007,
+   "continent": "Europe",
+   "avg_life": 77.6486,
+   "avg_pop": 19536617.63,
+   "avg_gdpPercap": 25054.48164
+ },
+ {
+   "year": 2007,
+   "continent": "Oceania",
+   "avg_life": 80.7195,
+   "avg_pop": 12274973.5,
+   "avg_gdpPercap": 29810.18828
+ }
+]
