@@ -1,0 +1,35 @@
+---
+title: "HW4_Curran_Thomas"
+author: "Thomas Curran"
+date: "5/21/2017"
+output: html_document
+---
+
+```{r Rgraph}
+library(datasets)
+library(gapminder)
+library(tidyverse)
+library(plotly)
+
+data <- gapminder %>%
+  group_by(year, continent) %>%
+  summarise(avg_life = mean(lifeExp), avg_pop = mean(pop), avg_gdpPercap = mean(gdpPercap))
+
+
+p<-ggplotly(
+    ggplot(
+      data, 
+      aes(x=year, y=avg_life, group = factor(continent),
+          color = continent) 
+    ) +
+      geom_point() +
+      geom_smooth(method = "lm", fill="NA") +
+      theme_classic()+
+      theme(legend.position = "none") +
+      xlab("Year") +
+      ylab("Average Life Expectancy") +
+      ggtitle("Average Life Expectancy By Continent (1952 - 2007)")
+  )
+
+p
+```

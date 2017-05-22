@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta charset="utf-8">
+    <script type = "text/javascript" src="https://d3js.org/d3.v4.min.js">
+    </script>
+
+    <title>Gapminder</title>
+  </head>
+  <body>
+    <script type = "text/javascript" source='https://d3js.org/d3.v4.min.js'>
+    //Width and height
+  	var w = 500;
+  	var h = 100;
+
+  	var dataset = [
+  					[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+  					[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+  					];
+
+  	//Create SVG element
+  	var svg = d3.select("body")
+  				.append("svg")
+  				.attr("width", w)
+  				.attr("height", h);
+
+  	svg.selectAll("circle")
+  	   .data(dataset)
+  	   .enter()
+  			.append("circle")
+  			.attr("cx", function(d) {
+  					return d[0];
+  			})
+  			.attr("cy", function(d) {
+  					return d[1];
+  			})
+  			.attr("r", 5);
+
+
+    //console.log(gapminder);
+    </script>
+  </body>
+</html>
+
+d3.json("D3_jsondata.json", function(data){
+  gapminder = data;
+
+  var count = Object.keys(gapminder).length
+  var year = [];
+  var avg_life = [];
+  var points=[]
+
+  var w = 500;
+  var h = 500;
+
+  for(i=0;i<count;i++){
+    //create two dimensional array for the scatter plot:
+    var pop = gapminder[i].avg_life
+    var year = gapminder[i].year
+    points[i]=[pop,year]
+  };
+
+  var svg = d3.select("body")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h);
+
+
+});
