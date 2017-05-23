@@ -1,0 +1,468 @@
+---
+title: "Oklahoma City School Data Explorer"
+resource_files:
+- schooldistrict.dbf
+- schooldistrict.shx
+- SchoolDistrict.txt
+runtime: shiny
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    theme: spacelab
+---
+```{r globals, include = FALSE, verbose=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+#knitr::opts_chunk$set(verbose=FALSE, echo=FALSE, warning=FALSE, message=FALSE)
+library(flexdashboard)
+library(tidyverse)
+library(stringr)
+library(data.table)
+library(plotly)
+library(shiny)
+library(leaflet)
+library(rgdal)
+library(stringr)
+library(ggthemes)
+
+#Importing Data Sets
+###############################################################################
+principals<-read.csv("principals.csv", header=TRUE)
+contact_info<-read.csv("contactinfo.csv", header=TRUE)
+enrollment<-read.csv("OKC_enrollment.csv", header=TRUE)
+af_grades_df<-read.csv("AFGrades.csv", header=TRUE)
+af_grades_df$LetteGrade<-str_trim(af_grades_df$LetteGrade)
+af_grades_df$SchoolName<-toupper(af_grades_df$SchoolName)
+spi<-read_csv("SchoolPerformanceIndex.csv")
+testScores<-read_csv("SchoolTestScores.csv")
+testScores_wide<-gather(testScores, Prof, Prct, Advanced:Satisfactory, factor_key=TRUE)
+###############################################################################
+#setting list names:
+###############################################################################
+letterGrades<-unique(af_grades_df$LetteGrade)
+gradeGroups<-as.list(unique(af_grades_df$LetterGradeGroup))
+schools<- unique(enrollment$SiteName)
+year<- unique(enrollment$Year)
+grades<-as.list(unique(enrollment$Grade))
+grade_groups<-as.list(unique(af_grades_df$LetterGradeGroup))
+##############################################################################
+#Wide Enrollment for graphs
+###############################################################################
+wEnrollment <- gather(enrollment, Race_Gender, Count, Hispanic_Male:Total, factor_key = TRUE)
+wEnrollment<-filter(wEnrollment, Race_Gender !='Total')
+wEnrollment <- separate(wEnrollment, Race_Gender,c("Race","Gender"),sep="_")
+
+#leaflet
+#shapefile
+district<-readOGR("schooldistrict.shp",layer="schooldistrict")
+okc_shp<-subset(district, SD_NAME =="Oklahoma City")
+#school maker
+school_geo<-read_csv("school_geo.csv")
+school_lat <- school_geo$Latitude
+school_lon <- school_geo$Longitude
+school_name<-school_geo$Site
+###############################################################################
+#Expenditures
+expenditures<-read.csv("okcpsExp.csv", header=TRUE)
+#Revenues:
+revenues<-read.csv("okcpsRev.csv", header=TRUE)
+
+```
+
+District Map
+==============================================================================
+
+```{r map, verbose=FALSE, echo=FALSE, warning=FALSE, message=FALSE}
+af_grades<-filter(af_grades_df, af_grades_df$Year == max(af_grades_df$Year))
+getColor<-function(grades){
+  sapply(af_grades$LetterGradeGroup, function(LetterGradeGroup){
+    if(LetterGradeGroup=="A"){
+      "green"
+    } else if(LetterGradeGroup=="B"){
+      "blue"
+    } else if(LetterGradeGroup=="C"){
+      "purple"
+    } else if(LetterGradeGroup=="D"){
+      "orange"
+    } else if(LetterGradeGroup=="F"){
+      "red"
+    }
+  })
+}
+
+icons<- awesomeIcons(
+  icon='ios-close',
+  iconColor='black',
+  library='ion',
+  markerColor=getColor(af_grades)
+)
+
+map <- leaflet()
+map<-addTiles(map, 
+              group="Oklahoma")
+map<- addPolygons(map,
+                  group='School Districts',
+                  data=okc_shp,
+                  weight=1,
+                  fillColor="blue")
+
+map <- addAwesomeMarkers(map,
+                         lng=af_grades$Longitude,
+                         lat=af_grades$Latitude,
+                         icon = icons,
+                         label = paste(af_grades$SchoolName,": ", af_grades$LetteGrade))
+map<-addLegend(map, "topright", labels=c("A Schools","B School","C School","D School","F School"), col=c("green","blue","purple","orange","red"), title="2016 A-F Grade Colors")
+
+map
+
+```
+
+Oklahoma City
+==============================================================================
+
+Column{.sidebar}
+----------------------------------------------
+###Select Grade Year
+```{r}
+selectInput(
+  "gradeYear",
+  "Select Year",
+  choices=unique(af_grades_df$Year)
+)
+```
+
+###Select School Level
+```{r}
+
+levels <-as.list(unique(af_grades_df$School_Level))
+selectInput(
+  "schoolLevel",
+  "School Level",
+  choices= c("All", levels)
+)
+```
+```{r}
+h3("School Superintendent:")
+h4("Aurora Laura")
+renderText({
+})
+```
+
+
+Row
+---------------------------------------------
+###Number of Schools By Grade Group 2013-2016
+```{r}
+af_grades_2<-filter(af_grades_df, af_grades_df$LetterGradeGroup!='N')
+af_grades_agg<-count(group_by(af_grades_2,Year,LetterGradeGroup))
+
+renderPlotly({
+  ggplot(af_grades_agg, aes(Year,y=n, color=factor(LetterGradeGroup)))+
+    geom_point()+
+    scale_x_discrete("Year")+
+    geom_line()+
+    xlab("Year")+
+    scale_x_discrete(limits=unique(af_grades_agg$Year))+
+    ylab("Number of Schools")+
+    labs(color="Grade")+
+    theme(legend.position = "bottom")
+})
+```
+
+###Number of Schools By Letter Grade (Single Year)
+```{r}
+
+af_grades2<- reactive({
+  if(input$schoolLevel == 'All'){
+    x<-filter(af_grades_df, af_grades_df$LetterGradeGroup!='N' & Year == input$gradeYear)
+    x
+  } else {
+    x<-filter(af_grades_df, af_grades_df$LetterGradeGroup!='N' & Year == input$gradeYear & School_Level == input$schoolLevel )
+    x 
+  }
+})
+
+renderPlot({
+  ggplot(af_grades2(), aes(LetterGradeGroup, fill=factor(LetterGradeGroup)))+
+    geom_bar(stat="count")+
+    xlab("Letter Grade Group")+
+    ylab("Number of Schools") +
+    theme(legend.position="none")
+})
+```
+
+Row{.tabset}
+---------------------------------------------
+###Query Grades
+```{r}
+gradeGroups <- reactive({
+  if(input$schoolLevel == 'All'){
+    x<-filter(af_grades_df, af_grades_df$LetterGradeGroup!='N' & Year == input$gradeYear)
+    x<-x[,c("Year", "SchoolName", "IndexScore","LetteGrade")]
+    x<-x[order(x$IndexScore, decreasing=TRUE),]
+    x
+    
+  } else {
+    x<-filter(af_grades_df, af_grades_df$LetterGradeGroup!='N' & Year == input$gradeYear & School_Level == input$schoolLevel )
+    x<-x[,c("Year", "SchoolName", "IndexScore","LetteGrade")]
+    x<-x[order(x$IndexScore, decreasing=TRUE),]
+    x
+  }
+})
+renderTable({
+  gradeGroups()
+})
+```
+
+School Explorer
+==============================================================================
+
+Column {.sidebar}
+-------------------------------------
+###School Chooser
+```{r}
+#School Name
+selectInput(
+  "schools",
+  "Select School",
+  choices=schools
+)
+
+selectInput(
+  "year",
+  "Select Year",
+  choices=year,
+  selected=2016
+)
+
+selectInput(
+  "grade",
+  "Select Grade",
+  choices = c("All", grades),
+  selected="All"
+)
+
+selectInput(
+  "subject",
+  "Select Test Subject (for EOI select any grade between 9 and 12)",
+  choices=unique(testScores$Subject),
+  selected=1
+)
+```
+
+Row
+-------------------------------------
+###Address
+```{r}
+address<-reactive({
+  x<-filter(contact_info, contact_info$Site==input$schools)
+  y<-x$Address
+})
+
+renderValueBox({
+  
+  h2(valueBox(address(), 
+         "School Address",
+         icon="fa-address-book"))
+})
+```
+
+### Principal
+```{r}
+principal<-reactive({
+  x<-filter(principals, principals$SchoolName==input$schools)
+  y<-x$Principal
+})
+renderValueBox({
+  h2(valueBox(
+    principal(),
+    "School Principal",
+    icon="fa-id-card"
+         ))
+})
+
+```
+
+###A-F Letter Grade
+```{r}
+afgrade<-reactive({
+  x<-filter(af_grades_df, af_grades_df$SchoolName==input$schools & af_grades_df$Year == input$year)
+  y<-x$LetteGrade
+})
+
+
+renderValueBox({
+  h3(valueBox(
+    afgrade(),
+    "Letter Grade",
+    icon="fa-pencil",
+    color=ifelse(grepl(afgrade(),"A")==TRUE,"green",
+                 ifelse(grepl(afgrade(),"B")==TRUE,"#4286f4",
+                        ifelse(grepl(afgrade(),"C")==TRUE,"#def416", ifelse(grepl(afgrade(),"D")==TRUE,"#f47616",ifelse(grepl(afgrade(),"F")==TRUE,"red","gray")))))
+         ))
+})
+```
+
+###Grades Served
+```{r}
+gradespan<-reactive({
+  x<-filter(enrollment, enrollment$SiteName==input$schools)
+  if(min(x$LowGrade) == -1){
+    minGrade = "Pre-School"
+  } else if (min(x$LowGrade) == 0){
+    minGrade = "Kindergarten"
+  } else{
+    minGrade = min(x$LowGrade)
+  }
+  
+  maxGrade = max(x$HighGrade)
+  paste(minGrade," - ", maxGrade)
+})
+
+renderValueBox({
+  
+  valueBox(
+    gradespan(),
+    "Grades Served",
+    icon="fa-bell",
+    color="gray"
+  )
+  
+})
+```
+
+Row
+-------------------------------
+
+###School Demographics (Single Year)
+```{r}
+demos<-reactive({
+  if(input$grade=='All'){
+    x<-filter(wEnrollment, wEnrollment$Year == input$year & wEnrollment$SiteName == input$schools)
+    x<-aggregate(x$Count, by=list(x$Race),FUN=sum)
+  } else if(input$grade != 'All'){
+    x<-filter(wEnrollment, wEnrollment$Year == input$year & wEnrollment$SiteName == input$schools & wEnrollment$Grade == input$grade)
+    x<-aggregate(x$Count, by=list(x$Race),FUN=sum)
+  }
+})
+
+renderPlot({
+  ggplot(demos(), aes(x=Group.1, y=x, fill=Group.1))+geom_col()+xlab("Demographic")+ylab("Number of Students")+labs(fill="Demographic")
+})
+```
+
+
+###Demographics Over Time
+```{r}
+demos_ot<-reactive({
+  if(input$grade=='All'){
+    x<-filter(wEnrollment, wEnrollment$SiteName == input$schools)
+    x<-aggregate(x$Count,  by=list("Year" = x$Year, "Demographic"=x$Race),FUN=sum)
+    x
+  } else if(input$grade != 'All'){
+    x<-filter(wEnrollment, wEnrollment$SiteName == input$schools & wEnrollment$Grade == input$grade)
+    x<-aggregate(x$Count, by=list("Year" = x$Year, "Demographic"=x$Race),FUN=sum)
+    x
+  }
+})
+
+renderPlotly({
+  demos_ot<-demos_ot()
+  
+  ggplotly(ggplot(demos_ot(), 
+                  aes(x=Year, y=x, group=factor(Demographic),
+                      color=factor(Demographic)))+
+             geom_point()+
+             geom_line()+
+    xlab("Year")+
+    ylab("Num Students")+
+      labs(color="Demographic"))
+})
+```
+
+Row
+-------------------------------
+###Free and Reduced Lunch (FLR)
+```{r}
+frl<-reactive({
+  x<-filter(spi, spi$Site == input$schools)
+})
+
+renderPlotly({
+  ggplotly(
+    ggplot(frl(), aes(x=YR, y=FRL))+
+      geom_point()+
+      geom_line()+
+      scale_y_continuous(limits=c(0,1))
+  )
+})
+
+```
+
+###Student Performance - Testing Profecient and Advanced (EOI Tests are not grade specifc )
+```{r}
+
+scores<- reactive({
+  if(input$grade == 'All'){
+    NULL
+  } else if(input$grade=="9"|input$grade=="10"|input$grade=="11"|input$grade=="12" | input$grade =="All"){
+    filter(testScores_wide, testScores_wide$Site == input$schools & testScores_wide$Subject==input$subject)
+  } else if (input$grade!="9"|input$grade!="10"|input$grade!="11"|input$grade!="12" | input$grade!="All") {
+    filter(testScores_wide, testScores_wide$Site == input$schools & testScores_wide$Subject==input$subject & testScores_wide$Grade==input$grade)
+  }
+})
+renderPlot({
+  if(is.null(scores())){
+    print("Please Select Grade and Subject")
+  } else{
+     ggplot(scores(), aes(x=YR, y=Prct, group=factor(Prof), fill=factor(Prof)))+geom_col(position = "dodge")+
+      scale_y_continuous(limits=c(0,1))+labs(fill="Student Scores")
+  }
+  
+})
+```
+
+District Expenditures
+===============================================================================
+
+Column {.sidebar}
+-------------------------------------------------------
+```{r}
+#Fund Number
+
+expenditures <- mutate(expenditures, 
+                       FundNum_Description = paste(expenditures$FundCode, expenditures$FundDescript,sep = " "),
+                       FunctionNum_Description = paste(expenditures$FunctionCode, expenditures$FunctionDescrip,sep = " "),
+                       ObjectCode_Description = paste(expenditures$ObjectCode, expenditures$ObjectDescrip ,sep = " "))
+funds<-unique(expenditures$FundNum_Description)
+func<- unique(expenditures$FunctionNum_Description)
+object<-unique(expenditures$ObjectCode_Description)
+
+
+
+#Fund Search
+selectInput(
+  "fundnum",
+  "Select Fund Code",
+  choices=c("All", funds)
+)
+
+#Function Search
+selectInput(
+  "funcnum",
+  "Select Function Code ",
+  choices=c("All", func)
+)
+
+#Function Search
+selectInput(
+  "objectCode",
+  "Select Object Code ",
+  choices=c("All", object)
+)
+
+
+```
+
+District Revenue
+===============================================================================
+
+

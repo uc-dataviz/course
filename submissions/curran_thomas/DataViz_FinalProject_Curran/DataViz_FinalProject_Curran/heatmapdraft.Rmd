@@ -1,0 +1,87 @@
+---
+title: "Untitled"
+author: "Thomas Curran"
+date: "5/23/2017"
+output: html_document
+---
+```{r}
+L2<-Leaflet$new()
+
+L2$setView(c(35.481918, -97.508469), 10)
+#L2$tileLayer(provider="MapQuestOpen.OSM")
+data(crime, package = 'ggmap')
+library(plyr)
+#consists of latitudes and longitudes an count of crimes
+#crime_dat = ddply(crime, .(lat, lon), summarise, count = length(address))
+#crime_dat = toJSONArray2(na.omit(crime_dat), json = F, names = F)
+#cat(rjson::toJSON(crime_dat[1:2]))
+
+x<-filter(af_grades_df, Year == 2016)
+x<- x[,c("SchoolName","Latitude","Longitude")]
+y<-filter(spi, YR ==max(YR))
+z<-left_join(x,y, by=c("SchoolName"="Site"))
+z<-z[,c("Latitude", "Longitude", "FRL")]
+cat(rjson::toJSON(z[1:2]))
+
+z = toJSONArray2(na.omit(z), json = F, names = F)
+
+# Add leaflet-heat plugin. Thanks to Vladimir Agafonkin
+L2$addAssets(jshead = c(
+  "http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"
+))
+
+# Add javascript to modify underlying chart
+L2$setTemplate(afterScript = sprintf("
+<script>
+  var addressPoints = %s
+  var heat = L.heatLayer(addressPoints).addTo(map)           
+</script>
+", rjson::toJSON(z)
+))
+
+
+L2
+```
+```{r}
+Heat Layer
+==============================================================================
+```{r}
+L2<-Leaflet$new()
+
+L2$setView(c(35.481918, -97.508469), 10)
+#L2$tileLayer(provider="MapQuestOpen.OSM")
+data(crime, package = 'ggmap')
+library(plyr)
+#consists of latitudes and longitudes an count of crimes
+#crime_dat = ddply(crime, .(lat, lon), summarise, count = length(address))
+#crime_dat = toJSONArray2(na.omit(crime_dat), json = F, names = F)
+#cat(rjson::toJSON(crime_dat[1:2]))
+
+x<-filter(af_grades_df, Year == 2016)
+x<- x[,c("SchoolName","Latitude","Longitude")]
+y<-filter(spi, YR ==max(YR))
+z<-left_join(x,y, by=c("SchoolName"="Site"))
+z<-z[,c("Latitude","Longitude","FRL")]
+cat(rjson::toJSON(z[1:2]))
+
+z = toJSONArray2(na.omit(z), json = F, names = F)
+
+# Add leaflet-heat plugin. Thanks to Vladimir Agafonkin
+L2$addAssets(jshead = c(
+  "http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"
+))
+
+# Add javascript to modify underlying chart
+L2$setTemplate(afterScript = sprintf("
+<script>
+  var addressPoints = %s
+  var heat = L.heatLayer(addressPoints).addTo(map)           
+</script>
+", rjson::toJSON(z)
+))
+
+
+L2
+```
+```
+
