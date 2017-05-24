@@ -43,7 +43,7 @@
     var data;
 
 //#############################################################################
-//Create domain and canvas to be appended
+//Margin and canvas dimensions
 //#############################################################################
 var outerWidth = 600;
 var outerHeight = 400;
@@ -60,6 +60,7 @@ var innerHeight = outerHeight - marginTop - marginBottom;
 
 //#############################################################################
 //Create domain and canvas to be appended
+//Create variables that are not bound by data
 //#############################################################################
 var svg = d3.select("body").append("svg").attr("width", outerWidth).attr("height",outerHeight);
 
@@ -110,7 +111,7 @@ var tooltip = d3.select("body")
   return "Test"
 });*/
 //#############################################################################
-//Render images:
+//Render images and bound/data dependent variables
 //#############################################################################
 function render(d){
 
@@ -158,12 +159,29 @@ function render(d){
               d3.select(this).transition().duration(150).attr("r",4)
           });
 
-          // draw legend
-  var legend = svg.selectAll(".legend")
-      .data(color.domain())
-    .enter().append("g")
-      .attr("class", "legend")
-      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+                // draw legend
+        var legend = svg.selectAll(".legend")
+            .data(colorScale.domain())
+          .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) {
+              return "translate(0," + i * 20 + ")";
+            });
+
+      // draw legend colored rectangles
+        legend.append("rect")
+            .attr("x",innerWidth+50)
+            .attr("width", 18)
+            .attr("height", 18)
+            .attr("y",230)
+            .style("fill", colorScale);
+
+        legend.append("text")
+            .attr("x", innerWidth+35)
+            .attr("y", 235)
+            .attr("dy", ".5em")
+            .style("text-anchor", "end")
+            .text(function(d) { return d;})
 
 }
 
