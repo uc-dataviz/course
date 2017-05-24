@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Gapminder in D3</title>
+
+    <style>
+    .axis path,
+    .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+          }
+    .axis{
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    .title{
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    div.tooltip {
+    position: absolute;
+    text-align: left;
+    width: 110;
+    height: 65px;
+    padding: 2px;
+    font: 22px sans-serif;
+    background: none;
+    border: 0px;
+    pointer-events: none;
+}
+
+    </style>
+
+
+  </head>
+  <body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+
+    <script>
+
+    var data;
+
+//#############################################################################
+//Create domain and canvas to be appended
+//#############################################################################
+var outerWidth = 600;
+var outerHeight = 400;
+var xAxisLabelOffset = 55;
+
+var continent = "continent";
+var marginLeft = 70,
+marginRight = 60,
+marginTop = 60,
+marginBottom = 60;
+var innerWidth = outerWidth - marginLeft - marginRight;
+var innerHeight = outerHeight - marginTop - marginBottom;
+
+
+//#############################################################################
+//Create domain and canvas to be appended
+//#############################################################################
+var svg = d3.select("body").append("svg").attr("width", outerWidth).attr("height",outerHeight);
+
+
+var g = svg.append("g").attr("transform", "translate("+marginLeft+ ","+marginTop+")");
+
+var title = g.append("text").text("Average Life Span By Continent").attr("class","title")
+              .attr("transform", "translate(150,0)")
+
+var xAxisG = g.append("g").attr("transform", "translate(0"+","+innerHeight+")")
+.attr("class", "axis");
+
+xAxisLabel = xAxisG.append("text")
+                  .style("text-anchor","middle")
+                  .attr("transform", "translate(215,30)")
+                  .attr("class","label")
+                  .text("Year")
+
+
+var yAxisG = g.append("g").attr("class", "axis");
+
+var yAxisLabel = yAxisG.append("text")
+      .attr("class", "label")
+      .attr("transform", "translate(-35,30)rotate(-90)")
+      .style("text-anchor", "end")
+      .text("Average Life Expectancy");
+
+var xScale = d3.scale.linear().range([0,innerWidth]);
+
+var yScale = d3.scale.linear().range([innerHeight,0]);
+
+var colorScale = d3.scale.category10();
+
+
+var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(5).tickFormat(d3.format("d"))
+.outerTickSize(0);
+var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5)
+.outerTickSize(0)
+
+//tool tip
+var tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+
+/*var tip = d3.tip().attr("class", 'd3-tip').offset([-10,0]).html(function(d){
+  return "Test"
+});*/
+//#############################################################################
+//Render images:
+//#############################################################################
+function render(d){
+
+  xScale.domain([1950,2007]);
+
+  yScale.domain([30,d3.max(d, function(d){return d.avg_life})]);
+  var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
+
+
+
+  xAxisG.call(xAxis)
+  yAxisG.call(yAxis);
+  //bind data:
+
+  var points = g.selectAll("circle").data(d)
+
+  //enter data:
+  points.enter().append("circle")
+          .attr("r", 4)
+          .attr("cx", function(d){
+            return xScale(d.year)}
+          )
+          .attr("cy", function(d){
+            return yScale(d.avg_life)
+          })
+          .attr("stroke", function(d){return colorScale(d[continent])})
+          .attr("fill", function(d){return(colorScale(d[continent]))})
+          .on("mouseover", function(d) {
+
+            div.transition()
+                .duration(150)
+                .style("opacity", .9);
+            d3.select(this).transition().duration(150)
+              .attr("r", 10);
+            div.html(d.continent + "<br/>" + "Year: " + d.year +"<br/>"+
+            "Average Life Span: " + d.avg_life)
+
+            })
+
+          .on("mouseout", function(d) {
+              div.transition()
+              .duration(150)
+              .style("opacity",0);
+              d3.select(this).transition().duration(150).attr("r",4)
+          })
+}
+
+/*
+div.transition()
+    .duration(150)
+    .style("opacity", .9);
+d3.select(this).transition().duration(150)
+  .attr("r", 10);
+div.html(d.continent + "<br/>" + "Year: " + d.year +"<br/>"+
+"Average Life Span: " + d.avg_life) */
+//#############################################################################
+//Load CSV
+//#############################################################################
+d3.csv("data.csv", function(d){
+
+  //convert types to integers:
+
+  d.forEach(function(d){
+    d.avg_life = parseFloat(d.avg_life);
+    d.avg_life = Math.round(d.avg_life)
+  });
+
+  d.forEach(function(d){
+    d.year = parseFloat(d.year);
+  });
+
+  var yMax = d3.max(d, function(d){
+    return d.avg_life
+  });
+
+  //computes the min and max of year
+
+  var yearRange = d3.extent(d, function(d){return d.year});
+
+
+  render(d)
+});
+
+
+    </script>
+  </body>
+</html>

@@ -18,12 +18,11 @@ data <- gapminder %>%
 
 p<-ggplotly(
     ggplot(
-      data, 
+      data,
       aes(x=year, y=avg_life, group = factor(continent),
-          color = continent) 
+          color = continent)
     ) +
       geom_point() +
-      geom_smooth(method = "lm", fill="NA") +
       theme_classic()+
       theme(legend.position = "none") +
       xlab("Year") +
