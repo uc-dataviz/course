@@ -25,9 +25,9 @@
     width: 110;
     height: 65px;
     padding: 2px;
-    font: 22px sans-serif;
-    background: none;
-    border: 0px;
+    font: 12px sans-serif;
+    background: lightblue;
+    border: 90px;
     pointer-events: none;
 }
 
@@ -105,7 +105,6 @@ var tooltip = d3.select("body")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
-var div = d3.select("body").append("div").attr("class", "tooltip").style("opacity", 0);
 
 /*var tip = d3.tip().attr("class", 'd3-tip').offset([-10,0]).html(function(d){
   return "Test"
@@ -141,22 +140,31 @@ function render(d){
           .attr("fill", function(d){return(colorScale(d[continent]))})
           .on("mouseover", function(d) {
 
-            div.transition()
+            tooltip.transition()
                 .duration(150)
                 .style("opacity", .9);
+            tooltip.html(d.continent + "<br/>" + "Year: " + d.year +"<br/>"+
+            "Average Life Span: " + d.avg_life)
+            .style("left", (d3.event.pageX + 5) + "px").style("top", (d3.event.pageY - 28) + "px");
             d3.select(this).transition().duration(150)
               .attr("r", 10);
-            div.html(d.continent + "<br/>" + "Year: " + d.year +"<br/>"+
-            "Average Life Span: " + d.avg_life)
 
             })
 
           .on("mouseout", function(d) {
-              div.transition()
+              tooltip.transition()
               .duration(150)
               .style("opacity",0);
               d3.select(this).transition().duration(150).attr("r",4)
-          })
+          });
+
+          // draw legend
+  var legend = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
 }
 
 /*
