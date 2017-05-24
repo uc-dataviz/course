@@ -19,14 +19,18 @@
       font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
     }
 
+    .legend{
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    }
+
     div.tooltip {
     position: absolute;
     text-align: left;
     width: 110;
-    height: 65px;
+    height: 45px;
     padding: 2px;
     font: 12px sans-serif;
-    background: lightblue;
+    background: lightgray;
     border: 90px;
     pointer-events: none;
 }
@@ -95,7 +99,7 @@ var yScale = d3.scale.linear().range([innerHeight,0]);
 var colorScale = d3.scale.category10();
 
 
-var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(5).tickFormat(d3.format("d"))
+var xAxis = d3.svg.axis().scale(xScale).orient("bottom").ticks(7).tickFormat(d3.format("d"))
 .outerTickSize(0);
 var yAxis = d3.svg.axis().scale(yScale).orient("left").ticks(5)
 .outerTickSize(0)
