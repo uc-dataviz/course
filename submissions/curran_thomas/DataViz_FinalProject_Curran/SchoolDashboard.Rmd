@@ -21,6 +21,7 @@ library(shiny)
 library(leaflet)
 library(rgdal)
 library(stringr)
+library(formattable)
 library(ggthemes)
 
 #Importing Data Sets
@@ -461,6 +462,46 @@ selectInput(
 
 
 ```
+
+Column
+-------------------------------------------------------
+```{r}
+
+expend<-reactive({
+  #only Fund code filter is active
+  fund<-input$fundnum
+  fund<-substr(fund,1,2)
+  fund<-as.numeric(fund)
+  
+  funcnum<-input$funcnum
+  funcnum<-substr(funcnum,1,4)
+  funcnum<-as.numeric(funcnum)
+  
+  objectCode<-input$objectCode
+  objectCode<-substr(objectCode,1,3)
+  objectCode<-as.numeric(objectCode)
+  
+  x<-filter(expenditures, expenditures$FundCode == fund)
+  x<-aggregate(x, by = list(x$YR, x$FundCode, x$FundDescrip), FUN = sum)
+  names(x)<-c("Year","Fund Code", "Fund Description","Total")
+  x
+  
+})
+
+renderTable({
+  expend()
+})
+```
+
+Column
+----------------------------------------------------
+```{r}
+renderText({
+  print("Hello")
+})
+```
+
+
 
 District Revenue
 ===============================================================================
