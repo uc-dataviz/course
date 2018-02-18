@@ -1,7 +1,0 @@
-date,policy
-7/6/2015,Limit futures trading to 1200 contracts per account per day
-8/3/2015,Start charging order fee
-8/26/2015,Increase transaction fee
-8/28/2015,Increase margin requirement to 20%
-8/31/2015,Increase margin requirement to 30%
-9/7/2015,"Increase margin requirement to 40%, increase transaction fee, and limit futures trading to 10 contracts per account per day"
