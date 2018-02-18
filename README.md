@@ -58,7 +58,7 @@ Readings for the course will come primarily from the following books, as well as
 | May 1 | Interactivity | And more interactivity | [Assignment 2](assignments/assignment-2.md) |
 | May 8 | Geospatial visualization |  | [Assignment 3](assignments/assignment-3.md) |
 | May 15 | Network visualization |  |  |
-| May 22 | Text visualization |  | [Assignment 4](assignments/assignment-4.md) / Present [final project](assignments/final-project.md) |
+| May 22 | Text visualization |  | [Assignment 4](assignments/assignment-4.md) |
 | May 29 | No class (Memorial Day) |  | Present [final project](assignments/final-project.md) |
 | June 3 |  |  | Submit [final project](assignments/final-project.md) |
 
