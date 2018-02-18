@@ -4,15 +4,15 @@ output: github_document
 
 # Final project
 
-The purpose of the final project is to apply principles of visual design and technical skills rendering graphics in R and/or D3 to a topic of your own substantive interests. Student may work individually or in teams of two. Students should identify early in the term a research question or topic of substantive importance to themselves, then use the skills developed in this course to design and present a visualization which explains the results. The form of this deliverable can take any number of forms:
+The purpose of the final project is to apply principles of visual design and technical skills rendering graphics in R to a topic of your own substantive interests. Student may work individually or in teams of two. Students should identify early in the term a research question or topic of substantive importance to themselves, then use the skills developed in this course to design and present a visualization which explains the results. The form of this deliverable can take any number of forms:
 
 * A research paper with a substantial visualization component
 * A web site with a substantial (static) visualization component
-* An interactive web page built using [R Markdown](http://rmarkdown.rstudio.com/), [Shiny](https://shiny.rstudio.com/), or [D3](https://d3js.org/)
+* An interactive web page built using [R Markdown](http://rmarkdown.rstudio.com/), [Shiny](https://shiny.rstudio.com/), [`flexdashboard`](http://rmarkdown.rstudio.com/flexdashboard/), etc.
 
 ## Deadlines
 
-By the end of the fourth week (April 21), students should select a topic and [submit a proposal](https://goo.gl/forms/901AGuC5H1fWkvTT2). Students will present their projects to the class on **Wednesday, March 31**. Projects must be fully complete and submitted for grading by **Sunday, June 4 at 11:59 pm**.
+By the end of the fourth week (April 20), students should select a topic and [submit a proposal](https://goo.gl/forms/901AGuC5H1fWkvTT2). Students will present their projects to the class on **May 29**. Projects must be fully complete and submitted for grading by **Sunday, June 3 at 11:59 pm**.
 
 ## Assessment
 
@@ -24,11 +24,11 @@ Your project will be assessed on the following criteria:^[Drawn from chapter 2 o
 * Is it insightful?
 * Is it enlightening?
 
-The final project is worth 30 points, or roughly the weight of two assignments.
+The final project is worth 30 points.
 
 ## Final Deliverables
 
-Submit final deliverables to your GitHub repo by **Sunday, June 4 at 11:59 pm**.
+Submit final deliverables to your GitHub repo by **Sunday, June 3 at 11:59 pm**.
 
 The final deliverables include:
 
@@ -42,4 +42,4 @@ The final deliverables include:
 
 ## Getting started
 
-All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/assignment-invitations/3122b7fd7efd6b37dce698193b57c280).
+All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/a/_mIFYI6x).
