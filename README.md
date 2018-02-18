@@ -1,22 +1,22 @@
-# MACS 40700 - Data Visualization (Spring 2017)
+# MACS 40700 - Data Visualization (Spring 2018)
 
 |  | [Dr. Benjamin Soltoff](http://www.bensoltoff.com/) |
 |--------------|----------------------------------------------------|
 | Email | soltoffbc@uchicago.edu |
-| Office | 249 Saieh Hall |
-| Office Hours | Th 2-4pm |
+| Office | 209 McGiffert House |
+| Office Hours | Th 1-3pm |
 | GitHub | [bensoltoff](https://github.com/bensoltoff) |
 
-* **Meeting day/time**: MW 1:30-2:50pm, Saieh Hall, Room 247
+* **Meeting day/time**: Tu 11:00-1:50pm, Saieh Hall, Room 247
 * Office hours also available by appointment
 
 ## Course description
 
-Social scientists frequently wish to convey information to a broader audience in a cohesive and interpretable manner. Visualizations are an excellent method to summarize information and report analysis and conclusions in a compelling format. This course introduces the theory and applications of data visualization. Students will learn about theory of cognition and perception in order to understand how humans process and synthesize information in a visual medium, while also developing techniques and methods for generating rich, informative, and interactive visualizations for both data exploration and explanation. These techniques will be developed using software implementations in [R](https://www.r-project.org/) and [D3](https://d3js.org/).
+Social scientists frequently wish to convey information to a broader audience in a cohesive and interpretable manner. Visualizations are an excellent method to summarize information and report analysis and conclusions in a compelling format. This course introduces the theory and applications of data visualization. Students will learn about theory of cognition and perception in order to understand how humans process and synthesize information in a visual medium, while also developing techniques and methods for generating rich, informative, and interactive visualizations for both data exploration and explanation. These techniques will be developed using software implementations in [R](https://www.r-project.org/).
 
 ### Prerequisites
 
-Students are expected to have prior programming experience; this is not an introductory programming course and students without this experience will have significant difficulties keeping up with the material. Experience could come from completion of [MACS 30500 - Computing for the Social Sciences](http://cfss.uchicago.edu/), an alternative course on programming at UChicago or undergrad, or self-taught experience using either R or Python. Students should also be familiar with the [Git version tracking system](https://git-scm.com/) and be comfortable with the Git workflow (commit, push, pull, merge, etc.). Finally, some basic experience with probability/statistical theory (especially regression analysis) will be helpful, though not required.
+Students are expected to have prior programming experience; this is not an introductory programming course and students without this experience will have significant difficulties keeping up with the material. Experience could come from completion of [MACS 30500 - Computing for the Social Sciences](http://cfss.uchicago.edu/), an alternative course on programming at UChicago or undergrad, or self-taught experience using R. Students should also be familiar with the [Git version tracking system](https://git-scm.com/) and be comfortable with the Git workflow (commit, push, pull, merge, etc.). Finally, some basic experience with probability/statistical theory (especially regression analysis) will be helpful, though not required.
 
 ## Grades
 
