@@ -49,17 +49,17 @@ Readings for the course will come primarily from the following books, as well as
 ## Course schedule
 
 | Date | Topic A | Topic B | Due dates |
-|---------|--------------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------|
+|---------|-------------------------------------------------------|-----------------------------------|------------------------------------------------------|
 | Mar. 27 | Introduction to data visualization | Principles of data visualization |  |
 | Apr. 3 | Design and evaluation | Grammar of graphics and `ggplot2` |  |
 | Apr. 10 | Science, art, or somewhere inbetween | Exploratory data analysis | [Assignment 1](assignments/assignment-1.md) |
 | Apr. 17 | Graphical perception and cognition | Multivariate data visualization |  |
 | Apr. 24 | Rules of thumb | Visualizing scientific results |  |
 | May 1 | Interactivity | And more interactivity | [Assignment 2](assignments/assignment-2.md) |
-| May 8 | Geospatial visualization |  | [Assignment 3](assignments/assignment-3.md) |
-| May 15 | Network visualization |  |  |
-| May 22 | Text visualization |  | [Assignment 4](assignments/assignment-4.md) |
-| May 29 | No class (Memorial Day) |  | Present [final project](assignments/final-project.md) |
+| May 8 | Information dashboards |  |  |
+| May 15 | Geospatial visualization | Network visualization | [Assignment 3](assignments/assignment-3.md) |
+| May 22 | Text visualization |  |  |
+| May 29 | Present [final project](assignments/final-project.md) |  | [Assignment 4](assignments/assignment-4.md) |
 | June 3 |  |  | Submit [final project](assignments/final-project.md) |
 
 ## References and Readings
