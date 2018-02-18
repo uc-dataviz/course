@@ -48,30 +48,19 @@ Readings for the course will come primarily from the following books, as well as
 
 ## Course schedule
 
-| Date | Day | Topic | Due dates |
-|---------|-----|------------------------------------|-------------------------------------------------------|
-| Mar. 27 | M | Introduction to data visualization |  |
-| Mar. 29 | W | Principles of data visualization |  |
-| Apr. 3 | M | Design and evaluation |  |
-| Apr. 5 | W | Grammar of graphics and `ggplot2` |  |
-| Apr. 10 | M | Science, art, or somewhere inbetween | [Assignment 1](assignments/assignment-1.md) |
-| Apr. 12 | W | Exploratory data analysis |  |
-| Apr. 17 | M | Graphical perception and cognition |  |
-| Apr. 19 | W | Multivariate data visualization |  |
-| Apr. 24 | M | Rules of thumb |  |
-| Apr. 26 | W | Visualizing scientific results |  |
-| Apr. 28 | F |  | [Assignment 2](assignments/assignment-2.md) |
-| May 1 | M | Interactivity |  |
-| May 3 | W | Interactivity (cont.) |  |
-| May 8 | M | Geospatial visualization |  |
-| May 10 | W | Introduction to D3 | [Assignment 3](assignments/assignment-3.md) |
-| May 15 | M | Network visualization |  |
-| May 17 | W | More D3 |  |
-| May 22 | M | Text visualization |  |
-| May 24 | W | Final project presentations | [Assignment 4](assignments/assignment-4.md) / Present [final project](assignments/final-project.md) |
-| May 29 | M | No class (Memorial Day) |  |
-| May 31 | W | Final project presentations | Present [final project](assignments/final-project.md) |
-| June 4 | Su |  | Submit [final project](assignments/final-project.md) |
+| Date | Topic A | Topic B | Due dates |
+|---------|--------------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------|
+| Mar. 27 | Introduction to data visualization | Principles of data visualization |  |
+| Apr. 3 | Design and evaluation | Grammar of graphics and `ggplot2` |  |
+| Apr. 10 | Science, art, or somewhere inbetween | Exploratory data analysis | [Assignment 1](assignments/assignment-1.md) |
+| Apr. 17 | Graphical perception and cognition | Multivariate data visualization |  |
+| Apr. 24 | Rules of thumb | Visualizing scientific results |  |
+| May 1 | Interactivity | And more interactivity | [Assignment 2](assignments/assignment-2.md) |
+| May 8 | Geospatial visualization |  | [Assignment 3](assignments/assignment-3.md) |
+| May 15 | Network visualization |  |  |
+| May 22 | Text visualization |  | [Assignment 4](assignments/assignment-4.md) / Present [final project](assignments/final-project.md) |
+| May 29 | No class (Memorial Day) |  | Present [final project](assignments/final-project.md) |
+| June 3 |  |  | Submit [final project](assignments/final-project.md) |
 
 ## References and Readings
 
