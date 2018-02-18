@@ -31,19 +31,7 @@ Be sure to include a link to the original visualization in your critique. Submit
 Part 2: `ggplot2` and the grammar of graphics (10 points)
 ---------------------------------------------------------
 
-![Former Vice-President Joseph Biden](https://s3.amazonaws.com/media.thecrimson.com/photos/2014/10/02/103651_1299339.jpg)
-
-`biden.csv` contains a selection of variables from the [2008 American National Election Studies survey](http://www.electionstudies.org/) that allow you to test competing factors that may influence attitudes towards Joe Biden. The variables are coded as follows:
-
--   `biden` - feeling thermometer ranging from 0-100[2]
--   `female` - 1 if respondent is female, 0 if respondent is male
--   `age` - age of respondent in years
--   `dem` - 1 if respondent is a Democrat, 0 otherwise
--   `rep` - 1 if respondent is a Republican, 0 otherwise
--   `educ` - number of years of formal education completed by respondent
-    -   `17` - 17+ years (aka first year of graduate school and up)
-
-Your assignment is to design a static visualization (i.e. a single image) that effectively communicates the data and provide a written explanation (approximately 750-1000 words) describing your design. You should use the given data as provided, but you can transform it as you see fit or incorporate external data into the visualization. The visualization should be interpretable without reference to your written explanation, so be sure to include all the necessary components (e.g. title, axis labels, legends).
+Your assignment is to design a static visualization (i.e. a single image) that effectively communicates a data-driven story and provide a written explanation (approximately 750-1000 words) describing your design. You should use any dataset you choose, making necessary transformations and summarizations as appropriate. The visualization should be interpretable without reference to your written explanation, so be sure to include all the necessary components (e.g. title, axis labels, legends).
 
 Your visualization will be evaluated using the same criteria as for part 1:
 
@@ -68,5 +56,3 @@ In your written explanation, be sure to rigorously defend your design choices. T
 Submit your graph and written explanation as a single R Markdown document rendered using the `github_document` output format.
 
 [1] Drawn from chapter 2 of *The Truthful Art: Data, charts, and maps for communication* by Alberto Cairo.
-
-[2] Feeling thermometers are a common metric in survey research used to gauge attitudes or feelings of warmth towards individuals and institutions. They range from 0-100, with 0 indicating extreme coldness and 100 indicating extreme warmth.
