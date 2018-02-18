@@ -19,7 +19,7 @@ Setting up accounts
 -   Setup your [Amazon MTurk account](https://www.mturk.com/mturk/welcome)
 -   Setup your [Qualtrics account here](https://sscs.uchicago.edu/page/qualtrics)
     -   **DO THIS EARLY**
-    -   Make sure to forward the email I sent your from IRB to Social Sciences Computing Services so they will activate your account. You cannot create a Qualtrics survey until this is done.
+    -   Make sure to forward the email I sent you from IRB to Social Sciences Computing Services so they will activate your account. You cannot create a Qualtrics survey until this is done.
 
 Working with a partner
 ----------------------
@@ -40,7 +40,5 @@ Submission details
 ------------------
 
 Submit your analysis as a single R Markdown document rendered using the `github_document` output format.[1] Your folder in the repo should also contain a copy of the generated data file and documentation of the survey and the treatment/condition versions of your graphic.
-
-Your submission is due by **11:59pm on Friday, April 28th**.
 
 [1] Use `html_document` if needed to properly render your graphs.
