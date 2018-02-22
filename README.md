@@ -22,11 +22,12 @@ Students are expected to have prior programming experience; this is not an intro
 
 | Assignment | Points |
 |------------------|--------|
-| [Assignment 1](assignments/assignment-1.md) | 15 |
-| [Assignment 2](assignments/assignment-2.md) | 15 |
-| [Assignment 3](assignments/assignment-3.md) | 15 |
-| [Assignment 4](assignments/assignment-4.md) | 15 |
-| [Final project](assignments/final-project.md) | 30 |
+| Visualization critique | 10 |
+| Visualization experiment | 20 |
+| Interactive graphics | 10 |
+| Information dashboard | 10 |
+| Geospatial/network/text visualization | 10 |
+| Final project | 30 |
 | Participation | 10 |
 | **Total Points** | 100 |
 
