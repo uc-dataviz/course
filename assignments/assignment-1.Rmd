@@ -38,7 +38,7 @@ Some good resources for finding visualizations to critique:
 
 Be sure to include a link to the original visualization in your critique. Submit your critique as a [Markdown](http://daringfireball.net/projects/markdown/basics) formatted document that can be read directly in the repo on GitHub. Write either in the original `.md` file or write it as an [R Markdown](http://rmarkdown.rstudio.com/) document rendered using the `github_output` format.
 
-## Part 2: `ggplot2` and the grammar of graphics (10 points)
+## Part 2: `ggplot2` and the grammar of graphics (5 points)
 
 Your assignment is to design a static visualization (i.e. a single image) that effectively communicates a data-driven story and provide a written explanation (approximately 750-1000 words) describing your design. You should use any dataset you choose, making necessary transformations and summarizations as appropriate. The visualization should be interpretable without reference to your written explanation, so be sure to include all the necessary components (e.g. title, axis labels, legends).
 

@@ -1,5 +1,5 @@
 
-Assignment 2: Experimenting with visual design (15 points)
+Assignment 2: Experimenting with visual design (20 points)
 ==========================================================
 
 For this assignment, you need to create, design, implement, and analyze an experiment testing some principle or rule of visual design. Look to the readings from our units on ["Design and evaluation"](../notes/day3-notes.html) or ["Science, art, or somewhere inbetween"](../notes/day5-notes.html) for inspiration. Your experiment should be implemented a la Cleveland and McGill/Heer and Bostock using Amazon MTurk to obtain research participants.

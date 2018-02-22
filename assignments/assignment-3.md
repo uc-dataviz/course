@@ -1,6 +1,6 @@
 
-Assignment 3: Interactive graphics with Gapminder
-=================================================
+Assignment 3: Interactive graphics with Gapminder (10 points)
+=============================================================
 
 [Gapminder](http://www.gapminder.org/data/) compiles detailed indicators of global development. For this assignment, you should build an interactive visualization to tell a story about the data. **This requires you to develop both the visualization as well as a written narrative.**
 
@@ -33,19 +33,19 @@ import_gapminder <- function(filename, inc_name = NA){
 ```
 
     ## # A tibble: 9,075 x 4
-    ##                  country  year                                 variable
-    ##                    <chr> <int>                                    <chr>
-    ##  1              Abkhazia  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  2           Afghanistan  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  3 Akrotiri and Dhekelia  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  4               Albania  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  5               Algeria  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  6        American Samoa  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  7               Andorra  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  8                Angola  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ##  9              Anguilla  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ## 10   Antigua and Barbuda  1979 Estimated HIV Prevalence% - (Ages 15-49)
-    ## # ... with 9,065 more rows, and 1 more variables: value <dbl>
+    ##    country                year variable                              value
+    ##    <chr>                 <int> <chr>                                 <dbl>
+    ##  1 Abkhazia               1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  2 Afghanistan            1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  3 Akrotiri and Dhekelia  1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  4 Albania                1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  5 Algeria                1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  6 American Samoa         1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  7 Andorra                1979 Estimated HIV Prevalence% - (Ages … NA     
+    ##  8 Angola                 1979 Estimated HIV Prevalence% - (Ages …  0.0265
+    ##  9 Anguilla               1979 Estimated HIV Prevalence% - (Ages … NA     
+    ## 10 Antigua and Barbuda    1979 Estimated HIV Prevalence% - (Ages … NA     
+    ## # ... with 9,065 more rows
 
 ``` r
 # use custom label
@@ -54,18 +54,18 @@ import_gapminder <- function(filename, inc_name = NA){
 ```
 
     ## # A tibble: 9,075 x 4
-    ##                  country  year  variable      value
-    ##                    <chr> <int>     <chr>      <dbl>
-    ##  1              Abkhazia  1979 hiv_15_49         NA
-    ##  2           Afghanistan  1979 hiv_15_49         NA
-    ##  3 Akrotiri and Dhekelia  1979 hiv_15_49         NA
-    ##  4               Albania  1979 hiv_15_49         NA
-    ##  5               Algeria  1979 hiv_15_49         NA
-    ##  6        American Samoa  1979 hiv_15_49         NA
-    ##  7               Andorra  1979 hiv_15_49         NA
-    ##  8                Angola  1979 hiv_15_49 0.02652787
-    ##  9              Anguilla  1979 hiv_15_49         NA
-    ## 10   Antigua and Barbuda  1979 hiv_15_49         NA
+    ##    country                year variable    value
+    ##    <chr>                 <int> <chr>       <dbl>
+    ##  1 Abkhazia               1979 hiv_15_49 NA     
+    ##  2 Afghanistan            1979 hiv_15_49 NA     
+    ##  3 Akrotiri and Dhekelia  1979 hiv_15_49 NA     
+    ##  4 Albania                1979 hiv_15_49 NA     
+    ##  5 Algeria                1979 hiv_15_49 NA     
+    ##  6 American Samoa         1979 hiv_15_49 NA     
+    ##  7 Andorra                1979 hiv_15_49 NA     
+    ##  8 Angola                 1979 hiv_15_49  0.0265
+    ##  9 Anguilla               1979 hiv_15_49 NA     
+    ## 10 Antigua and Barbuda    1979 hiv_15_49 NA     
     ## # ... with 9,065 more rows
 
 Can I use some different data?
