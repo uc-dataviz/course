@@ -53,6 +53,8 @@ In your written explanation, be sure to rigorously defend your design choices. T
 
 #### Submission details
 
-Submit your graph and written explanation as a single R Markdown document rendered using the `github_document` output format.
+[Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/a/Zj8ttjOM) Submit your graph and written explanation as a single R Markdown document rendered using the `github_document` output format.
+
+Your submission is due by **11:00am on Tuesday, April 10th**.
 
 [1] Drawn from chapter 2 of *The Truthful Art: Data, charts, and maps for communication* by Alberto Cairo.

@@ -1,6 +1,11 @@
 
-Assignment 3: Interactive graphics with Gapminder (10 points)
-=============================================================
+Assignment 3: Interactive graphics with Gapminder (or something else) (10 points)
+=================================================================================
+
+In this assignment, you will build an interactive visualization of data. If you have a specific dataset you want to use for the assignment (possibly the same data as your final project), **feel free to use it**. If you need a suggestion for data, keep reading.
+
+Gapminder
+---------
 
 [Gapminder](http://www.gapminder.org/data/) compiles detailed indicators of global development. For this assignment, you should build an interactive visualization to tell a story about the data. **This requires you to develop both the visualization as well as a written narrative.**
 
@@ -68,11 +73,6 @@ import_gapminder <- function(filename, inc_name = NA){
     ## 10 Antigua and Barbuda    1979 hiv_15_49 NA     
     ## # ... with 9,065 more rows
 
-Can I use some different data?
-------------------------------
-
-YES! If you have another dataset around which you want to build an interactive visualization, go ahead! Just let me know before you proceed.
-
 Grading
 -------
 
@@ -93,9 +93,9 @@ In addition to the visualization and accompanying narrative, write an approximat
 Submission details
 ------------------
 
-Submit your visualization and analysis as a single R Markdown document rendered using the `html_document` output format. If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io) and include a link to it in your submission. Include your design explanation in a separate document.
+[Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/a/2A0OFLSL) Submit your visualization and analysis as a single R Markdown document rendered using the `html_document` output format. If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io) and include a link to it in your submission. Include your design explanation in a separate document.
 
-Your submission is due by **1:30pm on Wednesday, May 10th**.
+Your submission is due by **11:00am on Tuesday, May 8th**.
 
 [1] Though with far less detail
 

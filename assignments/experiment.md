@@ -21,10 +21,10 @@ Setting up accounts
     -   **DO THIS EARLY**
     -   Make sure to forward the email I sent you from IRB to Social Sciences Computing Services so they will activate your account. You cannot create a Qualtrics survey until this is done.
 
-Working with a partner
-----------------------
+Working in a team
+-----------------
 
-You may work with one other student in the course if you choose. When you submit the assignment, only one student needs to open a pull request. Make sure to indicate in the pull request which students participated in the experiment and document how each of you contributed to the assignment.
+You may work with up to two other students in the course if you choose. When you create the repo for the assignment, be sure to create a team so that the other team members have read/write access to the repo.
 
 Grading
 -------
@@ -39,6 +39,8 @@ Grading will be flexible. I will not grade you on whether you find significant o
 Submission details
 ------------------
 
-Submit your analysis as a single R Markdown document rendered using the `github_document` output format.[1] Your folder in the repo should also contain a copy of the generated data file and documentation of the survey and the treatment/condition versions of your graphic.
+[Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/g/WtfroPll) Submit your analysis as a single R Markdown document rendered using the `github_document` output format.[1] The repo should also contain a copy of the generated data file and documentation of the survey and the treatment/condition versions of your graphic.
+
+Your submission is due by **11:00am on Tuesday, May 1st**.
 
 [1] Use `html_document` if needed to properly render your graphs.

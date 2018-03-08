@@ -2,7 +2,7 @@
 Final project
 =============
 
-The purpose of the final project is to apply principles of visual design and technical skills rendering graphics in R to a topic of your own substantive interests. Student may work individually or in teams of two. Students should identify early in the term a research question or topic of substantive importance to themselves, then use the skills developed in this course to design and present a visualization which explains the results. The form of this deliverable can take any number of forms:
+The purpose of the final project is to apply principles of visual design and technical skills rendering graphics in R to a topic of your own substantive interests. Student may work individually or in teams of up to three. Students should identify early in the term a research question or topic of substantive importance to themselves, then use the skills developed in this course to design and present a visualization which explains the results. The form of this deliverable can take any number of forms:
 
 -   A research paper with a substantial visualization component
 -   A web site with a substantial (static) visualization component
@@ -44,6 +44,6 @@ The final deliverables include:
 Getting started
 ---------------
 
-All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/a/_mIFYI6x).
+All work will be performed inside a version-controlled GitHub repo. Create your project repo by going [to this link](https://classroom.github.com/g/SH9AMzoC).
 
 [1] Drawn from chapter 2 of *The Truthful Art: Data, charts, and maps for communication* by Alberto Cairo.
