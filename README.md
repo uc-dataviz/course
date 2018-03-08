@@ -44,7 +44,7 @@ Readings for the course will come primarily from the following books, as well as
 * **Munzer** - Munzner, Tamara. *Visualization analysis and design*. CRC Press, 2014.
 * **R4DS** - [Wickham, Hadley and Garrett Grolemund. *R for Data Science*. O'Rielly Media, Inc., 2017.](http://r4ds.had.co.nz/)
 
-> I recommend you purchase a copy of TA. R4DS and D3 are both available for free online, however you can also purchase a hard-copy if you prefer that medium. TA and FA are also available as ebooks through the UChicago library (follow the links above, authentication required).
+> I recommend you purchase a copy of TA. R4DS is available for free online, however you can also purchase a hard-copy if you prefer that medium. TA and FA are also available as ebooks through the UChicago library (follow the links above, authentication required).
 
 ## Course schedule
 
