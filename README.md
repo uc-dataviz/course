@@ -52,11 +52,11 @@ Readings for the course will come primarily from the following books, as well as
 |-----|---------|-------------------------------------------------------|-----------------------------------|------------------------------------------------------|
 | 1. | Mar. 27 | Introduction to data visualization | Principles of data visualization |  |
 | 2. | Apr. 3 | Design and evaluation | Grammar of graphics and `ggplot2` |  |
-| 3. | Apr. 10 | Science, art, or somewhere inbetween | Exploratory data analysis | [Viz critique](assignments/assignment-1.md) |
+| 3. | Apr. 10 | Science, art, or somewhere inbetween | Exploratory data analysis | [Viz critique](assignments/critique-grammar.md) |
 | 4. | Apr. 17 | Graphical perception and cognition | Multivariate data visualization |  |
 | 5. | Apr. 24 | Rules of thumb | Visualizing scientific results |  |
-| 6. | May 1 | Interactivity | And more interactivity | [Viz experiment](assignments/assignment-2.md) |
-| 7. | May 8 | Information dashboards |  | Interactive graphics |
+| 6. | May 1 | Interactivity | And more interactivity | [Viz experiment](assignments/experiment.md) |
+| 7. | May 8 | Information dashboards |  | [Interactive graphics](assignments/interactivity.md) |
 | 8. | May 15 | Geospatial visualization | Network visualization | Information dashboard |
 | 9. | May 22 | Text visualization |  |  |
 | 10. | May 29 | Present [final project](assignments/final-project.md) |  | Geospatial/network/text viz |
