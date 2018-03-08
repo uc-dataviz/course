@@ -19,7 +19,7 @@ Setting up accounts
 -   Setup your [Amazon MTurk account](https://www.mturk.com/mturk/welcome)
 -   Setup your [Qualtrics account here](https://sscs.uchicago.edu/page/qualtrics)
     -   **DO THIS EARLY**
-    -   Make sure to forward the email I sent you from IRB to Social Sciences Computing Services so they will activate your account. You cannot create a Qualtrics survey until this is done.
+    -   You need to first create an account on Qualtrics, then email <ssc-server-support@lists.uchicago.edu> acknowledging that you are using Qualtrics for the class.
 
 Working in a team
 -----------------
