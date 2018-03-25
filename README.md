@@ -79,7 +79,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Wickham, Hadley. "A layered grammar of graphics." *Journal of Computational and Graphical Statistics* 19.1 (2010): 3-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/abs/10.1198/jcgs.2009.07098)
     * [R4DS Ch 1-3](http://r4ds.had.co.nz/)
 1. Science, art, or somewhere inbetween/Exploratory data analysis
-    * [Ch 4-5 in *The Visual Display of Quantitative Information* by Edward Tufte.](https://canvas.uchicago.edu/courses/1747/files?preview=257039)
+    * [Ch 4-5 in *The Visual Display of Quantitative Information* by Edward Tufte.](https://canvas.uchicago.edu/courses/15305/files?preview=1426507)
     * FA Ch 3 - focus on pg. 61-72
     * [Gelman, Andrew, and Antony Unwin. "Infovis and statistical graphics: different goals, different looks." *Journal of Computational and Graphical Statistics* 22.1 (2013): 2-28.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761137)
     * [Wickham, Hadley. "Graphical criticism: some historical notes." *Journal of Computational and Graphical Statistics* 22.1 (2013): 38-44.](http://www-tandfonline-com.proxy.uchicago.edu/doi/full/10.1080/10618600.2012.761140?src=recsys)
