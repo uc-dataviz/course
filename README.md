@@ -1,11 +1,11 @@
 # MACS 40700 - Data Visualization (Spring 2018)
 
-|  | [Dr. Benjamin Soltoff](http://www.bensoltoff.com/) |
-|--------------|----------------------------------------------------|
-| Email | soltoffbc@uchicago.edu |
-| Office | 209 McGiffert House |
-| Office Hours | Th 1-3pm |
-| GitHub | [bensoltoff](https://github.com/bensoltoff) |
+|  | [Dr. Benjamin Soltoff](http://www.bensoltoff.com/) | Emma Peterson (TA) |
+|--------------|----------------------------------------------------|-------------------------------------------------------------|
+| Email | soltoffbc@uchicago.edu | ecpeterson@uchicago.edu |
+| Office | 209 McGiffert House | TBD |
+| Office Hours | Th 1-3pm | TBD |
+| GitHub | [bensoltoff](https://github.com/bensoltoff) | [emmacooperpeterson](https://github.com/emmacooperpeterson) |
 
 * **Meeting day/time**: Tu 11:00-1:50pm, Saieh Hall, Room 247
 * Office hours also available by appointment
