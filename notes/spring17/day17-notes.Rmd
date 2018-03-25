@@ -1,0 +1,678 @@
+---
+title: "Day 17 - text visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Identify the basic workflow for conducting text analysis
+* Descriptive text visualization
+    * Wordclouds
+    * N-gram viewers
+* Geospatial visualization
+* Network analysis
+* Even more complex methods
+    * Sentiment analysis
+    * Latent semantic analysis
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(tidytext)
+library(twitteR)
+library(wordcloud)
+library(scales)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Basic workflow for text analysis
+
+* Obtain your text sources
+* Extract documents and move into a corpus
+* Transformation
+* Extract features
+* Perform analysis
+
+## Obtain your text sources
+
+Text data can come from lots of areas:
+
+* Web sites
+    * Twitter
+* Databases
+* PDF documents
+* Digital scans of printed materials
+
+The easier to convert your text data into digitally stored text, the cleaner your results and fewer transcription errors.
+
+## Extract documents and move into a corpus
+
+A **text corpus** is a large and structured set of texts. It typically stores the text as a [raw character string](http://r4ds.had.co.nz/strings.html) with meta data and details stored with the text.
+
+## Transformation
+
+Examples of typical transformations include:
+
+* Tagging segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
+* Standard text processing - we want to remove extraneous information from the text and standardize it into a uniform format. This typically involves:
+    * Converting to lower case
+    * Removing punctuation
+    * Removing numbers
+    * Removing **stopwords** - common parts of speech that are not informative such as *a*, *an*, *be*, *of*, etc.
+    * Removing domain-specific stopwords
+    * Stemming - reduce words to their word stem
+        * "Fishing", "fished", and "fisher" -> "fish"
+
+## Extract features
+
+Feature extraction involves converting the text string into some sort of quantifiable measures. The most common approach is the **bag-of-words model**, whereby each document is represented as a vector which counts the frequency of each term's appearance in the document. You can combine all the vectors for each document together and you create a *term-document matrix*:
+
+* Each row is a document
+* Each column is a term
+* Each cell represents the frequency of the term appearing in the document
+
+However the bag-of-word model ignores **context**. You could randomly scramble the order of terms appearing in the document and still get the same term-document matrix.
+
+## Perform analysis
+
+At this point you now have data assembled and ready for analysis. There are several approaches you may take when analyzing text depending on your research question. Basic approaches include:
+
+* Word frequency - counting the frequency of words in the text
+* Collocation - words commonly appearing near each other
+* Dictionary tagging - locating a specific set of words in the texts
+
+More advanced methods include **document classification**, or assigning documents to different categories. This can be **supervised** (the potential categories are defined in advance of the modeling) or **unsupervised** (the potential categories are unknown prior to analysis). You might also conduct **corpora comparison**, or comparing the content of different groups of text. This is the approach used in plagiarism detecting software such as [Turn It In](http://turnitin.com/). Finally, you may attempt to detect clusters of document features, known as **topic modeling**.
+
+# Descriptive text visualization
+
+## Wordclouds
+
+So far we've used basic plots from `ggplot2` to visualize our text data. However we could also use a **word cloud** to represent our text data. Also known as a **tag cloud**, word clouds visually represent text data by weighting the importance of each word, typically based on frequency in the text document. We can use the `wordcloud` package in R to generate these plots based on our tidied text data.
+
+To draw the wordcloud, we need the data in tidy text format, so one-row-per-term. For example, here is a wordcloud of a set of tweets related to `#rstats`:
+
+```{r}
+library(twitteR)
+```
+
+```{r, cache = FALSE}
+# You'd need to set global options with an authenticated app
+setup_twitter_oauth(getOption("twitter_api_key"),
+                    getOption("twitter_api_token"))
+```
+
+```{r wordcloud-rstats}
+library(wordcloud)
+
+# get tweets
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"   # custom regular expression to tokenize tweets
+
+rstats <- searchTwitter('#rstats', n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+rstats_token <- rstats %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+rstats_token %>%
+  count(word) %>%
+  filter(word != "#rstats") %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+Or tweets by [Pope Francis](https://twitter.com/Pontifex):
+
+```{r wordcloud-pope}
+# get tweets
+pope <- userTimeline("Pontifex", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"   # custom regular expression to tokenize tweets
+
+pope_token <- pope %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+pope_token %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+We can even use wordclouds to compare words or tokens through the `comparison.cloud()` function. For instance, how do the tweets by Donald Trump compare to Pope Francis? In order to make this work, we need to convert our tidy data frame into a matrix first using the `acast()` function from `reshape2`, then use that for `comparison.cloud()`.
+
+```{r wordcloud-pope-trump}
+library(reshape2)
+
+# get fresh trump tweets
+trump <- userTimeline("realDonaldTrump", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+trump_token <- trump %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
+  count(word, person) %>%
+  acast(word ~ person, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 100, colors = c("blue", "red"))
+```
+
+The size of a word's text is in proportion to its frequency within its category (i.e. proportion of all Trump tweets or all pope tweets). We can use this visualization to see the most frequent words/hashtags by President Trump and Pope Francis, but the sizes of the words are not comparable across sentiments.
+
+## N-gram viewers
+
+An **n-gram** is a contiguous sequence of $n$ items from a given sequence of text or speech.
+
+* n-gram of size 1 = unigram
+* n-gram of size 2 = bigram
+* n-gram of size 3 = trigram
+* n-gram of size 4 = four-gram, etc.
+
+This starts to incorporate context into our visualization. Rather than assuming all words/tokens are unique and independent from one another, n-grams of size 2 and up join together pairs or combinations of words in order to identify frequency within a document.
+
+### Examples of n-gram viewers
+
+* [Google Books Ngram Viewer](https://books.google.com/ngrams)
+    * ["Fuck"](https://books.google.com/ngrams/graph?content=Fuck&case_insensitive=on&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t4%3B%2CFuck%3B%2Cc0%3B%2Cs0%3B%3Bfuck%3B%2Cc0%3B%3BFuck%3B%2Cc0%3B%3BFUCK%3B%2Cc0)
+    * ["the Great War" vs. "the World War" vs. "World War I"](https://books.google.com/ngrams/graph?content=the+Great+War%2Cthe+World+War%2CWorld+War+I&year_start=1900&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cthe%20Great%20War%3B%2Cc0%3B.t1%3B%2Cthe%20World%20War%3B%2Cc0%3B.t1%3B%2CWorld%20War%20I%3B%2Cc0)
+    * ["upward trend"](https://books.google.com/ngrams/graph?content=upward+trend&year_start=1850&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cupward%20trend%3B%2Cc0)
+    * ["love" vs. "hope" vs. "faith" vs. "sex"](https://books.google.com/ngrams/graph?content=love%2Chope%2Cfaith%2Csex&year_start=1700&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Clove%3B%2Cc0%3B.t1%3B%2Chope%3B%2Cc0%3B.t1%3B%2Cfaith%3B%2Cc0%3B.t1%3B%2Csex%3B%2Cc0)
+    * ["President"](https://books.google.com/ngrams/graph?content=President&year_start=1750&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2CPresident%3B%2Cc0)
+    * ["prime the pump"](https://books.google.com/ngrams/graph?content=prime+the+pump&year_start=1880&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cprime%20the%20pump%3B%2Cc0)
+    * ["merry Christmas" vs. "happy holidays"](https://books.google.com/ngrams/graph?content=merry+Christmas%2Chappy+holidays&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Cmerry%20Christmas%3B%2Cc0%3B.t1%3B%2Chappy%20holidays%3B%2Cc0)
+    * ["telephone" vs. "telegram" vs. "television" vs. "radio" vs. "internet"](https://books.google.com/ngrams/graph?content=telephone%2C+telegram%2C+television%2C+radio%2C+internet&year_start=1800&year_end=2000&corpus=15&smoothing=3&share=&direct_url=t1%3B%2Ctelephone%3B%2Cc0%3B.t1%3B%2Ctelegram%3B%2Cc0%3B.t1%3B%2Ctelevision%3B%2Cc0%3B.t1%3B%2Cradio%3B%2Cc0%3B.t1%3B%2Cinternet%3B%2Cc0)
+    * [Calendar of Meaningful Dates](https://www.xkcd.com/1140/)
+* [How The Internet* Talks](https://projects.fivethirtyeight.com/reddit-ngram/?keyword=triggered.safe_space.sjw.snowflake&start=20071015&end=20161231&smoothing=10)
+
+# Geospatial visualization with text
+
+* Combines text data with geospatial visualization techniques
+* Requires calculating statistics and frequency of terms for different regions to be plotted
+* [Which Curse Words Are Popular In Your State? Find Out From These Maps.](http://www.huffingtonpost.com/entry/which-curse-words-are-popular-in-your-state_us_55a80662e4b04740a3df54b8)
+* [Hate Map](http://users.humboldt.edu/mstephens/hate/hate_map.html)
+* [Soda vs. Pop with Twitter](http://blog.echen.me/2012/07/06/soda-vs-pop-with-twitter/)
+
+# Network analysis with text
+
+* Use text features to identify edges between nodes in a network
+* [How every #GameOfThrones episode has been discussed on Twitter](https://interactive.twitter.com/game-of-thrones/#?episode=1)
+
+# Sentiment analysis
+
+**Sentiment analysis** uses text analysis to estimate the attitude of a speaker or writer with respect to some topic or the overall polarity of the document. For example, the sentence
+
+> I am happy
+
+contains words and language typically associated with positive feelings and emotions. Therefore if someone tweeted "I am happy", we could make an educated guess that the person is expressing positive feelings.
+
+Obviously it would be difficult for us to create a complete dictionary that classifies words based on their emotional affect; fortunately other scholars have already done this for us. Some simply classify words and terms as positive or negative:
+
+```{r}
+get_sentiments("bing")
+```
+
+Others rate them on a numeric scale:
+
+```{r}
+get_sentiments("afinn")
+```
+
+Still others rate words based on specific sentiments
+
+```{r}
+get_sentiments("nrc")
+
+get_sentiments("nrc") %>%
+  count(sentiment)
+```
+
+In order to assess the document or speaker's overall sentiment, you simply count up the number of words associated with each sentiment. For instance, [how positive or negative are Jane Austen's novels](http://tidytextmining.com/sentiment.html#sentiment-analysis-with-inner-join)? We can determine this by counting up the number of positive and negative words in each chapter, like so:
+
+```{r}
+library(janeaustenr)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text, regex("^chapter [\\divxlc]", 
+                                                 ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+janeaustensentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
+        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+        facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+
+Ignoring the specific code, this is a relatively simple operation. Once you have the text converted into a format suitable for analysis, tabulating and counting term frequency is not a complicated operation.
+
+## Exploring content of Donald Trump's Twitter timeline
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Every non-hyperbolic tweet is from iPhone (his staff). <br><br>Every hyperbolic tweet is from Android (from him). <a href="https://t.co/GWr6D8h5ed">pic.twitter.com/GWr6D8h5ed</a></p>&mdash; Todd Vaziri (\@tvaziri) <a href="https://twitter.com/tvaziri/status/762005541388378112">August 6, 2016</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+If you want to know what President Donald Trump personally tweets from his account versus his handlers, it looks like we might have a way of detecting this difference. Tweets from an iPhone are his staff; tweets from an Android are from him. Can we quantify this behavior or use text analysis to lend evidence to this argument? **Yes**.
+
+### Obtaining documents
+
+```{r}
+library(twitteR)
+```
+
+```{r}
+# You'd need to set global options with an authenticated app
+setup_twitter_oauth(getOption("twitter_api_key"),
+                    getOption("twitter_api_token"))
+```
+
+```{r, eval = FALSE}
+# We can request only 3200 tweets at a time; it will return fewer
+# depending on the API
+trump_tweets <- userTimeline("realDonaldTrump", n = 3200)
+trump_tweets_df <- trump_tweets %>%
+  map_df(as.data.frame) %>%
+  tbl_df()
+```
+
+```{r trump_tweets_df}
+# if you want to follow along without setting up Twitter authentication,
+# just use this dataset:
+load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+str(trump_tweets_df)
+```
+
+### Clean up the data
+
+Let's next clean up the data frame by selecting only the relevant columns, extracting from `statusSource` the name of the application used to generate the Tweet, and filter for only tweets from an iPhone or an Android phone. The `extract()` function uses a [**regular expression**](http://r4ds.had.co.nz/strings.html#matching-patterns-with-regular-expressions) to extract the app name.
+
+```{r tweets, dependson = "trump_tweets_df"}
+tweets <- trump_tweets_df %>%
+  select(id, statusSource, text, created) %>%
+  extract(statusSource, "source", "Twitter for (.*?)<") %>%
+  filter(source %in% c("iPhone", "Android"))
+
+tweets %>%
+  head() %>%
+  knitr::kable(caption = "Example of Donald Trump tweets")
+```
+
+### Comparison of words
+
+What can we say about the difference in the **content**? We can use the [`tidytext`](https://cran.r-project.org/web/packages/tidytext) package to analyze this.
+
+We start by dividing into individual words using the `unnest_tokens()` function, and removing some common **stopwords**. This is a common aspect to preparing text for analysis. Typically, **tokens** are single words from a document. However they can also be *(bi-grams)* (pairs of words), **tri-grams** (three-word sequences), **n-grams** ($n$-length sequences of words), or in this case, individual words, hashtags, or references to other Twitter users. Because tweets are a special form of text (they can include words, urls, references to other users, hashtags, etc.) we need to use a custom regular expression to convert the text into tokens.
+
+```{r tweet_words, dependson = "tweets"}
+library(tidytext)
+
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"   # custom regular expression to tokenize tweets
+
+# function to neatly print the first 10 rows using kable
+print_neat <- function(df){
+  df %>%
+    head() %>%
+    knitr::kable()
+}
+
+# tweets data frame
+tweets %>%
+  print_neat()
+
+# remove manual retweets
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  print_neat()
+
+# remove urls
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  print_neat()
+
+# unnest into tokens - tidytext format
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  print_neat()
+
+# remove stop words
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]")) %>%
+  print_neat()
+
+# store for future use
+tweet_words <- tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+```
+
+What were the most common words in Trump's tweets overall?
+
+```{r tweet_words_plot, dependson = "tweet_words", fig.height = 6, fig.width = 8, echo = FALSE}
+tweet_words %>%
+  count(word, sort = TRUE) %>%
+  head(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Frequency of tokens in @realDonaldTrump timeline",
+         x = "Word",
+         y = "Occurrences") +
+  coord_flip()
+```
+
+Yeah, sounds about right.
+
+### Assessing word and document frequency
+
+One measure of how important a word may be is its **term frequency** (tf), how frequently a word occurs within a document. The problem with this approach is that some words occur many times in a document, yet are probably not important (e.g. "the", "is", "of"). Instead, we want a way of downweighting words that are common across all documents, and upweighting words that are frequent within a small set of documents.
+
+Another approach is to look at a term's **inverse document frequency** (idf), which decreases the weight for commonly used words and increases the weight for words that are not used very much in a collection of documents. This can be combined with term frequency to calculate a term's **tf-idf**, the frequency of a term adjusted for how rarely it is used. It is intended to measure how important a word is to a document in a collection (or corpus) of documents. It is a rule-of-thumb or heuristic quantity, not a theoretically proven method. The inverse document frequency for any given term is defined as:
+
+$$idf(\text{term}) = \ln{\left(\frac{n_{\text{documents}}}{n_{\text{documents containing term}}}\right)}$$
+
+To calculate tf-idf for this set of documents, we will pool all the tweets from iPhone and Android together and treat them as if they are two total documents. Then we can calculate the frequency of terms in each group, and standardize that relative to the the term's frequency across the entire corpus.
+
+```{r}
+tweet_words_count <- tweet_words %>%
+  count(source, word, sort = TRUE) %>%
+  ungroup()
+tweet_words_count
+
+total_words <- tweet_words_count %>%
+  group_by(source) %>%
+  summarize(total = sum(n))
+total_words
+
+tweet_words_count <- left_join(tweet_words_count, total_words)
+tweet_words_count
+
+tweet_words_count <- tweet_words_count %>%
+  bind_tf_idf(word, source, n)
+tweet_words_count
+```
+
+Which terms have a high tf-idf?
+
+```{r}
+tweet_words_count %>%
+  select(-total) %>%
+  arrange(desc(tf_idf))
+```
+
+```{r}
+tweet_important <- tweet_words_count %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+tweet_important %>%
+  group_by(source) %>%
+  slice(1:15) %>%
+  ggplot(aes(word, tf_idf, fill = source)) +
+  geom_bar(alpha = 0.8, stat = "identity") +
+  labs(title = "Highest tf-idf words in @realDonaldTrump",
+       subtitle = "Top 15 for Android and iPhone",
+       x = NULL, y = "tf-idf") +
+  coord_flip()
+```
+
+* **Most hashtags come from the iPhone**. Indeed, almost no tweets from Trump's Android contained hashtags, with some rare exceptions like [this one](https://twitter.com/realDonaldTrump/status/753960134422900736). (This is true only because we filtered out the quoted "retweets", as Trump does sometimes quote tweets [like this](https://twitter.com/realDonaldTrump/status/731805331425218560) that contain hashtags).
+
+* **Words like "join", and times like "7pm", also came only from the iPhone**. The iPhone is clearly responsible for event announcements like [this one](https://twitter.com/realDonaldTrump/status/743522630230228993) ("Join me in Houston, Texas tomorrow night at 7pm!")
+
+* **A lot of "emotionally charged" words, like "badly" and "dumb", were overwhelmingly more common on Android.** This supports the original hypothesis that this is the "angrier" or more hyperbolic account.
+
+### Sentiment analysis
+
+Since we've observed a difference in sentiment between the Android and iPhone tweets, let's try quantifying it. We'll work with the [NRC Word-Emotion Association](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm) lexicon, available from the `tidytext` package, which associates words with 10 sentiments: **positive**, **negative**, **anger**, **anticipation**, **disgust**, **fear**, **joy**, **sadness**, **surprise**, and **trust**.
+
+```{r nrc}
+nrc <- sentiments %>%
+  filter(lexicon == "nrc") %>%
+  select(word, sentiment)
+nrc
+```
+
+To measure the sentiment of the Android and iPhone tweets, we can count the number of words in each category:
+
+```{r by_source_sentiment}
+sources <- tweet_words %>%
+  group_by(source) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  distinct(id, source, total_words)
+sources
+
+by_source_sentiment <- tweet_words %>%
+  inner_join(nrc, by = "word") %>%
+  count(sentiment, id) %>%
+  ungroup() %>%
+  complete(sentiment, id, fill = list(n = 0)) %>%
+  inner_join(sources) %>%
+  group_by(source, sentiment, total_words) %>%
+  summarize(words = sum(n)) %>%
+  ungroup()
+
+head(by_source_sentiment)
+```
+
+(For example, we see that `r by_source_sentiment$words[[1]]` of the `r by_source_sentiment$total_words[[1]]` words in the Android tweets were associated with "`r by_source_sentiment$sentiment[[1]]`"). We then want to measure how much more likely the Android account is to use an emotionally-charged term relative to the iPhone account. Since this is count data, we can use a [Poisson test](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/poisson.test.html) to measure the difference:
+
+```{r}
+# function to calculate the poisson.test for a given sentiment
+poisson_test <- function(df){
+  poisson.test(df$words, df$total_words)
+}
+
+# use the nest() and map() functions to apply poisson_test to each sentiment and 
+# extract results using broom::tidy()
+sentiment_differences <- by_source_sentiment %>%
+  group_by(sentiment) %>%
+  nest() %>%
+  mutate(poisson = map(data, poisson_test),
+         poisson_tidy = map(poisson, tidy)) %>%
+  unnest(poisson_tidy, .drop = TRUE)
+sentiment_differences
+```
+
+And we can visualize it with a 95% confidence interval:
+
+```{r}
+sentiment_differences %>%
+  ungroup() %>%
+  mutate(sentiment = reorder(sentiment, estimate)) %>%
+  mutate_each(funs(. - 1), estimate, conf.low, conf.high) %>%
+  ggplot(aes(estimate, sentiment)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high)) +
+  scale_x_continuous(labels = percent_format()) +
+  labs(x = "% increase in Android relative to iPhone",
+       y = "Sentiment")
+```
+
+Thus, Trump's Android account uses about 40-80% more words related to **disgust**, **sadness**, **fear**, **anger**, and other "negative" sentiments than the iPhone account does. (The positive emotions weren't different to a statistically significant extent).
+
+We're especially interested in which words drove this different in sentiment. Let's consider the words with the largest changes within each category:
+
+```{r, fig.height = 10}
+tweet_important %>%
+  inner_join(nrc, by = "word") %>%
+  filter(!sentiment %in% c("positive", "negative")) %>%
+  mutate(sentiment = reorder(sentiment, -tf_idf),
+         word = reorder(word, -tf_idf)) %>%
+  group_by(sentiment) %>%
+  top_n(10, tf_idf) %>%
+  ungroup() %>%
+  ggplot(aes(word, tf_idf, fill = source)) +
+  facet_wrap(~ sentiment, scales = "free", nrow = 4) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = "",
+       y = "tf-idf") +
+  scale_fill_manual(name = "", labels = c("Android", "iPhone"),
+                    values = c("red", "lightblue"))
+```
+
+This confirms that lots of words annotated as negative sentiments are more common in Trump's Android tweets than the campaign's iPhone tweets. It's no wonder [Trump's staff took away his tweeting privileges for the remainder of the campaign](http://www.nytimes.com/2016/11/07/us/politics/donald-trump-presidential-race.html).
+
+# Latent semantic analysis
+
+Text documents can be utilized in computational text analysis under the **bag of words** approach.^[This section drawn from [18.3 in "Principal Component Analysis".](https://www.stat.cmu.edu/~cshalizi/uADA/12/lectures/ch18.pdf).] Documents are represented as vectors, and each variable counts the frequency a word appears in a given document. While we throw away information such as word order, we can represent the information in a mathematical fashion using a matrix. Each row represents a single document, and each column is a different word:
+
+```
+ a abandoned abc ability able about above abroad absorbed absorbing abstract
+43         0   0       0    0    10     0      0        0         0        1
+```
+
+These vectors can be very large depending on the **dictionary**, or the number of unique words in the dataset. These bag-of-words vectors have three important properties:
+
+1. They are **sparse**. Most entries in the matrix are zero.
+1. A small number of words appear frequently across all documents. These are typically uninformative words called **stop words** that inform us nothing about the document (e.g. "a", "an", "at", "of", "or").
+1. Other than these words, the other words in the dataset are correlated with some words but not others. Words typically come together in related bunches.
+
+Considering these three properties, we probably don't need to keep all of the words. Instead, we could reduce the dimensionality of the data by projecting the larger dataset into a smaller feature space with fewer dimensions that summarize most of the variation in the data. Each dimension would represent a set of correlated words.
+
+In a textual context, this process is known as **latent semantic analysis**. By identifying words that are closely related to one another, when searching for just one of the terms we can find documents that use not only that specific term but other similar ones. Think about how you search for information online. You normally identify one or more **keywords**, and search for pages that are related to those words. But search engines use techniques such as LSA to retrieve results not only for pages that use your exact word(s), but also pages that use similar or related words.
+
+## Interpretation: `NYTimes`
+
+```{r nytimes}
+# get NYTimes data
+load("data/pca-examples.Rdata")
+```
+
+Let's look at an application of LSA. `nyt.frame` contains a document-term matrix of a random sample of stories from the New York Times: 57 stories are about art, and 45 are about music. The first column identifies the topic of the article, and each remaining cell contains a frequency count of the number of times each word appeared in that article.^[Actually it contains the [term frequency-inverse document frequency](http://cfss.uchicago.edu/text001_tidytext.html#assessing_word_and_document_frequency) which downweights words that appear frequently across many documents. This is one method for guarding against any biases caused by stop words.] The resulting data frame contains `r nrow(nyt.frame)` rows and `r ncol(nyt.frame)` columns.
+
+Some examples of words appearing in these articles:
+
+```{r nytimes-words}
+colnames(nyt.frame)[sample(ncol(nyt.frame),30)]
+```
+
+We can estimate the LSA using the standard PCA procedure:
+
+```{r nytimes-pca}
+# Omit the first column of class labels
+nyt.pca <- prcomp(nyt.frame[,-1])
+
+# Extract the actual component directions/weights for ease of reference
+nyt.latent.sem <- nyt.pca$rotation
+
+# convert to data frame
+nyt.latent.sem <- nyt.latent.sem %>%
+  as_tibble %>%
+  mutate(word = names(nyt.latent.sem[,1])) %>%
+  select(word, everything())
+```
+
+Let's extract the biggest components for the first principal component:
+
+```{r nytimes-PC1}
+nyt.latent.sem %>%
+  select(word, PC1) %>%
+  arrange(PC1) %>%
+  slice(c(1:10, (n() - 10):n())) %>%
+  mutate(pos = ifelse(PC1 > 0, TRUE, FALSE),
+         word = fct_reorder(word, PC1)) %>%
+  ggplot(aes(word, PC1, fill = pos)) +
+  geom_col() +
+  labs(title = "LSA analysis of NYTimes articles",
+       x = NULL,
+       y = "PC1 scores") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+These are the 10 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on the negative loading are more strongly associated with art.
+
+```{r nytimes-PC2}
+nyt.latent.sem %>%
+  select(word, PC2) %>%
+  arrange(PC2) %>%
+  slice(c(1:10, (n() - 10):n())) %>%
+  mutate(pos = ifelse(PC2 > 0, TRUE, FALSE),
+         word = fct_reorder(word, PC2)) %>%
+  ggplot(aes(word, PC2, fill = pos)) +
+  geom_col() +
+  labs(title = "LSA analysis of NYTimes articles",
+       x = NULL,
+       y = "PC2 scores") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+Here the positive words are about art, but more focused on acquiring and trading ("donations", "tax"). We could perform similar analysis on each of the `r ncol(nyt.latent.sem)` principal components, but if the point of LSA/PCA is to reduce the dimensionality of the data, let's just focus on the first two for now.
+
+```{r nytimes-biplot}
+biplot(nyt.pca, scale = 0, cex = .6)
+```
+
+```{r nytimes-plot-dim}
+cbind(type = nyt.frame$class.labels, as_tibble(nyt.pca$x[,1:2])) %>%
+  mutate(type = factor(type, levels = c("art", "music"),
+                       labels = c("A", "M"))) %>%
+  ggplot(aes(PC1, PC2, label = type, color = type)) +
+  geom_text() +
+  labs(title = "")
+  theme(legend.position = "none")
+```
+
+The biplot looks a bit ridiculous because there are `r ncol(nyt.frame)` variables to map onto the principal components. Only a few are interpretable. If we instead just consider the articles themselves, even after throwing away the vast majority of information in the original data set the first two principal components still strongly distinguish the two types of articles. If we wanted to use PCA to reduce the dimensionality of the data and predict an article's topic using a method such as SVM, we could probably generate a pretty good model using just the first two dimensions of the PCA rather than all the individual variables (words).
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+

@@ -1,0 +1,573 @@
+---
+title: "Day 15 - Network visualization"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Define core concepts of network theory
+* Summarize [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/) and it's use of network analysis
+* Review the [*Love Actually*](http://varianceexplained.org/r/love-actually-network/) example
+* Identify core packages in R for network analysis
+* Demonstrate major types of network visualizations
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggraph)
+library(igraph)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Network theory
+
+A **network** (also sometimes referred to as a **graph**) is a set of relationships. Networks contain a set of objects (**nodes**/**verticies**) and a mapping or description of relations between the nodes (**link**/**edge**). For example, a simple network contains two objects, 1 and 3, and one relationship, or edge, that links them:
+
+```{r undirected-edge, echo = FALSE}
+simple_net <- data_frame(from = 1, to = 2) %>%
+  graph_from_data_frame
+
+ggraph(simple_net) +
+  geom_edge_link() + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_graph()
+```
+
+The above edge is an **undirected edge** - there is no directionality to the relationship between 1 and 2. A **directed edge** is an ordered pair of nodes, with an arrow drawn to indicate the directionality of the edge:
+
+```{r directed-edge, echo = FALSE}
+ggraph(simple_net) +
+  geom_edge_link(arrow = arrow(length = unit(4, 'mm')), 
+                 end_cap = circle(5, 'mm')) + 
+  geom_node_label(aes(label = name), size = 5) +
+  theme_graph()
+```
+
+There are lots of ways to analyze and measure networks. Let's first look at two examples of network analysis applied to real-life data, then circle back and talk about packages for network visualization and analysis in R.
+
+# Studying political polarization through networks
+
+> [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)
+
+There is little argument that political polarization is occurring in the United States. Partisanship can be attributed to many causes, including:
+
+* Income inequality
+* Gerrymandering/redistricting
+* Activists involved in primary elections
+* Political realignment in the South
+* Electing more partisan members to Congress
+* Shift by existing members to ideological poles
+* Increasingly partisan media
+
+## Research design
+
+In this paper, the authors studying partisanship in the U.S. House of Representatives by examining relationships between legislators. On one hand, legislators are pressured by party leaders to vote with members of their own party with incentives such as committee assignments and campaign funding used to keep members in check. Alternatively, legislators have individual incentives to cooperate with members of the opposite political party (responsiveness to individual constituencies' concerns).
+
+Here, the authors measure the extent to which legislators form ideological relationships with members of the opposite party by examining cooperation rates between individual members of Congress on roll-call votes. In this research design, legislators are the **nodes** and the frequency of agreement on roll call votes are the **edges**. Edges are calculated for each pair of legislators serving in a two-year term of Congress, resulting in nearly 6,000,000 pairs of legislators. The data is represented in matrix form with the rows and columns identifying each legislator-term observation and the cells identifying the frequency of voting together in that term. Therefore the network/graph is undirected (it doesn't matter the ordering of the pair, they will still have the same number of votes in agreement with one another).
+
+## Visualizing polarization
+
+Pairs are defined as either **cross-party** (comprised of a single Republican and a single Democrat) or **same-party** (comprised of two Democrats or two Republicans). We can then think of partisan affiliation as an **attribute** of each node, and the cross- or same-party pairing being an attribute of each edge.
+
+![Figure 2 from [*The Rise of Partisanship in the U.S. House of Representatives*](http://www.mamartino.com/projects/rise_of_partisanship/)](images/journal.pone.0123507.g002.PNG)
+
+This figure from the article is a fairly typical visualization of network data known as a **node-edge diagram**. Nodes are drawn as point marks and the edges connecting them are drawn as line marks. Drawing node-edge diagrams is tricky for the simple reason that you need to determine where to draw each node on a two-dimensional coordinate plane. The problem is that there is no inherent or meaningful value of x-y coordinates. In this data, there is no attribute/variable that tells us where to draw these nodes.
+
+Instead, node-edge diagrams rely on algorithms to determine spatial positioning in the visualization. There are many algorithms that can perform this task, but they typically consider **connectivity** and **distance**. Distance is defined as the number of edges along the shortest path connecting two nodes. Nodes that are tightly connected by shorter distances would therefore be grouped closer together in the visualization. Nodes that are loosely connected by many edges or links should be farther apart on the graph.
+
+### Force-directed placement
+
+One of the most common network layouts is **force-directed placement**.
+
+> [D3 example of a force-directed graph](https://bl.ocks.org/mbostock/4062045)
+
+In one variant, network elements are positioned according to a simulation of physical forces where nodes push away from each other while links act like springs that draw the endpoint nodes closer to each other. Typically this method places nodes randomly within the spatial region and iteratively refines the locations by gradually shifting nodes around until the layout improves and stabilizes.
+
+Under this method, absolute spatial position does not encode any meaningful value. The algorithm is designed to minimize distracting artifacts that might confuse the viewer (e.g. edge crossings, node overlaps), so spatial location is merely a side effect. While absolute position is meaningless, relative spatial location can be meaningful. Tightly interconnected groups of nodes should be drawn relatively close together, which could indicate a substantive clustering. However this could also be an artifact of the algorithm. Alternative measures such as **centrality** are more robust measures of relative node importance in a network.
+
+> Because these algorithms start with random placement, in order to exactly reproduce a network visualization you should remember to set your random number seed at the beginning of the script (`set.seed()` in R).
+
+In this graph, edges are drawn between legislators who agree above the Congress' threshold value of votes - this is defined as the average level of cooperation within each Congress. If the authors did not do this, every pair with at least one vote in agreement would have an edge drawn, making the graph even more complex.
+
+We also see that the authors encode additional information in the visualization through extra channels:
+
+* Partisan affiliation is indicated by coloring the nodes red (Republican) or blue (Democrat)
+* Each node is sized relative to its total connection, so larger nodes have more overall connections with other legislators
+* Edges are thicker if the pair agrees on more votes
+
+### Hairball node-edge diagrams
+
+Hairball diagrams are those with so many nodes and edges that the diagram becomes a jumbled mess and interpretation becomes extremely difficult. A general rule of thumb is that if the number of nodes is more than 4 times the number of edges, straight-forward force-directed placement will not be optimal.
+
+In this example, the individual network diagrams are pretty bad if you want to interpret them at the legislator level. For instance, consider the 2011 graph:
+
+[![2011 rise of partisanship](http://www.mamartino.com/projects/rise_of_partisanship/img/2011.jpg)](http://www.mamartino.com/projects/rise_of_partisanship/img/2011.jpg)
+
+Trying to track all the nodes and edges to identify legislators with the most ties (cooperative pairings) is downright impossible. There is just too much going on here. However, the visualization is very good at depicting the increasing partisanship in the U.S. House of Representatives. Democrats and Republicans are clustered together on the graph (partially the algorithm and partially the fact that legislators vote most frequently with members of their own party). It is easy to see that in the 1950s and 60s there were a lot of edges connecting legislators from both sides of the aisle. In fact we can even see more mixing of the nodes, where Republicans and Democrats are drawn more closely together on the grid. Over time, we can see both the number of cross-party edges decreasing and the spatial distance between the core Democrat and Republican clusters increasing, both outcomes of increased partisanship and decreasing cooperation.
+
+# Love Actually
+
+> Example adapted from David Robinson's [Analyzing networks of characters in 'Love Actually'](http://varianceexplained.org/r/love-actually-network/)
+
+## Import data
+
+First we use R to parse the raw script into a tidy data frame.
+
+```{r lines}
+raw <- readLines("data/love_actually.txt")
+
+lines <- data_frame(raw = raw) %>%
+    filter(raw != "", !str_detect(raw, "(song)")) %>%
+    mutate(is_scene = str_detect(raw, " Scene "),
+           scene = cumsum(is_scene)) %>%
+    filter(!is_scene) %>%
+    separate(raw, c("speaker", "dialogue"), sep = ":", fill = "left") %>%
+    group_by(scene, line = cumsum(!is.na(speaker))) %>%
+    summarize(speaker = speaker[1], dialogue = str_c(dialogue, collapse = " "))
+```
+
+Next we match characters to actors:
+
+```{r cast, dependson = "lines"}
+cast <- read_csv(url("http://varianceexplained.org/files/love_actually_cast.csv"))
+
+lines <- lines %>%
+    inner_join(cast) %>%
+    mutate(character = paste0(speaker, " (", actor, ")"))
+lines[460:465,] %>%
+  knitr::kable(caption = "Example of tidied data")
+```
+
+In order to analyze the network structure, we need to count first the lines-per-scene-per-character, then convert this into a binary speaker-by-scene matrix:
+
+```{r speaker_scene_matrix, dependson = "cast"}
+by_speaker_scene <- lines %>%
+  count(scene, character)
+by_speaker_scene
+
+library(reshape2)
+speaker_scene_matrix <- by_speaker_scene %>%
+  acast(character ~ scene, fun.aggregate = length)
+
+dim(speaker_scene_matrix)
+```
+
+## Hierarchical clustering
+
+[**Hierarchical clustering**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) is a technique for identifying clusters or subgroups in a data set. [**Dendrograms**](http://cfss.uchicago.edu/persp011_unsupervised.html#hierarchical_clustering) are a common visualization of these clusters. Observations which fuse into branches lower on the graph are generally similar to one another, whereas observations which fuse higher are less similar. Similarity is defined generally by distance between observations; here, defined by how many scenes each pair of characters shares.
+
+```{r h, dependson = "speaker_scene_matrix"}
+norm <- speaker_scene_matrix / rowSums(speaker_scene_matrix)
+
+h <- hclust(dist(norm, method = "manhattan"))
+
+ggdendro::ggdendrogram(h)
+```
+
+This looks about right! Almost all the romantic pairs are together (Natalia/PM; Aurelia/Jamie, Harry/Karen; Karl/Sarah; Juliet/Peter; Jack/Judy) as are the friends (Colin/Tony; Billy/Joe) and family (Daniel/Sam).
+
+One thing this tree is perfect for is giving an ordering that puts similar characters close together:
+
+```{r ordering, dependson = "h"}
+ordering <- h$labels[h$order]
+ordering
+```
+
+This ordering can be used to make other graphs more informative. For instance, we can visualize a timeline of all scenes:
+
+```{r scenes, dependson = "speaker_scene_matrix"}
+scenes <- by_speaker_scene %>%
+    filter(n() > 1) %>%        # scenes with > 1 character
+    ungroup() %>%
+    mutate(scene = as.numeric(factor(scene)),
+           character = factor(character, levels = ordering))
+
+ggplot(scenes, aes(scene, character)) +
+    geom_point() +
+    geom_path(aes(group = scene))
+```
+
+## Adjacency matrix
+
+Alternatively, network data can be visualized using a matrix view based on a table from the original network data. For example, an **adjacency matrix** is a matrix where the nodes of the network are lined up on the rows and columns, and the edges are encoded in the cell values. To visualize the edges, we draw a heatmap with color used to encode the edges.
+
+Here we draw an adjacency matrix for the Love Actually data. To generate the adjacency matrix, all we need is the speaker-by-scene matrix. Recall that this matrix records whether a character is present in every scene using a binary `0/1` coding scheme. To generate an adjacency matrix, we simply multiply the matrix by its transpose. This identifies the number of scenes in which every pair of characters appear.
+
+```{r cooccur}
+non_airport_scenes <- speaker_scene_matrix[, colSums(speaker_scene_matrix) < 10]
+non_airport_scenes[1:5, 1:5]
+
+cooccur <- non_airport_scenes %*% t(non_airport_scenes)
+cooccur[1:5, 1:5]
+```
+
+To visualize the adjacency matrix, we draw a heatmap. Note that when using the default `heatmap()` function from the `stats` library, dendrograms are also added to the left and top sides of the visualization:
+
+```{r cooccur-graphics}
+heatmap(cooccur)
+```
+
+If you want to use `ggplot()`, you need to first convert the adjacency matrix into a tidy data frame, then plot that object (and you lose the dendrograms):
+
+```{r cooccur-ggplot}
+cooccur %>%
+  as_tibble %>%
+  mutate(id1 = rownames(cooccur)) %>%
+  gather(id2, n, -id1) %>%
+  mutate_at(vars(id1, id2), funs(factor(., levels = ordering))) %>%
+  ggplot(aes(id1, id2, fill = n)) +
+  geom_tile() +
+  scale_fill_continuous(low = "white", high = "red") +
+  coord_fixed() +
+  labs(x = NULL,
+       y = NULL,
+       fill = NULL) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## Node-edge diagram
+
+To draw the network as a node-edge diagram, first we need to convert the adjacency matrix into an `igraph` object.^[`igraph` is one of the most important packages in R for graph and network analysis.] Rather than storing it in a pure matrix form, the `igraph` object is a specialized data object in R for storing network data. Many graphing functions in R for network data rely on this structure.^[We could also generate the `igraph` from the original data frame using `graph_from_data_frame()`.]
+
+```{r g, dependson = "cooccur"}
+g <- graph_from_adjacency_matrix(cooccur,
+                                 weighted = TRUE,
+                                 mode = "undirected",
+                                 diag = FALSE)
+g
+```
+
+The first argument is the adjacency matrix, and the remaining arguments are:
+
+* `weighted = TRUE` - creates a weighted graph. Here the weights refer to the fact that some edges are larger than others (i.e. some characters appear together in more scenes than others). In an unweighted graph, edges are binary - either they exist between two nodes, or they do not.
+* `mode = "undirected"` - there is no directionality to the edges.
+* `diag = FALSE` - set the diagonal of the matrix to be zero. We want to ignore the fact that characters appear in different numbers of scenes overall (this is basically ignoring nodes linked to themselves, i.e. the raw number of scenes in which the character appears).
+
+To draw the node-edge diagram, we can use several packages. Here I use [`ggraph`](https://github.com/thomasp85/ggraph), an extension of `ggplot2` which incorporates relational data structures into the layered grammar of graphics foundation.
+
+```{r node-edge}
+ggraph(g) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none")
+```
+
+Technical details about the visualization:
+
+* Edges are drawn based on the weights. That is, thicker lines indicate more scenes together and a stronger "tie" between the characters
+* I used the default algorithm for drawing the diagram, which is the `nicely()` algorithm from `igraph`. We will examine the output of additional algorithms later.
+* Nodes are labeled with the character's name. This tends to add more noise to the graph, but makes interpretation about individual character arcs and relationships easier.
+
+A few patterns pop out of this visualization. We see that the majority of characters are tightly connected (often by the scenes at the school play, or by Karen (Emma Thompson), who is friends or family to many key characters). But we see Bill Nighy’s plotline occurs almost entirely separate from everyone else, and that five other characters are linked to the main network by only a single thread (Sarah’s conversation with Mark at the wedding).
+
+# `ggraph` for network visualizations
+
+Let's explore in more detail the different components for drawing graphs using `ggraph`. Again, this is not the only approach in R. In fact, the package was only published in the past few months and is therefore still building in support and usage. However it is pretty thoroughly documented and adheres to the grammar of graphics philosophy. Other packages for network visualization in R include:
+
+* [`igraph`](http://igraph.org/r/) - the workhorse package in R. `ggraph` and other visualization tools heavily rely on this packages core functions for generating layouts, creating data structures, and other backend processing tasks. `igraph` also includes loads of functions for statistical analysis of networks (measures of density, reciprocity, centrality, distance, etc.)
+* [`ggnet2`](https://briatte.github.io/ggnet/) - another package using the `ggplot2` syntax
+* [`ggnetwork`](https://cran.r-project.org/web/packages/ggnetwork/index.html) - yet another package using `ggplot2`, in fact from the same author of `ggnet2`. This package retains the same common functions in `ggplot2` to add `geom_()`s to the visualization. It most resembles standard `ggplot2` code.
+
+## The layout
+
+The **layout** defines the vertical and horizontal placement of nodes when plotting a graph structure. The **layout algorithm** takes in a graph structure and returns the vertical and horizontal position of the nodes. Different algorithms (and in fact different iterations) return different spatial positions:
+
+```{r layouts}
+ggraph(g) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Default layout (Nicely) algorithm")
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Kamada and Kawai spring-based algorithm")
+
+ggraph(g, layout = "fr") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 500 iterations")
+
+ggraph(g, layout = "fr", niter = 100) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 100 iterations")
+
+ggraph(g, layout = "fr", niter = 10) + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  labs(title = "Fruchterman-Reingold algorithm",
+       subtitle = "Force-directed layout, 10 iterations")
+
+ggraph(g, layout = "grid") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Grid algorithm")
+
+ggraph(g, layout = "star") + 
+  geom_edge_link(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Star algorithm")
+```
+
+```{r layout-circle}
+ggraph(g, layout = "linear") + 
+  geom_edge_arc(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Linear algorithm")
+
+ggraph(g, layout = "linear", circular = TRUE) + 
+  geom_edge_arc(aes(edge_width = weight)) + 
+  geom_node_point() +
+  geom_node_text(aes(label = name), repel = TRUE, size = 3) +
+  scale_edge_width_continuous(range = c(.5, 3)) +
+  theme_graph() +
+  theme(legend.position = "none") +
+  ggtitle("Star algorithm (circular)")
+```
+
+### Possible layouts in `igraph`
+
+![Source: [Introduction to ggraph: Layouts](http://www.data-imaginist.com/2017/ggraph-introduction-layouts/)](http://www.data-imaginist.com/assets/images/2017-02-06-ggraph-introduction-layouts/unnamed-chunk-12-.gif)
+
+### Dendrograms
+
+```{r dendrograms}
+dendrogram <- as.dendrogram(hclust(dist(iris[, 1:4])))
+
+ggraph(dendrogram, 'dendrogram') + 
+  geom_edge_elbow()
+
+ggraph(dendrogram, 'dendrogram', circular = TRUE) + 
+  geom_edge_elbow() + 
+  coord_fixed()
+```
+
+## Nodes
+
+Remember that nodes are the entities that are connected in a network. Nodes represent entities, and the layout is their physical placement. Once we have their spatial placement from the layout, drawing them is basically like drawing a scatterplot:
+
+```{r scatter}
+ggraph(g, layout = "kk") +
+  geom_point(aes(x = x, y = y))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_point()
+```
+
+This works because the result of `ggraph()` and `create_layout()` is a data frame:
+
+```{r create-layout}
+create_layout(g, layout = "kk")
+```
+
+The `geom_node_*()` family of functions are essentially direct translations from `geom_*()`, but retain the network specific flavor. In addition, they explicitly assume the $x$ and $y$ coordinates are stored in `x` and `y`, so they do not need to be declared in the function call.
+
+The three core functions are `geom_node_point()`, `geom_node_text()`, and `geom_node_label()`:
+
+```{r geom-node}
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_point()
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_text(aes(label = name))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_label(aes(label = name))
+
+ggraph(g, layout = "kk") + 
+  geom_edge_link() + 
+  geom_node_label(aes(label = name), repel = TRUE)
+```
+
+### Communicating attributes of nodes
+
+```{r import-media-example}
+# example files obtained from http://kateto.net/network-visualization
+
+nodes <- read_csv("data/Dataset1-Media-Example-NODES.csv")
+links <- read_csv("data/Dataset1-Media-Example-EDGES.csv")
+
+links <- aggregate(links[,3], links[,-3], sum)
+links <- links[order(links$from, links$to),]
+
+net <- graph_from_data_frame(d = links, vertices = nodes, directed = TRUE)
+net
+```
+
+We can use standard aesthetics of `ggplot2` to communicate attributes of nodes. For instance, consider this basic node-edge diagram about media companies:
+
+```{r media-plot}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_label(aes(label = media), repel = TRUE) +
+  theme_graph()
+```
+
+We can add more information about the nodes via `aes()`. For instance, we know what type of media company each one is (newspaper, TV, or online). We could add this using the color aesthetic:
+
+```{r node-color}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label), size = 2) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+We also know the approximate audience size of each media company. We could add this information via the size aesthetic:
+
+```{r node-size}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+## Edges
+
+Edges simply denote the relationship between two entities or nodes. A straight line is one possible method for visualizing this relationship, but it is not the only way. `geom_edge_link()` will however provide straight lines for edges:
+
+```{r edge-straight}
+ggraph(net) +
+  geom_edge_link() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+However you can use other approaches, such as a fan:
+
+```{r edge-fan}
+ggraph(net) +
+  geom_edge_fan() +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+When edges run in parallel (i.e. multiple edges between the same two nodes), then `ggraph` spreads them out as arcs with different curvatures. Because the media example is a directed graph, edges can run in both directions which is why some of the nodes have multiple edges.
+
+### Decorating edges
+
+Edges can also have attributes mapped to them. We've already seen this by assigning edge thickness based on a given weighting attribute. We can also encode directionality, as in the media example, with the use of arrows:
+
+```{r edge-arrow}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm'))) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+Unfortunately by default the arrows extend through the center of the node. To correct this use `start_cap` and `end_cap` aesthetics to change the start and stop of the edge:
+
+```{r edge-arrow-adj}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm')) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+And like with nodes, we can also color-code the edges. For instance, here we can color the edge based on if the relationship is from a hyperlink or a mention:
+
+```{r edge-color}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm'),
+                aes(color = type)) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph()
+```
+
+To change the color palettes, use `scales_color_*()` like normal:
+
+```{r edge-color-adj}
+ggraph(net) +
+  geom_edge_fan(arrow = arrow(length = unit(4, 'mm')), 
+                   end_cap = circle(3, 'mm'),
+                aes(color = type)) +
+  geom_node_point(aes(color = type.label, size = audience.size)) +
+  geom_node_label(aes(label = media), repel = TRUE, size = 2) +
+  theme_graph() +
+  scale_color_brewer(palette = "Paired") +
+  scale_edge_color_brewer(palette = "Dark2")
+```
+
+# Additional resources
+
+* [Analyzing networks of characters in 'Love Actually'](http://varianceexplained.org/r/love-actually-network/)
+* [Kadushin, Charles. Introduction to Social Network Theory.](http://www.cin.ufpe.br/~rbcp/taia/Kadushin_Concepts.pdf)
+* [Network visualization with R](http://kateto.net/network-visualization)
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+

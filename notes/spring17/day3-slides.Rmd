@@ -1,0 +1,133 @@
+---
+title: "Design and evaluation"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "April 3, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = 18))
+```
+
+## Truthful
+
+* Importance of truth
+* Truth continuum
+* Where is truth constructed
+
+----
+
+![Inconsistent x-axis](images/cost_of_gas.jpg)
+
+----
+
+![Inconsistent y-axis](images/y_axis.jpg)
+
+----
+
+![Two y-axes](images/wonk-room-misleading-graph.jpg)
+
+----
+
+![Only have half the year](images/new-haven-ct.jpg)
+
+----
+
+![Numbers plotted are not even correct](images/unemployment-rate.jpg)
+
+----
+
+![[Spurious correlations](http://tylervigen.com/spurious-correlations)](images/drowning_cage.jpeg)
+
+----
+
+![Missing the other part of the story - what happens to those without a 4-year degree?](images/diminishing-return.jpg)
+
+
+## Functional
+
+* What is the purpose? What's the story?
+* Balance between detail and readability
+* Targeting different audiences/formats
+
+----
+
+![Baseline of 34, not 0](images/Bush_cuts2.png)
+
+----
+
+![Inverted y-axis](images/stand_your_ground.jpg)
+
+----
+
+![Should have gone with a bar chart](images/age_of_death.jpg)
+
+
+## Beautiful
+
+* Value of aesthetics
+* Chart junk
+
+----
+
+![[Eww chart junk](http://iboz.net/largest-fast-food-chain-in-the-world/)](images/Largest-Fast-Food-Chain.jpg)
+
+----
+
+![Serious story, ruined by amateur graph](images/death_penalty.jpg)
+
+
+## Insightful
+
+* Spontaneous
+* Knowledge-building
+* Know your audience
+* Know your medium
+
+----
+
+![[Self-Description](https://xkcd.com/688/)](images/xkcd_self_description.png)
+
+----
+
+![All zeroes](images/all_zeroes.jpg)
+
+## Insightful visualizations
+
+* [How Nations Fare in PhDs by Sex [Interactive]](https://www.scientificamerican.com/article/how-nations-fare-in-phds-by-sex-interactive1/)
+* [The Complete History Of MLB](https://projects.fivethirtyeight.com/complete-history-of-mlb/)
+
+## Enlightening
+
+* Is this topic important?
+* Somewhat relative, but also somewhat absolute
+* "Do good with data"
+
+----
+
+![[Movie Narrative Charts](https://xkcd.com/657/large/)](images/xkcd_movie_narrative_charts.png)
+
+----
+
+![[Child's sleeping pattern](https://www.reddit.com/r/dataisbeautiful/comments/5l39mu/my_daughters_sleeping_patterns_for_the_first_4/)](images/daughter_sleep.jpeg)
+
+
+## Visualization critiques
+
+* [Trump popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/)
+* [Earth Temperature Timeline](https://xkcd.com/1732/)
+* [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
+* [The Paper Mountain](http://www.nature.com/news/the-top-100-papers-1.16224)
+* [Marriage](https://xkcd.com/1431/)
+* [Cookie ingredient variants](http://flowingdata.com/2014/12/24/cookie-ingredient-variants/)
+

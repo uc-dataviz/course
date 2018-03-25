@@ -1,0 +1,830 @@
+---
+title: "Day 16 - More D3"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+    includes:
+      in_header: "header_include_d3.html"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Review how to add scales and axes to D3 plots
+* Identify methods for updating graphs and transitioning
+* Define event listeners and identify potential events
+* Explain how to incorporate interactivity by binding event listeners
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Scales
+
+> Scales are functions that map from an input domain to an output range.
+
+**Scales** allow for D3 graphics to dynamically adjust to different absolute values in the data. This is equivalent to the `scale_*()` family of functions in `ggplot2` and the scale component of the layered grammar of graphics.
+
+D3 scales are functions with parameters that you define. D3 will not just assume a certain type of scale given the data values - you need to explicitly declare it. Scales themselves are not visual elements of the graph. That is, scales do not define axes that are drawn to visualize the scale along the x and y coordinates. For that, we still need to explicitly create an **axis** which is the visual representation of the scale.
+
+## Domains and ranges
+
+* Input domain - range of possible input data values. Identified by the actual values encoded in the variables
+* Output range - range of possible output values. In D3, this is frequently displayed as values in pixel units
+
+![](http://orm-chimera-prod.s3.amazonaws.com/1230000000345/images/idvw_0701.png)
+
+## Creating the scale
+
+D3's scale functions are accessed with `d3.scale` followed by the type of scale you want:
+
+```javascript
+var scale = d3.scale.linear();
+var scale = d3.scale.sqrt();
+var scale = d3.scale.log();
+var scale = d3.scale.ordinal();
+```
+
+To properly use these functions, we need to set a domain and a range by passing the values into `scale` as arguments (stored as arguments):
+
+```javascript
+scale.domain([100, 500]);
+scale.range([10, 350]);
+
+// chained together
+var scale = d3.scale.linear()
+                    .domain([100, 500])
+                    .range([10, 350]);
+                    
+scale(100);  //Returns 10
+scale(300);  //Returns 180
+scale(500);  //Returns 350
+```
+
+## Scaling the scatterplot
+
+To be flexible, we don't want to hard code the values for the domain and range. What happens if the data values change? We want the scale to automatically adjust. Remember the data for the scatter plot is stored as an array of arrays:
+
+```javascript
+var dataset = [
+                [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+                [410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+              ];
+```
+
+### `d3.min()` and `d3.max()`
+
+We can use `d3.min()` and `d3.max()` to calculate the minimum and maximum values in our data set. Because the x and y coordinates are stored as arrays within an array, we need to loop over each array, pull out the x coordinate, and then calculate the minimum and maximum values for all the x coordinates:
+
+```javascript
+d3.max(dataset, function(d) {
+    return d[0];  //References first value in each subarray
+});
+```
+
+`function(d)` is an anonymous **accessor** function which retrieves the first indexed value from each array in `dataset` (this is what `d` refers to). This is similar to the other anonymous functions we used to calculate the coordinates for plotting the scatterplot circles:
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];
+})
+.attr("cy", function(d) {
+    return d[1];
+})
+```
+
+### Setting up dynamic scales
+
+```javascript
+var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([0, w]);
+```
+
+* `xScale` - give it a meaningful name
+* Bottom of domain and range are hardcoded to `0`. You could calculate the minimum value in the dataset instead
+* Output range is set to `0` and `w`, the SVG's width
+
+```javascript
+var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([0, h]);
+```
+
+### Incorporating scaled values
+
+Now we need to update the coordinates for the `circle` for each data value:
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];  //Returns original value bound from dataset
+})
+
+.attr("cx", function(d) {
+    return xScale(d[0]);  //Returns scaled value
+})
+```
+
+And for the text labels:
+
+```javascript
+.attr("x", function(d) {
+    return xScale(d[0]);
+})
+.attr("y", function(d) {
+    return yScale(d[1]);
+})
+```
+
+The result is:
+
+```javascript
+			//Width and height
+			var w = 500;
+			var h = 100;
+			
+			var dataset = [
+							[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+							[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+						  ];
+			//Create scale functions
+			var xScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+								 .range([0, w]);
+			var yScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+								 .range([0, h]);
+	
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			svg.selectAll("circle")
+			   .data(dataset)
+			   .enter()
+			   .append("circle")
+			   .attr("cx", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("cy", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("r", function(d) {
+			   		return Math.sqrt(h - d[1]);
+			   });
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d[0] + "," + d[1];
+			   })
+			   .attr("x", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("y", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "red");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/02_scaled_plot.html)
+
+### Tweaking the graph
+
+We still need to make some adjustments to the graph:
+
+* Remember that SVGs are drawn from the top-down. We need to reverse `yScale` so greater values are higher up. To do that, change
+
+    ```javascript
+    .range([0, h]);
+    ```
+    
+    to
+    
+    ```javascript
+    .range([h, 0]);
+    ```
+
+* Add padding to the range so that elements near the borders are not cut off. Similar to adding padding previously:
+
+    ```javascript
+    xScale.range([padding, w - padding]);
+    yScale.range([h - padding, h]);
+    ```
+
+* Use a scale function to calculate the radius of each `circle` as the square root of its `y` value.
+
+    ```javascript
+    var rScale = d3.scale.linear()
+                         .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                         .range([2, 5]);
+    .attr("r", function(d) {
+        return rScale(d[1]);
+    });
+    ```
+
+* [Result with original data](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/05_scaled_plot_radii.html)
+* [Result with new data point](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/06_scaled_plot_big.html)
+* [Result with new SVG size](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/07_scaled_plot_large.html)
+
+# Axes
+
+Much like scales, D3 axes are functions whose parameters you define. Rather than returning a value, they generate visual elements of the axis, including lines, labels, and ticks.
+
+## Setting up an axis
+
+Use `d3.svg.axis()` to create a generic axis function:
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom");
+```
+
+* Assigns the x-axis to a variable
+* Assigns it a scale
+* Orients labels to appear on the bottom of the axis
+
+To generate the axis and add it to the plot, we need to `call()` the `xAxis` function.
+
+```javascript
+svg.append("g")
+    .call(xAxis);
+```
+
+* Reference the `svg` element
+* `append()` a new `g` element to it. `g` is a group element that are invisible, but group together common elements. Think of an axis - it includes a line across the graph, tick marks, text labels, etc. We want them grouped together so we can apply common styles and aesthetics to the entire axis.
+* `call()` takes the incoming `g` group and sends it to the `xAxis` function (variable). It's like a basic chaining operation in R.
+* Remember that SVGs are drawn one element at a time. If you draw the axis first, other visual elements of the graph can be drawn over top of it. Typically this is not desired and you want the axis to be on top, so add it at the end of your code after the other elements in the SVG are generated. Again, similar to adding layers in `ggplot()`
+
+* [Result - not pretty](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/01_axes.html)
+
+## Cleaning it up
+
+We need to assign the axis (`g` element) to a **class* so we can alter its aesthetics with CSS:
+
+```javascript
+svg.append("g")
+    .attr("class", "axis") //Assign "axis" class
+    .call(xAxis);
+```
+
+Then add some CSS styles in the `<head>` of the page (or in an external file):
+
+```css
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+```
+
+* The first chunk applies to the axis path and line, changing the `fill` to `none`, the line stroke color to `black`, and giving it `crispEdges`
+* The axis text changes its font family and size
+
+To move the axis to the bottom of the graph, we **transform** it:
+
+```javascript
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + (h - padding) + ")")
+    .call(xAxis);
+```
+
+This is a new `transform` attribute that `translate()`s the x and y coordinates of the axis. Here, we just want to change the vertical position of the graph, so the first argument is `0`.
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/02_axes_bottom.html)
+
+## Check for ticks
+
+We can adjust the number of ticks when creating the axis:
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);  //Set rough # of ticks
+```
+
+This will create approximately 5 tick marks. However D3 will interpret this as a suggestion and pick the optimal number of human-readable values. In this case, D3 will choose 7 ticks so it can round each tick label to the nearest 100 value (e.g. 100, 200, 300).
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/03_axes_clean.html)
+* [Result with y-axis](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/04_axes_y.html)
+
+# Updates, Transitions, and Motion
+
+Return to the bar chart:
+
+```javascript
+			//Width and height
+			var w = 600;
+			var h = 250;
+			
+			var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(dataset)])
+							.range([0, h]);
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			//Create bars
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+			//Create labels
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/02_bar_chart_with_scales.html)
+    * Changed the height and width of the chart
+    * Used an **ordinal scale** to handle positioning along the x-axis. Ordinal scales are a way of declaring x-coordinate positions for non-quantitiative variables and use the D3 `scale()` function to declare positions.
+    
+## Updating data
+
+Because the bar graph is scalable to different data values, we should be able to dynamically change the data and have the graph be redrawn. The basic procedure is:
+
+1. Modify the values in the dataset
+1. Rebind the values to the existing elements (overwriting the original values)
+1. Set new attribute values as needed to update the visual display
+
+Before this occurs, we need an **event** to occur that signals the change should take place **after the page loads**. This is different from R, where we can use the same basic `ggplot()` code to draw a graph with new data, but we have to rerun the script in order for the changes to take effect. This starts the road down interactivity.
+
+
+### Interaction via event listeners
+
+Add this html to the `body`:
+
+```html
+<p>Click on this text to update the chart with new data values (once).</p>
+```
+
+And this to the D3 object:
+
+```javascript
+/On click, update with new data
+d3.select("p")
+    .on("click", function() {
+
+        //New values for dataset
+        dataset = [ 11, 12, 15, 20, 18, 17, 16, 18, 23, 25,
+                    5, 10, 13, 19, 21, 25, 22, 18, 15, 13 ];
+
+        //Update all rects
+        svg.selectAll("rect")
+           .data(dataset)
+           .attr("y", function(d) {
+                return h - yScale(d);
+           })
+           .attr("height", function(d) {
+                return yScale(d);
+           });
+
+    });
+```
+
+* First select the `p` element from the body of the HTML document
+* When the `click` event occurs, we're going to do something defined by the anonymous function to come. Event listeners happen all the time in JavaScript, click events are just one type.
+    * `dataset` is overwritten
+    * All the `rect` elements in `svg` are redrawn with the new height information
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/03_updates_all_data.html)
+    * Forgot to update the text labels and fill color
+    
+    ```javascript
+    svg.selectAll("rect")
+       .data(dataset)
+       .attr("y", function(d) {
+            return h - yScale(d);
+       })
+       .attr("height", function(d) {
+             return yScale(d);
+       })
+       .attr("fill", function(d) {   // <-- Down here!
+             return "rgb(0, 0, " + (d * 10) + ")";
+       });
+    svg.selectAll("text")
+       .data(dataset)
+       .text(function(d) {
+             return d;
+       })
+       .attr("x", function(d, i) {
+             return xScale(i) + xScale.rangeBand() / 2;
+       })
+       .attr("y", function(d) {
+             return h - yScale(d) + 14;
+       });
+    ```
+* [New result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/04_updates_all_data_fixed.html)
+
+## Transitions
+
+You may not want the change to occur instantaneously. Instead, let's smooth it out by using
+
+```javascript
+.transition()
+
+//Update all rects
+svg.selectAll("rect")
+   .data(dataset)
+   .transition()    // <-- This is new! Everything else here is unchanged.
+   .attr("y", function(d) {
+        return h - yScale(d);
+   })
+   .attr("height", function(d) {
+        return yScale(d);
+   })
+   .attr("fill", function(d) {
+        return "rgb(0, 0, " + (d * 10) + ")";
+   });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/05_transition.html)
+
+The result is a smooth transition and interpolation between the old and new version of the image. You can also control things such as the `.duration()`, or how long the transition should take. This is just added to the chain of updating the svg object. You can also change the type of motion using different `ease()` parameters:
+
+* [Linear](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/09_ease_linear.html)
+* [Circle](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/10_ease_circle.html)
+* [Elastic](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/11_ease_elastic.html)
+* [Bounce](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/12_ease_bounce.html)
+
+You can also `delay()` when the transition begins. The key thing to remember is that all these transition elements must be added to the chain before the actual modifications to the svg object are coded.
+
+There's lots more to do with transitions. See the book for more details.
+
+# Interactivity
+
+To make D3 graphics interactive, we have to bind changes onto **event listeners**. These are the JavaScript events that can trigger client-side dynamic events. This could be things such as a new input from the user via the keyboard, mouse, or touch screen. For instance, any time you move your mouse across the screen, an event is recorded. Hence we get things like [this](http://students.brown.edu/seeing-theory/).
+
+We just did this in the last section to update the bar graph's data values:
+
+```javascript
+d3.select("p")
+    .on("click", function() {
+        //Do something on click
+    });
+```
+
+This binds an event listener to the `p` paragraph element. Whenever the `click` event occurred on the `p` element, the anonymous function is triggered. If we clicked [anywhere else on the page](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/05_transition.html), the event does not happen. It only works when applied to the specified `p` element.
+
+Any interaction is a basic two step process:
+
+1. Bind the event listener
+1. Define the resulting behavior
+
+## Event listeners
+
+* [Different types of event listeners](https://www.quirksmode.org/dom/events/)
+
+## Binding event listeners
+
+Starting bar graph:
+
+```javascript
+			//Width and height
+			var w = 600;
+			var h = 250;
+			
+			var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(dataset)])
+							.range([0, h]);
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			//Create bars
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+			//Create labels
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/01_start.html)
+
+In the last example, the data changed only in reaction to an event on a single `p` element. Hence we use `d3.select("p")`. To bind event listeners to multiple elements, use `selectAll()` to select multiple elements and pass them to `on()`:
+
+```javascript
+//Create bars
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …   //Set attributes (omitted here)
+   .on("click", function(d) {
+       //This will run whenever *any* bar is clicked
+   });
+```
+
+This interaction is generated in the code that originally generated the `rect` elements of the bar graph. Whenever one of the `rect` elements is clicked upon by the user, the anonymous function will be run. You can continue to reference `d` (each data value) or `i` (each index value of the data) in the anonymous function, or not.
+
+### Hover to highlight
+
+To highlight a bar when the mouse hovers over it, we wait for the `mouseover` event to occur:
+
+```javascript
+.on("mouseover", function() {
+        //Do something on mouseover of any bar
+});
+```
+
+Now when this event occurs, we need to decide what behavior will result. We want to change the color of "this" bar (and not the other ones). To do that, we select `this` element an change its fill to orange:
+
+```javascript
+.on("mouseover", function() {
+        d3.select(this)
+          .attr("fill", "orange");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/04_mouseover.html)
+
+Nice except the bar now stays orange. To change it back to blue, we need to listen for the `mouseout` event:
+
+```javascript
+.on("mouseout", function(d) {
+        d3.select(this)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/05_mouseout.html)
+
+To smooth the transition, add `transition()` and `duration()` elements:
+
+```javascript
+.on("mouseout", function(d) {
+    d3.select(this)
+      .transition()
+      .duration(250)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result]()
+
+### Click to sort
+
+Sorting data provides different views of the data, potentially a powerful tool in data visualization. To do this with the bar chart, add an event listener for the `click` event which binds to an anonymous function that calls a new function which we will create called `sortBars()`:
+
+```javascript
+…
+.on("click", function() {
+        sortBars();
+});
+```
+
+> Notice that `sortBars` is not declared until the end of the document. This is fine because `sortBars()` doesn't actually run until the `click` event, which can only happen after the entire HTML page (and associated JavaScript) is run.
+
+Now we define `sortBars`:
+
+```javascript
+var sortBars = function() {
+
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                 return d3.ascending(a, b);
+           })
+           .transition()
+           .duration(1000)
+           .attr("x", function(d, i) {
+                 return xScale(i);
+           });
+
+};
+```
+
+* We now `selectAll("rect")` (the different elements of the bar chart) and sort the original `rect` elements based on their bound data values
+* We compare every combination of `a` and `b` data values based on the different elements and go through them until the array elements are sorted. Here we sort them `d3.ascending()`
+* With the new order in place, we transition to the new ordering and adjust the `x` attribute based on the new order of the data values
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/07_sort.html)
+
+Still need to fix the text label position (easy) and the color shading (harder). See the book for the example code.
+
+More interestingly, how do we sort it in multiple directions? For instance, why not sort it descending instead? Conceptually, this is not too difficult. We need to store the current state of the graph sorting (ascending or descending).
+
+```javascript
+var sortOrder = false;
+```
+
+Then in the `sortBars()` function, flip the value of `sortOrder` and use an if-else conditional expression to determine whether to sort ascending or descending:
+
+```javascript
+var sortBars = function() {
+        //Flip value of sortOrder
+        sortOrder = !sortOrder;
+        
+        ...
+        }
+```
+
+```javascript
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                        if (sortOrder) {
+                                return d3.ascending(a, b);
+                        } else {
+                                return d3.descending(a, b);
+                        }
+                })
+                …
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/09_resort.html)
+
+### Adding tooltips
+
+Tooltips use small overlays to present data values. This is what is generated by `ggplotly()` to add the detailed information to interactive graphs.
+
+#### Default browser tooltips
+
+These look ugly and are default, but they get the job done. To do this, inject a `title` element into whatever element should have the tooltip applied. For a bar chart, this would look like:
+
+```javascript
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …
+   .append("title")
+   .text(function(d) {
+         return d;
+   });
+```
+
+`append()` creates the new `title` element and then `text()` fills the content (here with `d` the bound data value). To append text to the numeric value, paste (concatenate) a text string in the anonymous function:
+
+```javascript
+   .append("title")
+   .text(function(d) {
+         return "This value is " + d;
+   });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/12_browser_tooltip_text.html)
+
+#### SVG element tooltips
+
+These are SVG elements used to include the labels:
+
+```javascript
+.on("mouseover", function(d) {
+
+//Get this bar's x/y values, then augment for the tooltip
+var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
+var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
+
+//Create the tooltip label
+svg.append("text")
+  .attr("id", "tooltip")
+  .attr("x", xPosition)
+  .attr("y", yPosition)
+  .attr("text-anchor", "middle")
+  .attr("font-family", "sans-serif")
+  .attr("font-size", "11px")
+  .attr("font-weight", "bold")
+  .attr("fill", "black")
+  .text(d);
+
+})
+
+.on("mouseout", function() {
+
+//Remove the tooltip
+d3.select("#tooltip").remove();
+
+})
+```
+
+* On a mouseover event:
+    * Use `parseFloat()` to calculate where to position the labels
+    * Create the tooltip as a `text` element as we've done before
+* On a mouseout event, remove the tooltip elements
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/13_svg_tooltip.html)
+
+#### HTML div tooltips
+
+Create tooltips as HTML `div` elements.
+
+* [Example](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/14_div_tooltip.html)
+
+Gets more fancy having to create some additional HTML and CSS styling rules. Otherwise, the D3 is pretty simple, just need to update the `tooltip` elements. Note that here, we use D3 to modify not just SVG elements by directly change HTML elements.
+
+# Examples of D3 graphics
+
+* [Popular Blocks](https://bl.ocks.org/)
+
+# Acknowledgments {.toc-ignore}
+
+* [Murray, Scott. *Interactive data visualization for the Web*. O'Reilly Media, Inc., 2013.](http://alignedleft.com/work/d3-book)
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+

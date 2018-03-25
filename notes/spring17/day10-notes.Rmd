@@ -1,0 +1,748 @@
+---
+title: "Day 10 - Visualizing scientific results"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Objectives
+
+* Review the mechanics and assumptions of linear regression
+* Identify regression diagnostic tests based on visualization
+* Compare tables vs. graphs for publishing statistical results in academic journals
+* Discuss presenting results in a paper vs. a presentation
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Linear models and visualization
+
+## Linear functional form
+
+Linear models are the simplest functional form to understand. They adopt a generic form
+
+$$Y = \beta_0 + \beta_{1}X$$
+
+where $y$ is the **outcome of interest**, $x$ is the **explanatory** or **predictor** variable, and $\beta_0$ and $\beta_1$ are **parameters** that vary to capture different patterns. In algebraic terms, $\beta_0$ is the **intercept** and $\beta_1$ the **slope** for the linear equation. Given the empirical values you have for $x$ and $y$, you generate a **fitted model** that finds the values for the parameters that best fit the data.
+
+```{r sim-plot}
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+```
+
+This looks like a linear relationship. We could randomly generate parameters for the formula $y = \beta_0 + \beta_1 * x$ to try and explain or predict the relationship between $x$ and $y$:
+
+```{r sim-random-fit}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point()
+```
+
+But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters.
+
+## Least squares regression
+
+One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the difference between the actual values for $y$ and the predicted values for $y$ (also known as the **residuals**).
+
+```{r sim-error}
+dist1 <- sim1 %>% 
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge,
+    pred = 7 + x1 * 1.5
+  )
+
+ggplot(dist1, aes(x1, y)) + 
+  geom_abline(intercept = 7, slope = 1.5, color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+To estimate a linear regression model in R, we use the `lm()` function. The `lm()` function takes two parameters. The first is a **formula** specifying the equation to be estimated (`lm()` translates `y ~ x` into $y = \beta_0 + \beta_1 * x$). The second is the data frame containing the variables:
+
+```{r sim-lm}
+sim1_mod <- lm(y ~ x, data = sim1)
+```
+
+We can use the `summary()` function to examine key model components, including parameter estimates, standard errors, and model goodness-of-fit statistics.
+
+```{r sim-lm-summary}
+summary(sim1_mod)
+```
+
+The resulting line from this regression model looks like:
+
+```{r sim-lm-plot}
+dist2 <- sim1 %>%
+  add_predictions(sim1_mod) %>%
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge
+  )
+
+ggplot(dist2, aes(x1, y)) + 
+  geom_smooth(method = "lm", color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+## Residuals and visualizations
+
+The blue lines identify the **residuals**, the error for an individual observation $e_i = y_i - \hat{y}_i$, or the difference between the actual and predicted value for the outcome of interest. Residuals can be very useful for diagnostic tests with linear regression. The distribution of residuals can tell us many things about our regression model. For instance, consider the linear relationship between `displ` and `hwy` in the `mpg` dataset:
+
+```{r mpg-displ}
+# estimate linear model
+mpg_lin <- lm(hwy ~ displ, data = mpg)
+
+# plot the model using geom_smooth()
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Not a great model (the relationship isn't strictly linear - we'll get to that more in a minute). But sometimes your model is better at predicting some types of observations better than others. For instance, we also know which cars are front wheel vs. rear wheel vs. four wheel drive:
+
+```{r mpg-drv}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point(aes(color = drv)) +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Could our model be more accurate at predicting highway mileage for one of these three categories? We can plot the distributions of the residuals from our original model to find out:
+
+```{r mpg-resid-dist}
+mpg %>%
+  add_residuals(mpg_lin) %>%
+  ggplot(aes(resid, color = drv)) +
+  geom_density()
+```
+
+If the model performed equally well for all three categories, the distributions should look similar to one another (ideally normally distributed centered around 0). It appears here that there are substantial differences in the distributions, suggesting perhaps we should include `drv` as an additional variable in our regression model in order to improve predictive accuracy:
+
+```{r mpg-drv-mod}
+mpg_drv <- lm(hwy ~ displ + drv, data = mpg)
+
+mpg %>%
+  data_grid(displ, drv) %>%
+  add_predictions(mpg_drv) %>%
+  ggplot(aes(displ, pred, color = drv)) +
+  geom_line() +
+  geom_point(data = mpg, aes(displ, hwy))
+
+mpg %>%
+  add_residuals(mpg_drv) %>%
+  ggplot(aes(resid, color = drv)) +
+  geom_density()
+```
+
+By doing so, the residuals now are more similarly distributed.
+
+## Testing assumptions of linear regression using visualizations
+
+### Non-linearity of the data
+
+Linear regression assumes the relationship between the predictors and the response is a straight line. If the true relationship is otherwise, then we cannot generate accurate inferences from the model. 
+
+```{r mpg-nonlinear}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+Doesn't look linear. We could just look at this graph and make that conclusion (a very basic visualization), but what happens once we estimate a model with more than a single predictor? Instead we can use **residual plots** to identify non-linearity. Recall that the residual is the error for an individual observation $e_i = y_i - \hat{y}_i$, or the difference between the actual and predicted value for the outcome of interest. Residual plots graph the relationship between the fitted values and the residuals. Ideally there should be no discernable pattern in the graph. If there is a pattern, then this indicates a problem with some aspect of the linear model.
+
+```{r resid-plot}
+# estimate models
+mpg_lin <- lm(hwy ~ displ, data = mpg)
+mpg_quad <- lm(hwy ~ poly(displ, 2, raw = TRUE), data = mpg)
+
+mpg %>%
+  add_predictions(mpg_lin) %>%
+  add_residuals(mpg_lin) %>%
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Residual plot for linear fit")
+
+mpg %>%
+  add_predictions(mpg_quad) %>%
+  add_residuals(mpg_quad) %>%
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Residual plot for quadratic fit")
+```
+
+### Non-constant variance of the error terms
+
+Another assumption of linear regression is that the error terms $\epsilon_i$ have a constant variance, $\text{Var}(\epsilon_i) = \sigma^2$. This is called **homoscedasticity**. Estimates of standard errors rely on this assumption. If the variances of the error terms are non-constant (aka **heteroscedastic**), our estimates of the standard errors will be inaccurate - they will either be inflated or deflated, leading to incorrect inferences about the statistical significance of predictor variables.
+
+We can uncover homo- or heteroscedasticity through the use of the residual plot. Below is data generated from the process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,1)$.
+
+```{r sim-homo}
+sim_homo <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, 1))
+sim_homo_mod <- glm(y ~ x, data = sim_homo)
+
+sim_homo %>%
+  add_predictions(sim_homo_mod) %>%
+  add_residuals(sim_homo_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(alpha = .2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Homoscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+Compare this to a linear model fit to the data generating process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,\frac{X}{2})$. Note that the variance for the error term of each observation $\epsilon_i$ is not constant, and is itself a function of $X$.
+
+```{r sim-hetero}
+sim_hetero <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, (x / 2)))
+sim_hetero_mod <- glm(y ~ x, data = sim_hetero)
+
+sim_hetero %>%
+  add_predictions(sim_hetero_mod) %>%
+  add_residuals(sim_hetero_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(alpha = .2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Heteroscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response $Y_i$ as $X_i$ increases.
+
+### Outliers
+
+An **outlier** is an observation for which the predicted value $\hat{y}_i$ is far from the actual value $y_i$. Sometimes outliers are simply coding errors in the original dataset, but sometimes they are extreme or unusual values that were not generated by the same data generating process as the remaining dataset. Detecting outliers is the first step to deciding how to handle them (i.e. keep or remove them from the analysis).
+
+We can use a few different visualizations to detect outliers. In a bivariate linear regression model, simply plot the variables against one another and draw the best-fit line:
+
+```{r outlier-lm}
+sim <- data_frame(x = rnorm(20),
+                  y = -2 + x + rnorm(20)) %>%
+  mutate(y = ifelse(row_number(x) == 15, y + 10, y),
+         outlier = ifelse(row_number(x) == 15, TRUE, FALSE))
+
+ggplot(sim, aes(x, y)) +
+  geom_point(aes(color = outlier)) +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(data = filter(sim, outlier == FALSE),
+              method = "lm", se = FALSE, linetype = 2) +
+  scale_color_manual(values = c("black", "red")) +
+  theme(legend.position = "none")
+```
+
+Or we can draw another residual plot (either raw or standardized):
+
+```{r outlier-resid}
+sim_lm <- lm(y ~ x, data = sim)
+
+sim %>%
+  add_predictions(sim_lm) %>%
+  add_residuals(sim_lm) %>%
+  ggplot(aes(pred, resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(color = outlier)) +
+  labs(x = "Fitted values",
+       y = "Residuals") +
+  scale_color_manual(values = c("black", "red")) +
+  theme(legend.position = "none")
+
+augment(sim_lm) %>%
+  left_join(sim) %>%
+  ggplot(aes(.fitted, .std.resid)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(color = outlier)) +
+  labs(x = "Fitted values",
+       y = "Standardized residuals") +
+  scale_color_manual(values = c("black", "red")) +
+  theme(legend.position = "none")
+```
+
+
+### High-leverage points
+
+**High-leverage points** are observations with have strong effects on the coefficient estimates in a linear model. Influence is a function of leverage and discrepancy:
+
+$$\text{Influence} = \text{Leverage} \times \text{Discrepancy}$$
+
+* **Leverage** - degree of potential influence on the coefficient estimates that a given observation can (but not necessarily does) have
+* **Discrepancy** - extent to which an observation is "unusual" or "different" from the rest of the data
+
+Various statistical measures exist for quantifying leverage and discrepancy. Leverage is frequently defined by the **leverage statistic** (also known as the **hat value**):
+
+$$h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\sum_{i'=1}^{n} (x_{i'} - \bar{x})^2}$$
+
+Residuals are commonly used to measure discrepancy (either raw, standardized, or studentized). **Cook's distance** (or **Cook's D**) combines these two measures to calculate an observation's leverage:
+
+$$D_i = \frac{\tilde{u}_i^2}{K} \times \frac{h_i}{1 - h_i}$$
+
+where $\tilde{u}_i^2$ is the squared standardized residual, $K$ is the number of parameters in the model, and $\frac{h_i}{1 - h_i}$ is the hat value.
+
+Where is the visualization? By combining all three variables into a "bubble plot", we can visualize all three variables simultaneously. For example, here are the results of a basic model of the number of federal laws struck down by the U.S. Supreme Court in each Congress, based on:
+
+1. **Age** - the mean age of the members of the Supreme Court
+1. **Tenure** - mean tenure of the members of the Court
+1. **Unified** - a dummy variable indicating whether or not the Congress was controlled by the same party in that period
+
+```{r bubble}
+library(haven)
+
+dahl <- read_dta("data/LittleDahl.dta")
+dahl_mod <-lm(nulls ~ age + tenure + unified, data = dahl)
+
+dahl_augment <- dahl %>%
+  mutate(hat = hatvalues(dahl_mod),
+         student = rstudent(dahl_mod),
+         cooksd = cooks.distance(dahl_mod))
+
+# use size
+ggplot(dahl_augment, aes(hat, student)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(size = cooksd), shape = 1) +
+  geom_text(data = dahl_augment %>%
+              arrange(-cooksd) %>%
+              slice(1:10),
+            aes(label = Congress)) +
+  scale_size_continuous(range = c(1, 20)) +
+  labs(x = "Leverage",
+       y = "Studentized residual") +
+  theme(legend.position = "none")
+
+# use color and geom_text_repel
+ggplot(dahl_augment, aes(hat, student, color = cooksd)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point() +
+  ggrepel::geom_text_repel(data = dahl_augment %>%
+              arrange(-cooksd) %>%
+              slice(1:10),
+            aes(label = Congress)) +
+  labs(x = "Leverage",
+       y = "Studentized residual") +
+  theme(legend.position = "none")
+```
+
+The bubble plot tells us several things:
+
+* The size/color of the symbols is proportional to Cook's D, which is in turn a multiplicative function of the square of the Studentized residuals (Y axis) and the leverage (X axis), so observations farther away from $Y=0$ and/or have higher values of $X$ will have larger symbols.
+* The plot tells us whether the large influence of an observation is due to high discrepancy, high leverage, or both
+    * The 104th Congress has relatively low leverage but is very discrepant
+    * The 74th and 98th Congresses demonstrate both high discrepancy and high leverage
+
+# Publishing statistical visualizations
+
+## Descriptive statistics
+
+### Mosaic plot
+
+What is the relationship between happiness and gender? We could identify this in several different contingency tables, depending on the probability distribution on which we wish to focus:
+
+```{r mosaic-happy}
+# Mosaic plot of happiness and education
+library(productplots)
+data("happy")
+
+happy <- happy %>%
+  na.omit
+```
+
+#### Joint distribution
+
+* $f(\text{happy}, \text{sex})$
+
+```{r happy-sex}
+# contingency table
+library(descr)
+crosstab(happy$happy, happy$sex, prop.t = TRUE, plot = FALSE)
+```
+
+#### Conditional distribution of sex given happiness
+
+* $f(\text{sex} | \text{happy})$
+* $f(\text{happy} | \text{sex})$
+
+```{r happy-sex-cond}
+crosstab(happy$happy, happy$sex, prop.r = TRUE, plot = FALSE)
+crosstab(happy$happy, happy$sex, prop.c = TRUE, plot = FALSE)
+```
+
+#### Conditional distribution of happiness given sex and marginal distribution of sex
+
+* $f(\text{happy})$ and $f(\text{sex})$
+
+```{r happy-sex-marg}
+crosstab(happy$happy, happy$sex, prop.c = TRUE, prop.r = TRUE, plot = FALSE)
+```
+
+Each of the contingency tables encourages a different type of comparison, therefore the author has to decide in advance which comparison is most important and include the appropriate table. Alternatively, we can visualize this information using a **mosaic plot**, whereby the area of each rectangle is proportional to the number of observations falling into the respective contengencies.
+
+There are a few different packages available for drawing mosaic plots in R.
+
+#### `graphics::mosaicplot()`
+
+```{r graphics-mosaicplot}
+mosaicplot(~ sex + happy, data = happy)
+```
+
+#### `vcd::mosaic()`
+
+```{r vcd-mosaic}
+library(vcd)
+mosaic(~ happy + sex, happy)
+```
+
+#### `productplots::prodplot()`
+
+* Developed by Hadley Wickham and based on `ggplot2`
+* [GitHub repo](https://github.com/hadley/productplots)
+* Based on a ["product plots" framework](http://vita.had.co.nz/papers/prodplots.pdf) for visualizing tables of counts, proportions, and probabilities
+
+```{r productplots}
+# mosaic plot using productplots
+prodplot(happy, ~ happy + sex)
+
+# add color
+prodplot(happy, ~ happy + sex) +
+  aes(fill = happy) +
+  theme(panel.grid = element_blank())
+
+prodplot(happy, ~ happy + marital) +
+  aes(fill = happy) +
+  theme(legend.position = "none") +
+  theme(panel.grid = element_blank())
+```
+
+Notice that the mosaic plot is very similar to a proportional bar chart:
+
+```{r prop-barchart}
+ggplot(happy, aes(marital, fill = happy)) +
+  geom_bar(position = "fill")
+```
+
+However unlike a proportional bar chart, the bar widths are constant and therefore we do not know what proportion of individuals in the survey are married vs. never married, or any other similar comparison.
+
+### Dot plot for summary statistics
+
+```{r oj}
+library(ISLR)
+
+OJ_sum <- OJ %>%
+  select(ends_with("MM"), ends_with("CH")) %>%
+  gather(var, value) %>%
+  group_by(var) %>%
+  summarize(mean = mean(value),
+            sd = sd(value),
+            min = min(value),
+            max = max(value),
+            n = n())
+
+# print the table
+kable(OJ_sum)
+
+# plot using a single dot plot
+ggplot(OJ_sum, aes(x = fct_reorder(var, mean), y = mean)) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1) +
+  geom_point() +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL)
+
+# dodge based on OJ brand
+OJ_sum %>%
+  separate(var, into = c("var", "brand"), -3, remove = TRUE) %>%
+  ggplot(aes(x = fct_reorder(var, mean), y = mean, color = brand)) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25,
+                 position = position_dodge(width = 0.5)) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1,
+                 position = position_dodge(width = 0.5)) +
+  geom_point(position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL,
+       color = "Brand")
+
+# facet based on OJ brand
+OJ_sum %>%
+  separate(var, into = c("var", "brand"), -3, remove = TRUE) %>%
+  ggplot(aes(x = fct_reorder(var, mean), y = mean)) +
+  facet_grid(. ~ brand) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1) +
+  geom_point() +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL,
+       color = "Brand")
+```
+
+## Regression results
+
+### Single linear model
+
+```{r lm-plot}
+library(coefplot)
+
+model <- lm(hwy ~ displ + I(displ^2), data = mpg)
+
+# in a table
+tidy(model) %>%
+  kable
+
+# in a plot
+coefplot(model)
+```
+
+### Multiple linear models
+
+```{r lm-mult, results = "asis"}
+displ <- lm(hwy ~ displ + I(displ^2), data = mpg)
+displ_cyl <- lm(hwy ~ displ + I(displ^2) + cyl, data = mpg)
+displ_cyl_drv <- lm(hwy ~ displ + I(displ^2) + cyl + drv, data = mpg)
+displ_cyl_drv_class <- lm(hwy ~ displ + I(displ^2) + cyl + drv + class, data = mpg)
+
+# in a table
+library(stargazer)
+stargazer(displ, displ_cyl, displ_cyl_drv, displ_cyl_drv_class,
+          type = "html",
+          title = "Regression models on highway fuel efficiency",
+          covariate.labels = c("Engine displacement", "$\\text{Engine displacement}\\^2$",
+                               "Number of cylinders", "Front wheel drive",
+                               "Rear wheel drive", "Compact", "Midsize",
+                               "Minivan", "Pickup", "Subcompact", "SUV",
+                               "Constant"),
+          dep.var.caption = "",
+          dep.var.labels.include = FALSE,
+          align =TRUE)
+
+# in a plot
+multiplot(displ, displ_cyl, displ_cyl_drv, displ_cyl_drv_class,
+          title = "Regression models on highway fuel efficiency",
+          xlab = NULL,
+          ylab = NULL,
+          newNames = c("displ" = "Engine displacement",
+                       "I(displ^2)" = "Engine displacement^2",
+                       "cyl" = "Number of cylinders",
+                       "drvf" = "Front wheel drive",
+                       "drvr" = "Rear wheel drive",
+                       "classcompact" = "Compact",
+                       "classmidsize" = "Midsize",
+                       "classminivan"   = "Minivan",
+                       "classpickup" = "Pickup",
+                       "classsubcompact" = "Subcompact",
+                       "classsuv" = "SUV")) +
+  scale_color_discrete(labels = c("Model 1", "Model 2", "Model 3", "Model 4"))
+
+multiplot(displ, displ_cyl, displ_cyl_drv, displ_cyl_drv_class,
+          single = FALSE,
+          names = c("Model 1", "Model 2", "Model 3", "Model 4"),
+          title = "Regression models on highway fuel efficiency",
+          xlab = NULL,
+          ylab = NULL,
+          newNames = c("displ" = "Engine displacement",
+                       "I(displ^2)" = "Engine displacement^2",
+                       "cyl" = "Number of cylinders",
+                       "drvf" = "Front wheel drive",
+                       "drvr" = "Rear wheel drive",
+                       "classcompact" = "Compact",
+                       "classmidsize" = "Midsize",
+                       "classminivan"   = "Minivan",
+                       "classpickup" = "Pickup",
+                       "classsubcompact" = "Subcompact",
+                       "classsuv" = "SUV")) +
+  theme(legend.position = "none")
+```
+
+## Generalized linear models
+
+Visualizations are great tools for presenting and interpreting results from other regression-based models that do not use continuous dependent variables. For instance, consider the Titanic:
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble()
+
+titanic %>%
+  head() %>%
+  knitr::kable()
+```
+
+If we estimate a logistic regression model (or models) of survival on the Titanic, the resulting parameters are very difficult to interpret because they are expressed in terms of [log-odds](https://cfss.uchicago.edu/persp004_logistic_regression.html#logistic_regression), not something intuitive such as odds or probabilities. For example, a model based on age looks like the following:
+
+```{r titanic-age}
+survive_age <- glm(Survived ~ Age, data = titanic, family = binomial)
+tidy(survive_age)
+coefplot(survive_age)
+
+# generate predicted values
+library(rcfss) # need to convert log-odds to probabilities
+titanic_age <- titanic %>%
+  data_grid(Age) %>%
+  add_predictions(survive_age) %>%
+  # predicted values are in the log-odds form - convert to probabilities
+  mutate(prob = logit2prob(pred))
+
+p_age <- ggplot(titanic_age, aes(Age, prob)) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Probability of surviving the Titanic",
+       subtitle = "Age",
+       y = "Predicted probability of survival",
+       color = "Sex")
+p_age
+```
+
+By visualizing the results as predicted probabilities (which are curvilinear and do not lend themselves well to presentation in a table), we have a more intuitive understanding of the results. For instance here, as age increases probability of survival decreases. Alternatively, in odds form:
+
+```{r titanic-odds}
+survive_age_pred <- titanic_age %>%
+  mutate(odds = prob2odds(prob))
+
+ggplot(survive_age_pred, aes(Age, odds)) +
+  geom_line(color = "blue", size = 1) +
+  labs(x = "Age",
+       y = "Odds of surviving the Titanic")
+```
+
+Regardless of age, the odds of surviving the Titanic are always below 1. Considering the probability of even a 1 year old surviving was less than $.50$, this should be expected. The relationship between age and the odds of survival is still curvilinear.
+
+This is especially true once we introduce additional variables into the model:
+
+```{r titanic-age-woman}
+survive_age_woman <- glm(Survived ~ Age + Sex, data = titanic,
+                         family = binomial)
+
+titanic_age_sex <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman) %>%
+  mutate(pred = logit2prob(pred))
+
+p_age_sex <- ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Probability of surviving the Titanic",
+       subtitle = "Age + Sex",
+       y = "Predicted probability of survival",
+       color = "Sex")
+p_age_sex
+```
+
+```{r titanic-age-woman-x}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+
+titanic_age_sex_x <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman_x) %>%
+  mutate(pred = logit2prob(pred))
+
+p_age_sex_x <- ggplot(titanic_age_sex_x, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Probability of surviving the Titanic",
+       subtitle = "Age x Sex",
+       y = "Predicted probability of survival",
+       color = "Sex")
+p_age_sex_x
+```
+
+If we want to present the results simultaneously, we have a few options:
+
+```{r titanic-all-models, results = "asis"}
+# in a table
+stargazer(survive_age, survive_age_woman, survive_age_woman_x,
+          type = "html",
+          title = "Probability of surviving the Titanic",
+          covariate.labels = c("Age", "Male", "Age x Male", "Constant"),
+          dep.var.caption = "",
+          dep.var.labels.include = FALSE,
+          align = TRUE)
+
+# in a coefficient plot
+multiplot(survive_age, survive_age_woman, survive_age_woman_x,
+          title = "Probability of surviving the Titanic",
+          xlab = "Parameter (log-odds)",
+          ylab = NULL,
+          newNames = c("Sexmale" = "Male",
+                       "Age:Sexmale" = "Age x Male")) +
+  scale_color_discrete(labels = c("Age", "Age + Sex", "Age x Sex"))
+
+# in a predicted probability plot
+bind_rows(list("Age" = titanic_age %>%
+                 mutate(pred = prob),
+               "Age + Sex" = titanic_age_sex,
+               "Age x Sex" = titanic_age_sex_x), .id = "id") %>%
+  mutate(Sex = ifelse(is.na(Sex), "both", Sex)) %>%
+  # plot the two models
+  ggplot(aes(Age, pred, color = Sex, linetype = id)) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = c("#1b9e77", "#d95f02", "#7570b3")) +
+  labs(title = "Probability of surviving the Titanic",
+       x = "Age",
+       y = "Predicted probability of survival",
+       color = "Sex",
+       linetype = "Model")
+```
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
+

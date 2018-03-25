@@ -1,0 +1,699 @@
+---
+title: "More D3"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "May 17, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(haven)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Scales
+
+> Scales are functions that map from an input domain to an output range.
+
+* Scales in D3
+* `scale_*()` in `ggplot2`
+* Scales, not axes
+
+## Domains and ranges
+
+* Input domain - range of possible input data values
+* Output range - range of possible output values
+
+    ![](http://orm-chimera-prod.s3.amazonaws.com/1230000000345/images/idvw_0701.png)
+
+## Creating the scale
+
+```javascript
+var scale = d3.scale.linear();
+var scale = d3.scale.sqrt();
+var scale = d3.scale.log();
+var scale = d3.scale.ordinal();
+```
+
+## Creating the scale
+
+```javascript
+scale.domain([100, 500]);
+scale.range([10, 350]);
+
+// chained together
+var scale = d3.scale.linear()
+                    .domain([100, 500])
+                    .range([10, 350]);
+                    
+scale(100);  //Returns 10
+scale(300);  //Returns 180
+scale(500);  //Returns 350
+```
+
+## Scaling the scatterplot
+
+```javascript
+var dataset = [
+                [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+                [410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+              ];
+```
+
+## `d3.min()` and `d3.max()`
+
+```javascript
+d3.max(dataset, function(d) {
+    return d[0];  //References first value in each subarray
+});
+```
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];
+})
+.attr("cy", function(d) {
+    return d[1];
+})
+```
+
+## Setting up dynamic scales
+
+```javascript
+var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([0, w]);
+```
+
+## Setting up dynamic scales
+
+```javascript
+var yScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                     .range([0, h]);
+```
+
+## Incorporating scaled values
+
+For the `circle`:
+
+```javascript
+.attr("cx", function(d) {
+    return d[0];  //Returns original value bound from dataset
+})
+
+.attr("cx", function(d) {
+    return xScale(d[0]);  //Returns scaled value
+})
+```
+
+And for the text labels:
+
+```javascript
+.attr("x", function(d) {
+    return xScale(d[0]);
+})
+.attr("y", function(d) {
+    return yScale(d[1]);
+})
+```
+
+## Incorporating scaled values {.scrollable}
+
+```javascript
+			//Width and height
+			var w = 500;
+			var h = 100;
+			
+			var dataset = [
+							[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+							[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+						  ];
+			//Create scale functions
+			var xScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+								 .range([0, w]);
+			var yScale = d3.scale.linear()
+								 .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+								 .range([0, h]);
+	
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			svg.selectAll("circle")
+			   .data(dataset)
+			   .enter()
+			   .append("circle")
+			   .attr("cx", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("cy", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("r", function(d) {
+			   		return Math.sqrt(h - d[1]);
+			   });
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d[0] + "," + d[1];
+			   })
+			   .attr("x", function(d) {
+			   		return xScale(d[0]);
+			   })
+			   .attr("y", function(d) {
+			   		return yScale(d[1]);
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "red");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/02_scaled_plot.html)
+
+## Tweaking the graph {.scrollable}
+
+* Reverse `yScale`
+
+    ```javascript
+    .range([0, h]);
+    ```
+    
+    to
+    
+    ```javascript
+    .range([h, 0]);
+    ```
+
+* Add padding to the range
+
+    ```javascript
+    xScale.range([padding, w - padding]);
+    yScale.range([h - padding, h]);
+    ```
+
+* Use a scale function to calculate the radius of each `circle`
+
+    ```javascript
+    var rScale = d3.scale.linear()
+                         .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                         .range([2, 5]);
+    .attr("r", function(d) {
+        return rScale(d[1]);
+    });
+    ```
+
+* [Result with original data](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/05_scaled_plot_radii.html)
+* [Result with new data point](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/06_scaled_plot_big.html)
+* [Result with new SVG size](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_07/07_scaled_plot_large.html)
+
+## Setting up an axis
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom");
+```
+
+## Setting up an axis
+
+```javascript
+svg.append("g")
+    .call(xAxis);
+```
+
+* [Result - not pretty](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/01_axes.html)
+
+## Cleaning it up
+
+```javascript
+svg.append("g")
+    .attr("class", "axis") //Assign "axis" class
+    .call(xAxis);
+```
+
+```css
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+```
+
+## Transformation and translation
+
+```javascript
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + (h - padding) + ")")
+    .call(xAxis);
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/02_axes_bottom.html)
+
+## Check for ticks
+
+```javascript
+var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);  //Set rough # of ticks
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/03_axes_clean.html)
+* [Result with y-axis](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_08/04_axes_y.html)
+
+## Updates, transitions, and motion {.scrollable}
+
+```javascript
+			//Width and height
+			var w = 600;
+			var h = 250;
+			
+			var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(dataset)])
+							.range([0, h]);
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			//Create bars
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+			//Create labels
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/02_bar_chart_with_scales.html)
+
+## Updating data
+
+1. Modify the values in the dataset
+1. Rebind the values to the existing elements (overwriting the original values)
+1. Set new attribute values as needed to update the visual display
+
+## Interaction via event listeners {.scrollable}
+
+```html
+<p>Click on this text to update the chart with new data values (once).</p>
+```
+
+```javascript
+//On click, update with new data
+d3.select("p")
+    .on("click", function() {
+
+        //New values for dataset
+        dataset = [ 11, 12, 15, 20, 18, 17, 16, 18, 23, 25,
+                    5, 10, 13, 19, 21, 25, 22, 18, 15, 13 ];
+
+        //Update all rects
+        svg.selectAll("rect")
+           .data(dataset)
+           .attr("y", function(d) {
+                return h - yScale(d);
+           })
+           .attr("height", function(d) {
+                return yScale(d);
+           });
+
+    });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/03_updates_all_data.html)
+
+## Update text labels and fill {.scrollable}
+
+```javascript
+    svg.selectAll("rect")
+       .data(dataset)
+       .attr("y", function(d) {
+            return h - yScale(d);
+       })
+       .attr("height", function(d) {
+             return yScale(d);
+       })
+       .attr("fill", function(d) {   // <-- Down here!
+             return "rgb(0, 0, " + (d * 10) + ")";
+       });
+    svg.selectAll("text")
+       .data(dataset)
+       .text(function(d) {
+             return d;
+       })
+       .attr("x", function(d, i) {
+             return xScale(i) + xScale.rangeBand() / 2;
+       })
+       .attr("y", function(d) {
+             return h - yScale(d) + 14;
+       });
+```
+
+* [New result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/04_updates_all_data_fixed.html)
+
+## Transitions
+
+```javascript
+.transition()
+
+//Update all rects
+svg.selectAll("rect")
+   .data(dataset)
+   .transition()    // <-- This is new! Everything else here is unchanged.
+   .attr("y", function(d) {
+        return h - yScale(d);
+   })
+   .attr("height", function(d) {
+        return yScale(d);
+   })
+   .attr("fill", function(d) {
+        return "rgb(0, 0, " + (d * 10) + ")";
+   });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/05_transition.html)
+
+## Types of transitions
+
+* [Linear](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/09_ease_linear.html)
+* [Circle](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/10_ease_circle.html)
+* [Elastic](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/11_ease_elastic.html)
+* [Bounce](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_09/12_ease_bounce.html)
+
+## Interactivity
+
+* Event listeners
+    * [Example](http://students.brown.edu/seeing-theory/).
+
+## Interactivity
+
+```javascript
+d3.select("p")
+    .on("click", function() {
+        //Do something on click
+    });
+```
+
+## Interactivity
+
+1. Bind the event listener
+1. Define the resulting behavior
+* [Different types of event listeners](https://www.quirksmode.org/dom/events/)
+
+## Binding event listeners {.scrollable}
+
+```javascript
+			//Width and height
+			var w = 600;
+			var h = 250;
+			
+			var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			var xScale = d3.scale.ordinal()
+							.domain(d3.range(dataset.length))
+							.rangeRoundBands([0, w], 0.05);
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(dataset)])
+							.range([0, h]);
+			
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+			//Create bars
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+			//Create labels
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/01_start.html)
+
+## Binding to multiple elements
+
+```javascript
+//Create bars
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …   //Set attributes (omitted here)
+   .on("click", function(d) {
+       //This will run whenever *any* bar is clicked
+   });
+```
+
+## Hover to highlight
+
+```javascript
+.on("mouseover", function() {
+        //Do something on mouseover of any bar
+});
+```
+
+```javascript
+.on("mouseover", function() {
+        d3.select(this)
+          .attr("fill", "orange");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/04_mouseover.html)
+
+## Change color back
+
+```javascript
+.on("mouseout", function(d) {
+        d3.select(this)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/05_mouseout.html)
+
+## Smooth the transition
+
+```javascript
+.on("mouseout", function(d) {
+    d3.select(this)
+      .transition()
+      .duration(250)
+      .attr("fill", "rgb(0, 0, " + (d * 10) + ")");
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/06_smoother.html)
+
+## Click to sort {.scrollable}
+
+```javascript
+…
+.on("click", function() {
+        sortBars();
+});
+```
+
+```javascript
+var sortBars = function() {
+
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                 return d3.ascending(a, b);
+           })
+           .transition()
+           .duration(1000)
+           .attr("x", function(d, i) {
+                 return xScale(i);
+           });
+
+};
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/07_sort.html)
+
+## Sort in multiple directions {.scrollable}
+
+```javascript
+var sortOrder = false;
+```
+
+```javascript
+var sortBars = function() {
+        //Flip value of sortOrder
+        sortOrder = !sortOrder;
+        
+        ...
+        }
+```
+
+```javascript
+        svg.selectAll("rect")
+           .sort(function(a, b) {
+                        if (sortOrder) {
+                                return d3.ascending(a, b);
+                        } else {
+                                return d3.descending(a, b);
+                        }
+                })
+                …
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/09_resort.html)
+
+## Default browser tooltips {.scrollable}
+
+```javascript
+svg.selectAll("rect")
+   .data(dataset)
+   .enter()
+   .append("rect")
+   …
+   .append("title")
+   .text(function(d) {
+         return d;
+   });
+```
+
+```javascript
+   .append("title")
+   .text(function(d) {
+         return "This value is " + d;
+   });
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/12_browser_tooltip_text.html)
+
+## SVG element tooltips {.scrollable}
+
+```javascript
+.on("mouseover", function(d) {
+
+//Get this bar's x/y values, then augment for the tooltip
+var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand() / 2;
+var yPosition = parseFloat(d3.select(this).attr("y")) + 14;
+
+//Create the tooltip label
+svg.append("text")
+  .attr("id", "tooltip")
+  .attr("x", xPosition)
+  .attr("y", yPosition)
+  .attr("text-anchor", "middle")
+  .attr("font-family", "sans-serif")
+  .attr("font-size", "11px")
+  .attr("font-weight", "bold")
+  .attr("fill", "black")
+  .text(d);
+
+})
+
+.on("mouseout", function() {
+
+//Remove the tooltip
+d3.select("#tooltip").remove();
+
+})
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/13_svg_tooltip.html)
+
+## HTML div tooltips
+
+* [Example](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_10/14_div_tooltip.html)
+

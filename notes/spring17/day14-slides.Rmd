@@ -1,0 +1,569 @@
+---
+title: "Introduction to D3"
+author: |
+  | MACS 40700
+  | University of Chicago
+date: "May 10, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(haven)
+library(plotly)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## HyperText Markup Language
+
+* HTML
+* Structuring content
+* Plain-text format
+* Annotating, not generating, information
+
+## Markup language
+
+```html
+<!DOCTYPE html>
+
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <title>Hello World</title>
+</head>
+
+<body>
+
+<h1>Hello World</h1>
+
+<p>This is a paragraph, with <b>bold</b>, <i>italic</i>, <u>underlined</u>, and <strike>strikethrough</strike> text. Extra spacing does not matter, even
+
+line
+
+breaks.</p>
+
+</body>
+</html>
+```
+
+## Markup language
+
+![](images/hello_world.png)
+
+* Elements
+* Tags
+
+## Attributes
+
+```html
+<tagname property="value"></tagname>
+```
+
+## Classes and IDs
+
+```html
+<p>Brilliant paragraph</p>
+<p>Insightful paragraph</p>
+<p class="awesome">Awe-inspiring paragraph</p>
+```
+
+```html
+<div id="content">
+    <div id="visualization"></div>
+    <div id="button"></div>
+</div>
+```
+
+## DOM
+
+* Document Object Module
+* Hierarchical structure
+
+```html
+<html>
+    <body>
+        <h1>Breaking News</h1>
+        <p></p>
+    </body>
+</html>
+```
+
+## Resources
+
+* [HTML 4 Reference](http://htmlhelp.com/reference/html40/)
+* [HTML tutorials](https://www.w3schools.com/html/default.asp)
+
+## Cascading Style Sheets
+
+* Style the visual presentation of DOM elements
+
+```css
+body {
+    background-color: white;
+    color: black;
+}
+```
+
+## Selectors properties
+
+```css
+selector {
+    property: value;
+    property: value;
+    property: value;
+}
+```
+
+## Practice CSS selectors
+
+[Let's play a game together!](http://flukeout.github.io)
+
+## Properties and values
+
+See the book
+
+## Embed the CSS rules
+
+```html
+<html>
+    <head>
+        <style type="text/css">
+
+            p {
+                font-size: 24px;
+                font-weight: bold;
+                background-color: red;
+                color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p>If I were to ask you, as a mere paragraph, would you say that I
+        have style?</p>
+    </body>
+</html>
+```
+
+## Store externally
+
+```html
+<html>
+    <head>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <p>If I were to ask you, as a mere paragraph, would you say that
+        I have style?</p>
+    </body>
+</html>
+```
+
+## Inheritance {.scrollable}
+
+```html
+<html>
+    <head>
+        <title></title>
+        <style type="text/css">
+
+            div {
+                background-color: red;
+                font-size: 24px;
+                font-weight: bold;
+                color: white;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p>I am a sibling to the div.</p>
+        <div>
+            <p>I am a descendant and child of the div.</p>
+        </div>
+    </body>
+</html>
+```
+
+![Source: *Interactive Data Visualization for the Web*.](http://orm-chimera-prod.s3.amazonaws.com/1230000000345/images/idvw_0307.png)
+
+## Resources
+
+* [CSS reference](http://htmlhelp.com/reference/css/)
+* [CSS tutorials](https://www.w3schools.com/css/default.asp)
+
+## JavaScript
+
+* Interpreted-scripting language
+* Interaction with DOM
+* Client-side vs. server-side
+
+## Variables
+
+```javascript
+var number = 5;
+```
+
+```javascript
+defaultColor = "hot pink";
+```
+
+```javascript
+var thisIsALogicalValue = true;
+```
+
+## Arrays
+
+```javascript
+var numbers = [ 5, 10, 15, 20, 25 ];
+```
+
+```javascript
+numbers[2] // returns 15
+```
+
+```javascript
+var mishmash = [ 1, 2, 3, 4.5, 5.6, "oh boy", "say it isn't", true ];
+```
+
+## Objects
+
+* Properties
+* Values
+
+```javascript
+var fruit = {
+    kind: "grape",
+    color: "red",
+    quantity: 12,
+    tasty: true
+};
+```
+
+## Objects
+
+```javascript
+fruit.kind      //Returns "grape"
+fruit.color     //Returns "red"
+fruit.quantity  //Returns 12
+fruit.tasty     //Returns true
+```
+
+## Objects and arrays {.scrollable}
+
+```javascript
+var fruits = [
+    {
+        kind: "grape",
+        color: "red",
+        quantity: 12,
+        tasty: true
+    },
+    {
+        kind: "kiwi",
+        color: "brown",
+        quantity: 98,
+        tasty: true
+    },
+    {
+        kind: "banana",
+        color: "yellow",
+        quantity: 0,
+        tasty: true
+    }
+];
+```
+
+```javascript
+fruits[0].kind      ==  "grape"
+fruits[0].color     ==  "red"
+fruits[0].quantity  ==  12
+fruits[0].tasty     ==  true
+
+fruits[1].kind      ==  "kiwi"
+fruits[1].color     ==  "brown"
+fruits[1].quantity  ==  98
+fruits[1].tasty     ==  true
+
+fruits[2].kind      ==  "banana"
+fruits[2].color     ==  "yellow"
+fruits[2].quantity  ==  0
+fruits[2].tasty     ==  true
+```
+
+## Operators and control structures {.scrollable}
+
+```javascript
++   //Add
+-   //Subtract
+*   //Multiply
+/   //Divide
+```
+
+```javascript
+==  //Equal to
+!=  //Not equal to
+<   //Less than
+>   //Greater than
+<=  //Less than or equal to
+>=  //Greater than or equal to
+```
+
+```javascript
+if (test) {
+    //Code to run if true
+}
+
+for (initialization; test; update) {
+    //Code to run each time through the loop
+}
+```
+
+## Functions
+
+```javascript
+var calculateGratuity = function(bill) {
+    return bill * 0.2;
+};
+```
+
+## Resources
+
+* [JavaScript tutorials](https://www.w3schools.com/js/default.asp)
+* [Code Academy](https://www.codecademy.com/learn/javascript)
+
+## Scalable Vector Graphics
+
+<svg width="50" height="50">
+<circle cx="25" cy="25" r="22" fill="blue" stroke="gray" stroke-width="2"/>
+</svg>
+
+```svg
+<svg width="50" height="50">
+    <circle cx="25" cy="25" r="22" fill="blue" stroke="gray" stroke-width="2"/>
+</svg>
+```
+
+## Scalable Vector Graphics
+
+<svg width="220" height="220">
+<rect x="10" y="10" width="200" height="200" stroke="black" stroke-width="2" fill="#A9DC3A" opacity="0.5"/>
+<circle cx="110" cy="110" r="100" stroke="black" stroke-width="2" fill="#2FCAD8" opacity="0.5"/>
+</svg>
+
+```svg
+<svg width="220" height="220">
+<rect x="10" y="10" width="200" height="200" stroke="black" stroke-width="2" fill="#A9DC3A" opacity="0.5"/>
+<circle cx="110" cy="110" r="100" stroke="black" stroke-width="2" fill="#2FCAD8" opacity="0.5"/>
+</svg>
+```
+
+## D3
+
+* Data-Driven Documents
+* Basic process
+    * Load data
+    * Bind data to elements
+    * Transforming those elements (style)
+    * Change elements based on user interactions
+
+## When not to use D3
+
+![](images/with-great-power-comes-great-responsibility-spider-man-super-powers-abilities-voltaire-quote.jpg)
+
+## Bar chart
+
+## First iteration
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+			
+	var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("rect")
+			.data(dataset)
+			.enter()
+			.append("rect")
+			.attr("x", 0)
+			.attr("y", 0)
+			.attr("width", 20)
+			.attr("height", 100);
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/13_making_a_bar_chart_rects.html)
+
+## Shift the bars on the x-axis
+
+```javascript
+var barPadding = 1;  // <-- New!
+
+.attr("x", function(d, i) {
+    return i * (w / dataset.length);
+})
+
+.attr("width", w / dataset.length - barPadding)
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/15_making_a_bar_chart_even.html)
+
+## Fix the height of each bar
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+	var barPadding = 1;
+			
+	var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+					11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+			
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("rect")
+	   .data(dataset)
+			.enter()
+			.append("rect")
+			.attr("x", function(d, i) {
+					return i * (w / dataset.length);
+			})
+			.attr("y", function(d) {
+					return h - (d * 4);
+			})
+			.attr("width", w / dataset.length - barPadding)
+			.attr("height", function(d) {
+					return d * 4;
+			});
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/17_making_a_bar_chart_heights.html)
+
+## Add color
+
+```javascript
+.attr("fill", "teal");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/18_making_a_bar_chart_teal.html)
+
+## Add color
+
+```javascript
+.attr("fill", function(d) {
+    return "rgb(0, 0, " + (d * 10) + ")";
+});
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/19_making_a_bar_chart_blues.html)
+
+## Adding text {.scrollable}
+
+```javascript
+	svg.selectAll("text")
+			.data(dataset)
+			.enter()
+			.append("text")
+			.text(function(d) {   \\print the text value
+				 return d;
+			})
+			.attr("x", function(d, i) {     \\ center the label in the middle of each bar
+			   return i * (w / dataset.length) + 5;
+			})
+			.attr("y", function(d) {    \\ draw the text inside the top of the bar
+			   return h - (d * 4) + 15;
+			})
+			.attr("font-family", "sans-serif")
+			.attr("font-size", "11px")
+			.attr("fill", "white");
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/20_making_a_bar_chart_labels.html)
+
+## Done in R {.scrollable}
+
+```{r bar-chart}
+dataset <- data_frame(y = c(5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+							11, 12, 15, 20, 18, 17, 16, 18, 23, 25)) %>%
+  mutate(x = row_number())
+
+# quick and dirty
+ggplot(dataset, aes(x, y, fill = y)) +
+  geom_col() +
+  geom_text(aes(label = y), color = "white", nudge_y = -1)
+
+# more exact
+ggplot(dataset, aes(x, y, fill = y)) +
+  geom_col() +
+  geom_text(aes(label = y), color = "white", nudge_y = -1) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Scatterplot {.scrollable}
+
+```javascript
+<script type="text/javascript">
+	//Width and height
+	var w = 500;
+	var h = 100;
+			
+	var dataset = [
+					[5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+					[410, 12], [475, 44], [25, 67], [85, 21], [220, 88]
+					];
+	
+	//Create SVG element
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width", w)
+				.attr("height", h);
+				
+	svg.selectAll("circle")
+	   .data(dataset)
+	   .enter()
+			.append("circle")
+			.attr("cx", function(d) {
+					return d[0];
+			})
+			.attr("cy", function(d) {
+					return d[1];
+			})
+			.attr("r", 5);
+			
+</script>
+```
+
+* [Result](https://htmlpreview.github.io/?https://github.com/alignedleft/d3-book/blob/master/chapter_06/22_scatterplot.html)
