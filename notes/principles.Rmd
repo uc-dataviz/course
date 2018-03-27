@@ -6,6 +6,7 @@ output:
     theme: readable
     toc: yes
     toc_float: yes
+    code_folding: hide
 ---
 
 ```{r setup, include = FALSE}
@@ -38,7 +39,7 @@ theme_set(theme_minimal())
 # Objectives
 
 * Define data structures
-* Identify why you should visualize your data using Anscombe's Quartet
+* Identify why you should visualize your data using the Datasaurus Dozen
 * Define marks and channels
 * Discuss how to identify appropriate graphical forms given the communication goal
 * Demonstrate different types of basic charts and identify their use case
@@ -246,6 +247,7 @@ We can encode a third categorical attribute (type of car, or `class`) by using a
 ```{r mpg-3a}
 ggplot(mpg, aes(x = displ, y = hwy, color = class)) +
   geom_point() +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(title = "mpg")
 ```
 
@@ -262,6 +264,7 @@ Finally, we can encode a fourth attribute (number of cylinders) by making use of
 ```{r mpg-4}
 ggplot(mpg, aes(x = displ, y = hwy, color = class, size = cyl)) +
   geom_point() +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(title = "mpg")
 ```
 
@@ -369,6 +372,7 @@ ggplot(infant, aes(mortal)) +
   geom_density(aes(color = "Rectangular"), kernel = "rectangular") +
   geom_density(aes(color = "Triangular"), kernel = "triangular") +
   geom_density(aes(color = "Biweight"), kernel = "biweight") +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Density estimators of infant mortality rate for 195 nations",
        x = "Infant mortality rate (per 1,000)",
        y = "Density",
@@ -434,6 +438,7 @@ A **bar chart** uses either vertical or horizontal bars (line marks) to show dis
 ```{r bar-group}
 ggplot(diamonds, aes(cut, fill = color)) +
   geom_bar(position = "dodge") +
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Diamonds data",
        x = "Cut of diamond",
        y = "Frequency count",
@@ -453,6 +458,7 @@ ggplot(diamonds, aes(cut, carat)) +
 
 ggplot(diamonds, aes(carat, fill = cut)) +
   geom_histogram(alpha = .5, position = "identity") +
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Diamonds data",
        x = "Carat size",
        y = "Frequency count",
@@ -460,6 +466,7 @@ ggplot(diamonds, aes(carat, fill = cut)) +
 
 ggplot(diamonds, aes(carat, color = cut)) +
   geom_density() +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Diamonds data",
        x = "Carat size",
        y = "Frequency count",
@@ -574,6 +581,7 @@ gapminder %>%
   summarize(lifeExp = mean(lifeExp, na.rm = TRUE)) %>%
   ggplot(aes(year, lifeExp, color = continent)) +
   geom_line() +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Gapminder quality of life measures",
        subtitle = "By continent",
        x = "Year",
@@ -682,6 +690,7 @@ Proportional graphs use size or area to show differences and similarities betwee
 ```{r stack-bar}
 ggplot(diamonds, aes(cut, fill = color)) +
   geom_bar() +
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Diamonds data",
        subtitle = "Stacked bar chart",
        x = "Cut of diamond",
@@ -691,6 +700,7 @@ ggplot(diamonds, aes(cut, fill = color)) +
 ggplot(diamonds, aes(cut, fill = color)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(type = "qual", palette = "Dark2") +
   labs(title = "Diamonds data",
        subtitle = "Proportional bar chart",
        x = "Cut of diamond",
