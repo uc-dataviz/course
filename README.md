@@ -70,7 +70,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * TA Ch 1, 2, 5
 1. Design and evaluation/Grammar of graphics and `ggplot2`
     * TA 2-4
-    * Visualizations to critique in-class on Monday
+    * Visualizations to critique in-class on Tuesday
         * [Earth Temperature Timeline](https://xkcd.com/1732/)
         * [Gun Deaths in America](https://fivethirtyeight.com/features/gun-deaths/)
         * [Marriage](https://xkcd.com/1431/)
