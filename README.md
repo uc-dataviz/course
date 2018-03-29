@@ -3,8 +3,8 @@
 |  | [Dr. Benjamin Soltoff](http://www.bensoltoff.com/) | Emma Peterson (TA) |
 |--------------|----------------------------------------------------|-------------------------------------------------------------|
 | Email | soltoffbc@uchicago.edu | ecpeterson@uchicago.edu |
-| Office | 209 McGiffert House | TBD |
-| Office Hours | Th 1-3pm | TBD |
+| Office | 209 McGiffert House | MACSS Office Suite, McGiffert House |
+| Office Hours | Th 1-3pm | Tu 2-4pm |
 | GitHub | [bensoltoff](https://github.com/bensoltoff) | [emmacooperpeterson](https://github.com/emmacooperpeterson) |
 
 * **Meeting day/time**: Tu 11:00-1:50pm, Saieh Hall, Room 247
