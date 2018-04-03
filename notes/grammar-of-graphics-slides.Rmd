@@ -1,0 +1,719 @@
+---
+title: "Grammar of graphics and `ggplot2`"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(lubridate)
+library(ggmap)
+library(ggrepel)
+library(gridExtra)
+library(pander)
+
+options(digits = 3)
+set.seed(1234)
+
+theme_set(theme_gray(base_size = 18))
+```
+
+## Grammar
+
+> The whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics.
+
+## Grammar of graphics
+
+* "The fundamental principles or rules of an art or science"
+* A grammar used to describe and create a wide range of statistical graphics.
+* Layered grammar of graphics
+    * `ggplot2`
+
+## Layered grammar of graphics
+
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system (coord)
+* Faceting (facet)
+* Defaults
+    * Data
+    * Mapping
+
+## Layer
+
+* Responsible for creating the objects that we perceive on the plot
+* Defined by its subcomponents
+
+----
+
+```{r layers, echo = FALSE}
+set.seed(1234)
+
+data_frame(x = runif(50),
+           y = x + rnorm(50, 0, .2)) %>%
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "A plot with two layers",
+       subtitle = "A scatterplot and a smoothing line")
+```
+
+## Data and mapping
+
+* **Data** defines the source of the information to be visualized
+* **Mapping** defines how the variables are applied to the graphic
+
+## Data: `mpg`
+
+```{r mpg}
+glimpse(mpg)
+```
+
+## Mapping: `mpg`
+
+```{r mapping}
+mpg %>%
+  select(displ, hwy) %>%
+  rename(x = displ,
+         y = hwy)
+```
+
+## Data and mapping
+
+```r
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+```r
+ggplot() +
+  geom_(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+## Statistical transformation
+
+* Transforms the data (typically by summarizing the information)
+
+----
+
+### Raw data
+
+```{r stat_raw}
+mpg %>%
+  select(cyl)
+```
+
+### Transformed data
+
+```{r stat_transform}
+mpg %>%
+  count(cyl)
+```
+
+## Stat transform syntax
+
+```{r stat-count, echo = TRUE}
+stat_output <- stat_count(data = mpg, mapping = aes(x = cyl))
+class(stat_output)
+stat_output
+```
+
+## Geometric objects (geoms)
+
+* Control the type of plot you create
+    * 0 dimensions - point, text
+    * 1 dimension - path, line
+    * 2 dimensions - polygon, interval
+* Geoms have specific aesthetics
+
+----
+
+```{r geom_point}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  ggtitle("A point geom with position and color aesthetics")
+```
+
+----
+
+```{r geom_bar}
+ggplot(mpg, aes(cyl)) +
+  geom_bar() +
+  ggtitle("A bar geom with position and height aesthetics")
+```
+
+## Position adjustment
+
+```{r position_identity}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_col(position = "identity") +
+  ggtitle("An identity bar chart")
+```
+
+## Position adjustment
+
+```{r position_stack}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_col() +
+  ggtitle("A stacked bar chart")
+```
+
+## Position adjustment
+
+```{r position_dodge}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_col(position = "dodge") +
+  ggtitle("A dodged bar chart")
+```
+
+## Position adjustment
+
+```{r position-obscure}
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_point() +
+  ggtitle("A point geom with obscured data points")
+```
+
+## Position adjustment
+
+```{r position-jitter}
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_jitter() +
+  ggtitle("A point geom with jittered data points")
+```
+
+## Position adjustment
+
+```r
+geom_bar(position = "fill")
+geom_bar(position = position_fill())
+```
+
+## Scale
+
+* Controls how data is mapped to aesthetic attributes
+* One scale for every aesthetic property employed in a layer
+
+## Scale: color
+
+```{r scale_color}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+## Scale: color
+
+```{r scale_color_palette}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  scale_color_brewer(palette = "Dark2")
+```
+
+## Scale syntax
+
+```r
+scale_()
+```
+
+## Coordinate system (coord)
+
+* Maps the position of objects onto the plane of the plot
+
+## Cartesian coordinate system
+
+```{r coord_cart}
+x1 <- c(1, 10)
+y1 <- c(1, 5)
+p <- qplot(x1, y1, geom = "blank", xlab = NULL, ylab = NULL) +
+  theme_bw(base_size = 24)
+p 
+```
+
+## Semi-log
+
+```{r coord_semi_log, dependson = "coord_cart"}
+p + coord_trans(y = "log10")
+```
+
+## Polar
+
+```{r coord_polar, dependson = "coord_cart"}
+p + coord_polar()
+```
+
+## Maps {.scrollable}
+
+```{r map-proj}
+library(fiftystater)
+data("fifty_states")
+
+ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  ggtitle("A cartesian coordinate system")
+
+ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  ggtitle("Albers equal-area projection")
+```
+
+## Faceting
+
+```{r facet}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~ class)
+```
+
+## Faceting
+
+* `facet_grid()`
+* `facet_wrap()`
+
+## Faceting
+
+```{r facet-grid}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_grid(cyl ~ class) +
+  ggtitle("facet_grid(cyl ~ class)")
+```
+
+## Faceting
+
+```{r facet-wrap}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~ cyl + class) +
+  ggtitle("facet_wrap(~ cyl + class)")
+```
+
+## Themes
+
+* Control the display of all non-data elements of the plot
+* `theme()`
+* `theme_()`
+
+## Default themes {.scrollable}
+
+```{r themes}
+sample_plot <- ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  scale_color_brewer(palette = "Dark2")
+
+sample_plot +
+  theme_gray(base_size = 18) +
+  ggtitle("Standard gray theme")
+
+sample_plot +
+  theme_bw(base_size = 18) +
+  ggtitle("Black and white theme")
+
+sample_plot +
+  theme_light(base_size = 18) +
+  ggtitle("Light theme")
+
+sample_plot +
+  theme_dark(base_size = 18) +
+  ggtitle("Dark theme")
+
+sample_plot +
+  theme_minimal(base_size = 18) +
+  ggtitle("Minimal theme")
+
+sample_plot +
+  theme_void(base_size = 18) +
+  ggtitle("Void theme")
+
+sample_plot +
+  ggthemes::theme_excel(base_size = 18) +
+  labs(title = "Excel theme",
+       caption = "From the ggthemes package")
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point", stat = "identity", position = "identity"
+  ) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  coord_cartesian()
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point"
+  )
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+```
+
+```{r default3, eval = FALSE, echo = TRUE}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+```
+
+```{r default3, eval = FALSE, echo = TRUE}
+```
+
+```{r default4, eval = FALSE, echo = TRUE}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+## Defaults {.scrollable}
+
+```{r default4, echo = TRUE}
+```
+
+## Defaults {.scrollable}
+
+```{r default5, echo = TRUE, message = FALSE}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth()
+```
+
+## Defaults {.scrollable}
+
+```{r default6, echo = TRUE, error = TRUE, message = FALSE}
+ggplot(mpg) +
+  geom_point(aes(displ, hwy)) +
+  geom_smooth()
+```
+
+----
+
+!["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](images/minard.png)
+
+## Building Minard's map in R
+
+```{r minard_data, echo = FALSE}
+# get data on troop movements, city names, and temperatures
+troops <- read_table("data/minard-troops.txt")
+cities <- read_table("data/minard-cities.txt")
+temps <- read_table("data/minard-temps.txt") %>%
+  mutate(date = dmy(date))
+```
+
+```{r minard-data-print, echo = TRUE}
+glimpse(troops)
+glimpse(cities)
+glimpse(temps)
+```
+
+## Minard's grammar
+
+<div id="left">
+* Troops
+    * Latitude
+    * Longitude
+    * Survivors
+    * Advance/retreat
+* Cities
+    * Latitude
+    * Longitude
+    * City name
+</div>
+
+<div id="right">
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system
+* Faceting
+</div>
+
+## Create the troop movement layer {.scrollable}
+
+```{r troops-1, echo = TRUE}
+ggplot(data = troops,
+       mapping = aes(x = long, y = lat, group = group)) +
+  geom_path()
+```
+
+## Add aesthetics {.scrollable}
+
+```{r troops-2, echo = TRUE}
+ggplot(data = troops,
+       mapping = aes(x = long, y = lat, group = group,
+                     color = direction, size = survivors)) +
+  geom_path()
+```
+
+## Tweak the path appearance {.scrollable}
+
+```{r troops-3, echo = TRUE}
+ggplot(data = troops,
+       mapping = aes(x = long, y = lat, group = group,
+                     color = direction, size = survivors)) +
+  geom_path(lineend = "round")
+```
+
+## Adjust the size scale {.scrollable}
+
+```{r troops-4, echo = TRUE}
+ggplot(data = troops,
+       mapping = aes(x = long, y = lat, group = group,
+                     color = direction, size = survivors)) +
+  geom_path(lineend = "round") +
+  scale_size(range = c(0.5, 15))
+```
+
+## Remove extraneous junk {.scrollable}
+
+```{r troops-5, echo = TRUE}
+ggplot(data = troops,
+       mapping = aes(x = long, y = lat, group = group,
+                     color = direction, size = survivors)) +
+  geom_path(lineend = "round") +
+  scale_size(range = c(0.5, 15)) + 
+  scale_color_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL,
+       y = NULL) + 
+  guides(color = FALSE,
+         size = FALSE)
+```
+
+## Create the cities layer {.scrollable}
+
+```{r cities-1, echo = TRUE}
+ggplot() +
+  geom_path(data = troops,
+            mapping = aes(x = long, y = lat, group = group,
+                          color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat)) +
+  geom_text(data = cities, aes(x = long, y = lat, label = city)) +
+  scale_size(range = c(0.5, 15)) + 
+  scale_color_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL,
+       y = NULL) + 
+  guides(color = FALSE,
+         size = FALSE)
+```
+
+## Adjust city name locations {.scrollable}
+
+```{r cities-2, echo = TRUE}
+ggplot() +
+  geom_path(data = troops,
+            mapping = aes(x = long, y = lat, group = group,
+                          color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat)) +
+  geom_text(data = cities, aes(x = long, y = lat, label = city),
+            vjust = 1.5) +
+  scale_size(range = c(0.5, 15)) + 
+  scale_color_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL,
+       y = NULL) + 
+  guides(color = FALSE,
+         size = FALSE)
+```
+
+## Improve color and font {.scrollable}
+
+```{r cities-3, echo = TRUE}
+ggplot() +
+  geom_path(data = troops,
+            mapping = aes(x = long, y = lat, group = group,
+                          color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat),
+             color = "#DC5B44") +
+  geom_text(data = cities, aes(x = long, y = lat, label = city),
+            vjust = 1.5,
+            color = "#DC5B44", family = "sans") +
+  scale_size(range = c(0.5, 15)) + 
+  scale_color_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL,
+       y = NULL) + 
+  guides(color = FALSE,
+         size = FALSE)
+```
+
+## Remove all background noise {.scrollable}
+
+```{r cities-4, echo = TRUE}
+troops_cities <- ggplot() +
+  geom_path(data = troops,
+            mapping = aes(x = long, y = lat, group = group,
+                          color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat),
+             color = "#DC5B44") +
+  geom_text(data = cities, aes(x = long, y = lat, label = city),
+            vjust = 1.5,
+            color = "#DC5B44", family = "sans") +
+  scale_size(range = c(0.5, 15)) + 
+  scale_color_manual(values = c("#DFC17E", "#252523")) +
+  labs(x = NULL,
+       y = NULL) + 
+  guides(color = FALSE,
+         size = FALSE) +
+  theme_void()
+troops_cities
+```
+
+## Temperatures and time {.scrollable}
+
+```{r temps-1, echo = TRUE}
+ggplot(data = temps, aes(x = long, y = temp)) +
+  geom_line() +
+  geom_label(aes(label = temp), vjust = 1.5)
+```
+
+## Make a better label {.scrollable}
+
+```{r temps-2, echo = TRUE}
+temps <- temps %>%
+  mutate(nice_label = str_c(temp, "°, ", month, ". ", day))
+
+ggplot(data = temps, aes(x = long, y = temp)) +
+  geom_line() +
+  geom_label(aes(label = nice_label), vjust = 1.5)
+```
+
+## Clean up the graph {.scrollable}
+
+```{r temps-3, echo = TRUE}
+ggplot(data = temps, aes(x = long, y = temp)) +
+  geom_line() +
+  geom_label(aes(label = nice_label),
+            family = "sans", size = 2.5) + 
+  labs(x = NULL,
+       y = "° Celsius") +
+  scale_y_continuous(position = "right") +
+  coord_cartesian(ylim = c(-35, 5)) +  # Add some space above/below
+  theme_bw(base_family = "sans") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.x = element_blank(), axis.ticks = element_blank(),
+        panel.border = element_blank())
+```
+
+## Align the axes {.scrollable}
+
+```{r axis-limits, echo = TRUE}
+xrange <- ggplot_build(troops_cities)$layout$panel_ranges[[1]]$x.range
+xrange
+```
+
+```{r temps-4, echo = TRUE}
+temps_plot <- ggplot(data = temps, aes(x = long, y = temp)) +
+  geom_line() +
+  geom_label(aes(label = nice_label),
+            family = "sans", size = 2.5) + 
+  labs(x = NULL,
+       y = "° Celsius") +
+  scale_x_continuous(limits = xrange) +
+  scale_y_continuous(position = "right") +
+  coord_cartesian(ylim = c(-35, 5)) +  # Add some space above/below
+  theme_bw(base_family = "sans") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.x = element_blank(), axis.ticks = element_blank(),
+        panel.border = element_blank())
+temps_plot
+```
+
+## `grid.arrange` {.scrollable}
+
+```{r align-example, echo = TRUE}
+example.data <- data_frame(
+  x = 1:10,
+  y = rnorm(10)
+)
+
+plot1 <- ggplot(example.data, aes(x = x, y = y)) +
+  geom_line() +
+  labs(y = "This is a really\nreally really really\nreally tall label")
+
+plot2 <- ggplot(example.data, aes(x = x, y = y)) +
+  geom_line() +
+  labs(y = NULL)
+
+grid.arrange(plot1, plot2)
+```
+
+## `gtable_rbind` {.scrollable}
+
+```{r align-example-good, echo = TRUE}
+plot.both <- gtable_rbind(ggplotGrob(plot1),
+                          ggplotGrob(plot2))
+
+grid::grid.newpage()
+grid::grid.draw(plot.both)
+```
+
+## Combine map and temperature {.scrollable}
+
+```{r align-minard, echo = TRUE}
+both_plot <- gtable_rbind(ggplotGrob(troops_cities),
+                          ggplotGrob(temps_plot))
+
+grid::grid.newpage()
+grid::grid.draw(both_plot)
+```
+
+## Adjust relative panel heights {.scrollable}
+
+```{r adjust-panels, echo = TRUE}
+# Identify which layout elements are panels
+panels <- both_plot$layout$t[grep("panel", both_plot$layout$name)]
+panels
+
+# Let's try a 3:1 ratio
+both_plot$heights[panels] <- unit(c(3, 1), "null")
+
+grid::grid.newpage()
+grid::grid.draw(both_plot)
+```

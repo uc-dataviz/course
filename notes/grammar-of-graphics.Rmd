@@ -129,7 +129,13 @@ mpg %>%
 
 > Sometimes you don't need to make a statistical transformation. For example, in a scatterplot you use the raw values for the $x$ and $y$ variables to map onto the graph. In these situations, the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
 
-Statistical transformation functions are called using the `stat_()` syntax.
+Statistical transformation functions are called using the `stat_()` syntax. Used outside of a `ggplot` object, their output is rather meaningless.
+
+```{r stat-count}
+stat_output <- stat_count(data = mpg, mapping = aes(x = cyl))
+class(stat_output)
+stat_output
+```
 
 ### Geometric objects
 
@@ -149,6 +155,8 @@ ggplot(mpg, aes(displ, hwy, color = class)) +
   ggtitle("A point geom with position and color aesthetics")
 ```
 
+In this example, the aesthetics for shape and size are not used, so instead they take on a constant value for all observations.
+
 A bar geom has position, height, width, and fill.
 
 ```{r geom_bar}
@@ -156,6 +164,8 @@ ggplot(mpg, aes(cyl)) +
   geom_bar() +
   ggtitle("A bar geom with position and height aesthetics")
 ```
+
+Again, with this example the fill aesthetic is not used.
 
 Geometric objects are created using `geom_()` functions. The type of variable(s) you seek to map will dictate which kinds of `geom_()` functions you can use. For instance, you cannot create a `geom_histogram()` if your variable is disrete. Instead, you need to use `geom_bar()`.
 
@@ -166,12 +176,17 @@ Sometimes with dense data we need to adjust the position of elements on the plot
 ```{r position_dodge}
 count(mpg, class, cyl) %>%
   ggplot(aes(cyl, n, fill = class)) +
-  geom_bar(stat = "identity") +
+  geom_col(position = "identity") +
+  ggtitle("An identity bar chart")
+
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_col() +
   ggtitle("A stacked bar chart")
 
 count(mpg, class, cyl) %>%
   ggplot(aes(cyl, n, fill = class)) +
-  geom_bar(stat = "identity", position = "dodge") +
+  geom_col(position = "dodge") +
   ggtitle("A dodged bar chart")
 ```
 
@@ -251,6 +266,10 @@ data("fifty_states")
 
 ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
   geom_polygon(color = "black", fill = "gray") +
+  ggtitle("A cartesian coordinate system")
+
+ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
   coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
   ggtitle("Albers equal-area projection")
 ```
@@ -289,6 +308,45 @@ ggplot(mpg, aes(displ, hwy)) +
 ```
 
 There are 19 plots displayed now, one for every combination of `cyl` and `class`.
+
+## Themes
+
+**Themes** control the display of all non-data elements of the plot. To modify individual elements, use `theme()`. To select between different premade themes, use the appropriate `theme_()` function.
+
+```{r themes}
+sample_plot <- ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  scale_color_brewer(palette = "Dark2")
+
+sample_plot +
+  theme_gray() +
+  ggtitle("Standard gray theme")
+
+sample_plot +
+  theme_bw() +
+  ggtitle("Black and white theme")
+
+sample_plot +
+  theme_light() +
+  ggtitle("Light theme")
+
+sample_plot +
+  theme_dark() +
+  ggtitle("Dark theme")
+
+sample_plot +
+  theme_minimal() +
+  ggtitle("Minimal theme")
+
+sample_plot +
+  theme_void() +
+  ggtitle("Void theme")
+
+sample_plot +
+  ggthemes::theme_excel() +
+  labs(title = "Excel theme",
+       caption = "From the ggthemes package")
+```
 
 ## Defaults
 
@@ -379,13 +437,9 @@ cities <- read_table("data/minard-cities.txt")
 temps <- read_table("data/minard-temps.txt") %>%
   mutate(date = dmy(date))
 
-troops %>%
-  head() %>%
-  kable()
-
-cities %>%
-  head() %>%
-  kable()
+glimpse(troops)
+glimpse(cities)
+glimpse(temps)
 ```
 
 ### Grammar of Minard's graphic
@@ -422,7 +476,7 @@ cities %>%
 
 ### Create the troop movement layer
 
-First we want to build the layer for the troop movement. If we just include the troop movement information (ignoring `surviviors` and `direction`), we could write this:
+First we want to build the layer for the troop movement.^[Example drawn from [Exploring Minard's 1812 plot with `ggplot2`](https://github.com/andrewheiss/fancy-minard).] If we just include the troop movement information (ignoring `surviviors` and `direction`), we could write this:
 
 ```{r troops-1}
 ggplot(data = troops,
@@ -560,8 +614,6 @@ troops_cities <- ggplot() +
 troops_cities
 ```
 
-> `theme_()` functions contain default settings for individual components of the graph. These do not control the aesthetics/channels as defined in `scale_()` functions. These are static elements of the graphic, or more specifically the non-data elements.
-
 ### Temperatures and time
 
 So far we have four of the variables from Minard's original plot -- we're still missing the temperatures during the retreat and the days of the retreat. Minard put this information in a separate plot under the map, which is fairly easy to do with [`gridExtra`](https://cran.r-project.org/web/packages/gridExtra/index.html).
@@ -607,7 +659,8 @@ ggplot(data = temps, aes(x = long, y = temp)) +
 When we overlay the two plots, we have to make sure the x-axes align, so we need to use the same x-axis limits used in `troops_cities`. Those limits are buried inside the plot object, the parts of which can be accessed with `ggplot_build()`:
 
 ```{r axis-limits}
-ggplot_build(troops_cities)$layout$panel_ranges[[1]]$x.range
+xrange <- ggplot_build(troops_cities)$layout$panel_ranges[[1]]$x.range
+xrange
 ```
 
 ```{r temps-4}
@@ -617,7 +670,7 @@ temps_plot <- ggplot(data = temps, aes(x = long, y = temp)) +
             family = "sans", size = 2.5) + 
   labs(x = NULL,
        y = "° Celsius") +
-  scale_x_continuous(limits = ggplot_build(troops_cities)$layout$panel_ranges[[1]]$x.range) +
+  scale_x_continuous(limits = xrange) +
   scale_y_continuous(position = "right") +
   coord_cartesian(ylim = c(-35, 5)) +  # Add some space above/below
   theme_bw(base_family = "sans") +
@@ -631,10 +684,13 @@ temps_plot
 
 ### Combining the plots
 
-Finally, we use functions in `gridExtra` to combine the two plots. The easiest way to combine plot objects with `gridExtra` is to use `grid.arrange()`, but doing so doesn't align the axes of the plot. For instance, look at these two example plots —- they're no longer comparable vertically because the left side of the bottom plot extends to the edge of the plot, expanding under the long axis label in the top plot:
+Finally, we use functions in the `gridExtra` package to combine the two plots. The easiest way to combine plot objects with `gridExtra` is to use `grid.arrange()`, but doing so doesn't align the axes of the plot. For instance, look at these two example plots — they're no longer comparable vertically because the left side of the bottom plot extends to the edge of the plot, expanding under the long axis label in the top plot:
 
 ```{r align-example}
-example.data <- data_frame(x = 1:10, y = rnorm(10))
+example.data <- data_frame(
+  x = 1:10,
+  y = rnorm(10)
+)
 
 plot1 <- ggplot(example.data, aes(x = x, y = y)) +
   geom_line() +
@@ -667,11 +723,12 @@ grid::grid.newpage()
 grid::grid.draw(both_plot)
 ```
 
-They're aligned, but there's an obvious problem—the map is way too small and the temperatures are too tall. With `grid.arrange` it's possible to pass a vector of relative panel heights, which would let us shrink the bottom panel. While using `gtable::rbind()` does let us align the two plots, it doesn't provide an easy way to mess with panel heights. Following [this StackOverflow answer](https://stackoverflow.com/questions/24331107/the-perils-of-aligning-plots-in-ggplot/24333504#24333504), though, we can mess with the ggplot object and adjust the panels manually.
+They're aligned, but there's an obvious problem—the map is way too small and the temperatures are too tall. With `grid.arrange` it's possible to pass a vector of relative panel heights, which would let us shrink the bottom panel. While using `gtable_rbind()` does let us align the two plots, it doesn't provide an easy way to mess with panel heights. Following [this StackOverflow answer](https://stackoverflow.com/questions/24331107/the-perils-of-aligning-plots-in-ggplot/24333504#24333504), though, we can mess with the `ggplot` object and adjust the panels manually.
 
 ```{r adjust-panels}
 # Identify which layout elements are panels
 panels <- both_plot$layout$t[grep("panel", both_plot$layout$name)]
+panels
 
 # Let's try a 3:1 ratio
 both_plot$heights[panels] <- unit(c(3, 1), "null")
