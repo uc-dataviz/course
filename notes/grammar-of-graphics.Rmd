@@ -737,5 +737,11 @@ grid::grid.newpage()
 grid::grid.draw(both_plot)
 ```
 
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
+
 [^layer]: [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)
 
