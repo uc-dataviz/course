@@ -1,0 +1,324 @@
+---
+title: "Science, art, or somewhere inbetween"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(ggthemes)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 18
+
+theme_set(theme_gray(base_size = base_size))
+```
+
+## Tufte's world
+
+* Core purpose of visualization is to communicate quantitative information
+    * "Above all else show the data"
+* Data-ink - non-erasable core of a graphic
+
+    $$\text{Data-ink ratio} = \frac{\text{data-ink}}{\text{total ink used to print the graphic}}$$
+
+* What should we consider to be part of the "data-ink"?
+
+## What is integral?
+
+```{r integral}
+p <- ggplot(mpg, aes(cty, hwy)) +
+  geom_point()
+p
+```
+
+## What is integral?
+
+```{r integral-void}
+p + theme_void(base_size = base_size)
+```
+
+## Starting point
+
+```{r integral-background}
+p + theme_bw(base_size = base_size)
+```
+
+## Remove panel box
+
+```{r integral-panelbox}
+p + theme_bw(base_size = base_size) +
+    theme(panel.background = element_blank(),
+          panel.border = element_blank())
+```
+
+## Remove minor grid lines
+
+```{r integral-minor}
+p + theme_bw(base_size = base_size) +
+    theme(panel.background = element_blank(),
+          panel.border = element_blank(),
+          strip.background = element_blank(),
+          plot.background = element_blank(),
+          axis.line = element_blank(),
+          panel.grid.minor = element_blank())
+```
+
+## Remove all grid lines
+
+```{r integral-major}
+p + theme_bw(base_size = base_size) +
+    theme(panel.background = element_blank(),
+          panel.border = element_blank(),
+          strip.background = element_blank(),
+          plot.background = element_blank(),
+          axis.line = element_blank(),
+          panel.grid = element_blank())
+```
+
+## Remove tick marks
+
+```{r integral-tick}
+p + theme_bw(base_size = base_size) +
+    theme(panel.background = element_blank(),
+          panel.border = element_blank(),
+          strip.background = element_blank(),
+          plot.background = element_blank(),
+          axis.line = element_blank(),
+          panel.grid = element_blank(),
+          axis.ticks = element_blank())
+```
+
+## Use serif font
+
+```{r integral-serif}
+p + theme_bw(base_size = base_size, base_family = "serif") +
+    theme(panel.background = element_blank(),
+          panel.border = element_blank(),
+          strip.background = element_blank(),
+          plot.background = element_blank(),
+          axis.line = element_blank(),
+          panel.grid = element_blank(),
+          axis.ticks = element_blank())
+```
+
+## Chart junk
+
+* Vibrating moire effects
+* The grid
+* The duck
+* Asserts all chart junk is bad - on what basis?
+
+## Line plot
+
+```{r line}
+x <- 1967:1977
+y <- c(0.5, 1.8, 4.6, 5.3, 5.3, 5.7, 5.4, 5, 5.5, 6, 5)
+d <- data_frame(x, y)
+
+ggplot(d, aes(x, y)) +
+  geom_line() +
+  geom_point() +
+  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
+  labs(title = "Per capita budget expandures",
+       x = "Year",
+       y = "Per capita budget expandures\nin constant dollars")
+```
+
+## Minimal line plot
+
+```{r minline}
+ggplot(d, aes(x, y)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_tufte(base_size = base_size) +
+  theme(axis.title = element_blank()) +
+  geom_hline(yintercept = c(5, 6), lty = 2) +
+  scale_y_continuous(breaks = seq(1, 6, 1), label = sprintf("$%s", seq(300, 400, 20))) +
+  scale_x_continuous(breaks = x, label = x) +
+  annotate(
+    "text",
+    x = c(1977, 1977.2),
+    y = c(1.5, 5.5),
+    adj = 1,
+    family = "serif",
+    label = c("Per capita\nbudget expandures\nin constant dollars", "5%")
+  )
+```
+
+## Boxplot
+
+```{r boxplot}
+ggplot(quakes, aes(factor(mag), stations)) +
+  geom_boxplot() +
+  labs(title = "Fiji earthquakes",
+       x = "Richter Magnitude",
+       y = "Number of stations reporting earthquakes")
+```
+
+## Minimal boxplot
+
+```{r minboxplot}
+ggplot(quakes, aes(factor(mag), stations)) +
+  theme_tufte(base_size = base_size) +
+  geom_tufteboxplot(outlier.colour = "transparent") +
+  theme(axis.title = element_blank()) +
+  annotate(
+    "text",
+    x = 8,
+    y = 120,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Number of stations \nreporting Richter Magnitude\nof Fiji earthquakes (n=1000)"
+    )
+  )
+```
+
+## Minimal boxplot
+
+```{r offset-boxplot}
+ggplot(quakes, aes(factor(mag), stations)) +
+  theme_tufte(base_size = base_size) +
+  geom_tufteboxplot(median.type = "line") +
+  theme(axis.title = element_blank()) +
+  annotate(
+    "text",
+    x = 8,
+    y = 120,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Number of stations \nreporting Richter Magnitude\nof Fiji earthquakes (n=1000)"
+    )
+  )
+```
+
+## Barchart
+
+```{r bar}
+library(psych)
+library(reshape2)
+
+d <- melt(colMeans(msq[, c(2, 7, 34, 36, 42, 43, 46, 55, 68)], na.rm = T) *
+            10)
+d$trait <- rownames(d)
+
+p <- ggplot(d, aes(x = trait, y = value)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(1, 5, 1)) +
+  labs(title = "Watson et al., 1998",
+       subtitle = "N = 3896",
+       x = "Negative emotion traits",
+       y = "Average score")
+p
+```
+
+## Default themes {.scrollable}
+
+```{r default-themes, dependson="bar", echo = TRUE}
+p + theme_bw(base_size = base_size)
+p + theme_dark(base_size = base_size)
+p + theme_classic(base_size = base_size)
+p + theme_minimal(base_size = base_size)
+p + theme_void(base_size = base_size)
+```
+
+## Minimal barchart
+
+```{r minbar}
+ggplot(d, aes(x = trait, y = value)) +
+  theme_tufte(base_size = base_size, ticks = F) +
+  geom_bar(width = 0.25, fill = "gray", stat = "identity") +
+  theme(axis.title = element_blank()) +
+  scale_y_continuous(breaks = seq(1, 5, 1)) +
+  geom_hline(yintercept = seq(1, 5, 1),
+             col = "white",
+             lwd = 1) +
+  annotate(
+    "text",
+    x = 3.5,
+    y = 5,
+    adj = 1,
+    family = "serif",
+    label = c(
+      "Average scores\non negative emotion traits
+from 3896 participants\n(Watson et al., 1988)"
+    )
+  )
+```
+
+## Bivariate scatterplot
+
+```{r scatterplot}
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  xlab("Car weight (lb/1000)") +
+  ylab("Miles per gallon of fuel")
+```
+
+## Range-frame graph
+
+```{r range-frame}
+ggplot(mtcars, aes(wt, mpg)) +
+  geom_point() +
+  geom_rangeframe() +
+  theme_tufte(base_size = base_size) +
+  xlab("Car weight (lb/1000)") +
+  ylab("Miles per gallon of fuel") +
+  theme(axis.title.x = element_text(vjust = -0.5),
+        axis.title.y = element_text(vjust = 1.5))
+```
+
+## With a quartile plot
+
+```{r range-frame-quartile}
+library(devtools)
+source_url('https://raw.githubusercontent.com/bearloga/Quartile-frame-Scatterplot/master/qfplot.R')
+
+qfplot(
+  x = mtcars$wt,
+  y = mtcars$mpg,
+  xlab = "Car weight (lb/1000)",
+  ylab = "Miles per gallon of fuel"
+)
+```
+
+## When is redundancy better?
+
+![Traditional bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/sk_time_chart1.png)
+
+![Double-time bar chart of crime in the city of San Francisco, 2009-10. Source: [Visualizing Time with the Double-Time Bar Chart](http://dougmccune.com/blog/2011/04/26/visualizing-time-with-the-double-time-bar-chart/)](http://dougmccune.com/blog/wp-content/uploads/2011/04/burglary1.png)
+    
+## Minimalism in practice
+
+![Chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b7c8b60cd9970b-pi)
+
+## Minimalism in practice
+
+![Redesigned chart from Harvard magazine. Source: [Involuntary head-shaking is probably not an intended consequence of data visualization](http://junkcharts.typepad.com/junk_charts/2016/11/involuntary-head-shaking-is-probably-not-an-intended-consequence-of-data-visualization.html)](http://junkcharts.typepad.com/.a/6a00d8341e992c53ef01b8d23fe1c7970c-pi)
+
+## Experimental tests of Tufte's claims {.scrollable}
+
+![Source: Figure 2 from [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)](images/tufte_experiment.png)
+
+## Results {.scrollable}
+
+![Source: Figures 4-6 from [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)](images/tufte_experiment_results.png)
+
+## Rethinking Tufte's definition of visual excellence
+
+* Too many of Tufte's claims are based on nothing
+* Hockey stick chart vs. xkcd on Earth's temperature
+* Experimental design
