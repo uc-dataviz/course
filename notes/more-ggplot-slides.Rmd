@@ -1,0 +1,446 @@
+---
+title: "More `ggplot2`"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(forcats)
+library(stringr)
+library(ggrepel)
+
+library(socviz)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 18
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Group data and the group aesthetic {.scrollable}
+
+```{r gapminder}
+library(gapminder)
+
+ggplot(data = gapminder,
+       mapping = aes(x = year,
+                     y = lifeExp)) +
+  geom_line()
+```
+
+## Group data and the group aesthetic {.scrollable}
+
+```{r gapminder-country}
+ggplot(data = gapminder,
+       mapping = aes(x = year,
+                     y = lifeExp,
+                     group = country)) +
+  geom_line()
+```
+
+## Group data and the group aesthetic {.scrollable}
+
+```{r gapminder-continent}
+ggplot(data = gapminder,
+       mapping = aes(x = lifeExp,
+                     y = gdpPercap,
+                     color = continent)) +
+  geom_point()
+
+ggplot(data = gapminder,
+       mapping = aes(x = lifeExp,
+                     y = gdpPercap,
+                     color = continent,
+                     # redundant
+                     group = continent)) +
+  geom_point()
+```
+
+## Statistical transformations and temporary variables {.scrollable}
+
+```{r geom-smooth}
+ggplot(data = gapminder,
+       mapping = aes(x = year,
+                     y = lifeExp)) +
+  geom_line(aes(group = country), alpha = .1) +
+  geom_smooth()
+```
+
+## Statistical transformations and temporary variables {.scrollable}
+
+```{r geom-smooth-ols}
+ggplot(data = gapminder,
+       mapping = aes(x = year,
+                     y = lifeExp)) +
+  geom_line(aes(group = country), alpha = .1) +
+  geom_smooth(method = "lm")
+```
+
+## Statistical transformations and temporary variables {.scrollable}
+
+```{r bigregion}
+ggplot(data = gss_sm,
+            mapping = aes(x = bigregion)) +
+  geom_bar()
+```
+
+## Statistical transformations and temporary variables {.scrollable}
+
+```{r prop}
+ggplot(data = gss_sm,
+            mapping = aes(x = bigregion)) +
+  geom_bar(aes(y = ..prop..))
+```
+
+## Statistical transformations and temporary variables {.scrollable}
+
+```{r prop-correct}
+ggplot(data = gss_sm,
+            mapping = aes(x = bigregion,
+                          group = 1)) +
+  geom_bar(aes(y = ..prop..))
+```
+
+## Frequency plots {.scrollable}
+
+```{r bar-color}
+ggplot(data = gss_sm,
+       mapping = aes(x = religion,
+                     fill = religion)) +
+  geom_bar()
+
+ggplot(data = gss_sm,
+       mapping = aes(x = religion, fill = religion)) +
+  geom_bar() +
+  guides(fill = FALSE) 
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion}
+ggplot(data = gss_sm,
+       mapping = aes(x = bigregion,
+                     fill = religion)) +
+  geom_bar()
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion-fill}
+ggplot(data = gss_sm,
+       mapping = aes(x = bigregion,
+                     fill = religion)) +
+  geom_bar(position = "fill")
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion-dodge}
+ggplot(data = gss_sm,
+       mapping = aes(x = bigregion,
+                     fill = religion)) +
+  geom_bar(position = "dodge")
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion-dodge-prop}
+ggplot(data = gss_sm,
+       mapping = aes(x = bigregion,
+                     fill = religion)) +
+  geom_bar(aes(y = ..prop..), position = "dodge")
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion-dodge-prop-religion}
+ggplot(data = gss_sm,
+       mapping = aes(x = bigregion,
+                     fill = religion)) +
+  geom_bar(aes(y = ..prop..,
+               group = religion), position = "dodge")
+```
+
+## The awkward way {.scrollable}
+
+```{r region-religion-facet}
+ggplot(data = gss_sm,
+       mapping = aes(x = religion)) +
+  geom_bar(aes(y = ..prop..,
+               group = bigregion), position = "dodge") +
+    facet_wrap(~ bigregion)
+```
+
+## Calculate manually {.scrollable}
+
+```{r rel-by-region}
+glimpse(gss_sm)
+
+(rel_by_region <- gss_sm %>%
+    group_by(bigregion, religion) %>%
+    summarize(N = n()) %>%
+    mutate(freq = N / sum(N),
+           pct = round((freq * 100), 0)))
+```
+
+## Calculate manually {.scrollable}
+
+```{r rel-by-region-plot}
+ggplot(data = rel_by_region,
+       mapping = aes(x = bigregion,
+                     y = pct,
+                     fill = religion)) +
+  geom_col(position = "dodge2") +
+  labs(x = "Region", y = "Percent", fill = "Religion") +
+  theme(legend.position = "top")
+```
+
+## Calculate manually {.scrollable}
+
+```{r rel-by-region-plot-facet}
+ggplot(data = rel_by_region,
+       mapping = aes(x = religion,
+                     y = pct,
+                     fill = religion)) +
+  geom_col(position = "dodge2") +
+  labs(x = "Region", y = "Percent", fill = "Religion") +
+  guides(fill = FALSE) + 
+  coord_flip() + 
+  facet_grid(~ bigregion)
+```
+
+## Continuous variables by group or category
+
+```{r}
+glimpse(organdata)
+```
+
+## Scatterplot {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+            mapping = aes(x = year, y = donors)) +
+  geom_point()
+```
+
+## Line plots {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+            mapping = aes(x = year, y = donors)) +
+  geom_line(aes(group = country)) +
+  facet_wrap(~ country)
+```
+
+## Boxplots {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+            mapping = aes(x = country, y = donors)) +
+  geom_boxplot()
+```
+
+## `coord_flip()` {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+            mapping = aes(x = country, y = donors)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+## `reorder()` {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+       mapping = aes(x = reorder(country, donors, na.rm = TRUE),
+                     y = donors)) +
+  geom_boxplot() +
+  labs(x = NULL) +
+  coord_flip()
+```
+
+## Add color {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+       mapping = aes(x = reorder(country, donors, na.rm = TRUE),
+                     y = donors, fill = world)) +
+  geom_boxplot() +
+  labs(x = NULL) +
+  coord_flip() +
+  theme(legend.position = "bottom")
+```
+
+## Strip chart {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+       mapping = aes(x = reorder(country, donors, na.rm = TRUE),
+                     y = donors, color = world)) +
+  geom_point() +
+  labs(x = NULL) +
+  coord_flip() +
+  theme(legend.position = "bottom")
+```
+
+## Strip chart {.scrollable}
+
+```{r}
+ggplot(data = organdata,
+       mapping = aes(x = reorder(country, donors, na.rm = TRUE),
+                     y = donors, color = world)) +
+  geom_jitter() +
+  labs(x = NULL) +
+  coord_flip() +
+  theme(legend.position = "bottom")
+```
+
+## Calculate summary statistics {.scrollable}
+
+```{r}
+(by_country <- organdata %>%
+  group_by(consent_law, country) %>%
+  summarize(donors_mean = mean(donors, na.rm = TRUE),
+            donors_sd = sd(donors, na.rm = TRUE),
+            gdp_mean = mean(gdp, na.rm = TRUE),
+            health_mean = mean(health, na.rm = TRUE),
+            roads_mean = mean(roads, na.rm = TRUE),
+            cerebvas_mean = mean(cerebvas, na.rm = TRUE)))
+```
+
+## Calculate summary statistics {.scrollable}
+
+```{r}
+(by_country <- organdata %>%
+  group_by(consent_law, country) %>%
+  summarize_if(is.numeric, funs(mean, sd), na.rm = TRUE) %>%
+  ungroup())
+```
+
+## Draw the plot {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = donors_mean,
+                     y = reorder(country, donors_mean),
+                     color = consent_law)) +
+  geom_point(size = 3) +
+  labs(x = "Donor Procurement Rate",
+       y = "", color = "Consent Law") +
+  theme(legend.position = "top")
+```
+
+## Use facet instead of color {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = donors_mean,
+                     y = reorder(country, donors_mean))) +
+  geom_point(size = 3) +
+  facet_wrap(~ consent_law, ncol = 1) +
+  labs(x = "Donor Procurement Rate",
+       y = "", color = "Consent Law")
+```
+
+## Use facet instead of color {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = donors_mean,
+                     y = reorder(country, donors_mean))) +
+  geom_point(size = 3) +
+  facet_wrap(~ consent_law, scales = "free_y", ncol = 1) +
+  labs(x = "Donor Procurement Rate",
+       y = "", color = "Consent Law")
+```
+
+## Add standard deviation {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = reorder(country, donors_mean),
+                     y = donors_mean)) +
+  geom_pointrange(mapping = aes(ymin = donors_mean - donors_sd,
+                                ymax = donors_mean + donors_sd)) +
+  labs(x = "",
+       y = "Donor Procurement Rate") +
+  coord_flip()
+```
+
+## `geom_text()` {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = roads_mean,
+                     y = donors_mean)) +
+  geom_point() +
+  geom_text(mapping = aes(label = country))
+```
+
+## `geom_text()` {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = roads_mean,
+                     y = donors_mean)) +
+  geom_point() +
+  geom_text(mapping = aes(label = country), hjust = 0)
+```
+
+## `ggrepel::geom_text_repel()` {.scrollable}
+
+```{r}
+elections_historic %>%
+  select(2:7)
+```
+
+```{r}
+p_title <- "Presidential Elections: Popular & Electoral College Margins"
+p_subtitle <- "1824-2016"
+p_caption <- "Data for 2016 are provisional."
+x_label <- "Winner's share of Popular Vote"
+y_label <- "Winner's share of Electoral College Votes"
+
+library(ggrepel)
+
+ggplot(elections_historic, aes(x = popular_pct,
+                               y = ec_pct,
+                               label = winner_label)) +
+  geom_hline(yintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_vline(xintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_point() +
+  geom_text_repel() +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = x_label, y = y_label, title = p_title, subtitle = p_subtitle,
+       caption = p_caption)
+```
+
+## Label outliers only {.scrollable}
+
+```{r}
+ggplot(data = by_country,
+       mapping = aes(x = gdp_mean, y = health_mean)) +
+  geom_point() +
+  geom_text_repel(data = filter(by_country, gdp_mean > 25000),
+                  mapping = aes(label = country))
+
+ggplot(data = by_country,
+       mapping = aes(x = gdp_mean, y = health_mean)) +
+  geom_point() +
+  geom_text_repel(data = filter(by_country,
+                                gdp_mean > 25000 | health_mean < 1500 |
+                                  country %in% "Belgium"),
+                  mapping = aes(label = country))
+```
