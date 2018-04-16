@@ -91,8 +91,8 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
     * [Heer, Jeffrey, and Michael Bostock. "Crowdsourcing graphical perception: using mechanical turk to assess visualization design." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://dl.acm.org.proxy.uchicago.edu/citation.cfm?id=1753357&CFID=745610279&CFTOKEN=53601915)
     * [Spence, Ian, and Stephan Lewandowsky. "Displaying proportions and percentages." *Applied Cognitive Psychology* 5.1 (1991): 61-77.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1002/acp.2350050106/abstract;jsessionid=E21007114F95498B3EA95F35DD6A21BF.f03t04)
-    * TA Ch 8-9
 1. Rules of thumb/Visualizing scientific results
+    * TA Ch 8-9
     * [Using Graphs Instead of Tables in Political Science](http://www.jstor.org.proxy.uchicago.edu/stable/20446574?seq=1#page_scan_tab_contents)
     * [visual battle: table vs graph](http://www.storytellingwithdata.com/blog/2011/11/visual-battle-table-vs-graph)
     * [Why tables are really much better than graphs](http://andrewgelman.com/2009/04/01/why_tables_are/)
