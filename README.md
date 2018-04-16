@@ -53,7 +53,7 @@ Readings for the course will come primarily from the following books, as well as
 | 1. | Mar. 27 | Introduction to data visualization | Principles of data visualization |  |
 | 2. | Apr. 3 | Design and evaluation | Grammar of graphics and `ggplot2` |  |
 | 3. | Apr. 10 | Science, art, or somewhere inbetween | More `ggplot2` | [Viz critique](assignments/critique-grammar.md) |
-| 4. | Apr. 17 | Graphical perception and cognition | Multivariate data visualization |  |
+| 4. | Apr. 17 | Graphical perception and cognition | Design a visualization experiment |  |
 | 5. | Apr. 24 | Rules of thumb | Visualizing scientific results |  |
 | 6. | May 1 | Interactivity | And more interactivity | [Viz experiment](assignments/experiment.md) |
 | 7. | May 8 | Information dashboards |  | [Interactive graphics](assignments/interactivity.md) |
@@ -86,7 +86,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Bateman, Scott, et al. "Useful junk?: the effects of visual embellishment on comprehension and memorability of charts." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://www.cedma-europe.org/newsletter%20articles/misc/The%20Effects%20of%20Visual%20Embellishment%20on%20Comprehension%20and%20Memorability%20of%20Charts.pdf)
     * TA Ch 6-7
     * [R4DS Ch 5, 7](http://r4ds.had.co.nz/exploratory-data-analysis.html)
-1. Graphical perception and cognition/Multivariate data visualization
+1. Graphical perception and cognition
     * FA Ch 5-7
     * [Cleveland, William S., and Robert McGill. "Graphical perception: Theory, experimentation, and application to the development of graphical methods." *Journal of the American statistical association* 79.387 (1984): 531-554.](http://www.jstor.org.proxy.uchicago.edu/stable/2288400)
     * [Heer, Jeffrey, and Michael Bostock. "Crowdsourcing graphical perception: using mechanical turk to assess visualization design." *Proceedings of the SIGCHI Conference on Human Factors in Computing Systems*. ACM, 2010.](http://dl.acm.org.proxy.uchicago.edu/citation.cfm?id=1753357&CFID=745610279&CFTOKEN=53601915)
