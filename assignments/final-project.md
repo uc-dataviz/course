@@ -11,7 +11,7 @@ The purpose of the final project is to apply principles of visual design and tec
 Deadlines
 ---------
 
-By the end of the fourth week (April 20), students should select a topic and [submit a proposal](https://goo.gl/forms/901AGuC5H1fWkvTT2). Students will present their projects to the class on **May 29**. Projects must be fully complete and submitted for grading by **Sunday, June 3 at 11:59 pm**.
+By the end of the fourth week (April 20), students should select a topic and [submit a proposal](https://goo.gl/forms/s5A6zgaMZdoNhXp63). Students will present their projects to the class on **May 29**. Projects must be fully complete and submitted for grading by **Sunday, June 3 at 11:59 pm**.
 
 Assessment
 ----------
