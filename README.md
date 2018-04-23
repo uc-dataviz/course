@@ -96,7 +96,7 @@ All readings are required unless otherwise noted. Adjustments can be made throug
     * [Using Graphs Instead of Tables in Political Science](http://www.jstor.org.proxy.uchicago.edu/stable/20446574?seq=1#page_scan_tab_contents)
     * [visual battle: table vs graph](http://www.storytellingwithdata.com/blog/2011/11/visual-battle-table-vs-graph)
     * [Why tables are really much better than graphs](http://andrewgelman.com/2009/04/01/why_tables_are/)
-    * [Siegrist, Michael. "The use or misuse of three-dimensional graphs to represent lower-dimensional data." *Behaviour & Information Technology* 15.2 (1996): 96-100.](http://web.b.ebscohost.com.proxy.uchicago.edu/ehost/detail/detail?sid=7f75c721-2db0-4d09-9a39-4c63f8cdae48%40sessionmgr103&vid=0&hid=107&bdata=JnNpdGU9ZWhvc3QtbGl2ZSZzY29wZT1zaXRl#AN=7613951&db=iih)
+    * [Siegrist, Michael. "The use or misuse of three-dimensional graphs to represent lower-dimensional data." *Behaviour & Information Technology* 15.2 (1996): 96-100.](http://proxy.uchicago.edu/login?url=http://search.ebscohost.com/login.aspx?direct=true&db=iih&AN=7613951&site=ehost-live&scope=site)
 1. Interactivity
     * [Plotly R library](https://plot.ly/r/)
     * [`htmlwidgets`](http://www.htmlwidgets.org/)
