@@ -41,6 +41,6 @@ Submission details
 
 [Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/g/WtfroPll) Submit your analysis as a single R Markdown document rendered using the `github_document` output format.[1] The repo should also contain a copy of the generated data file and documentation of the survey and the treatment/condition versions of your graphic.
 
-Your submission is due by **11:00am on Tuesday, May 1st**.
+Your submission is due by **~~11:00am on Tuesday, May 1st~~ 11:59pm on Friday, May 4th**.
 
 [1] Use `html_document` if needed to properly render your graphs.
