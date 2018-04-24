@@ -885,7 +885,7 @@ stargazer(gapminder_yr, gapminder_gdp, gapminder_yr_gdp, gapminder_gdp_year_life
 
 ## Generate predicted values
 
-Use the `predict()` function in base R. For instance, let's build a multiple linear regression model of life expectancy.
+Let's build a multiple linear regression model of life expectancy.
 
 ```{r gap-many}
 out <- lm(formula = lifeExp ~ gdpPercap + pop + continent,
@@ -893,7 +893,7 @@ out <- lm(formula = lifeExp ~ gdpPercap + pop + continent,
 summary(out)
 ```
 
-We can use `add_predictions()` to generate predicted values. First we need to create a synthetic dataset of the observations for which we want to predict. If we focus on GDP per capita, we could hold population at its median value and calculate predicted values for all the continents. `data_grid()` automatically expands a data frame to generate all possible combinations of values.
+We can use `predict()` to generate predicted values. First we need to create a synthetic dataset of the observations for which we want to predict. If we focus on GDP per capita, we could hold population at its median value and calculate predicted values for all the continents. `expand.grid()` automatically expands a data frame to generate all possible combinations of values.
 
 ```{r gap-df}
 min_gdp <- min(gapminder$gdpPercap)

@@ -1,0 +1,861 @@
+---
+title: "Visualizing scientific results"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(forcats)
+library(stringr)
+library(ggrepel)
+library(modelr)
+library(plotly)
+
+library(socviz)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 18
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Tables or graphs
+
+* [Kastellec and Leoni (2007)](http://www.jstor.org.proxy.uchicago.edu/stable/pdf/20446574.pdf?refreqid=excelsior:0edf6622ccfff488e494518924b22f92)
+* When to use tables vs graphs
+* Paper vs. poster
+
+## Smoothing lines
+
+```{r diamonds-point, echo = FALSE}
+p <- ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(x = "Carat size",
+       y = "Price")
+p
+```
+
+## Smoothing lines {.scrollable}
+
+```{r diamonds-lm}
+p +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## Smoothing lines {.scrollable}
+
+```{r diamonds-gam}
+p +
+  geom_smooth(se = FALSE)
+```
+
+## Smoothing lines {.scrollable}
+
+```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
+library(lattice)
+
+mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+fit <- augment(mod)
+
+mod0 <- loess(NOx ~ E, ethanol, degree = 0, span = .75)
+mod1 <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+mod2 <- loess(NOx ~ E, ethanol, degree = 2, span = .75)
+
+fit_all <- ethanol %>%
+  gather_predictions(mod0, mod1, mod2) %>%
+  mutate(model = factor(model, levels = c("mod0", "mod1", "mod2"),
+                        labels = c("Constant", "Linear", "Quadratic")))
+
+ggplot(fit_all, aes(E, NOx)) +
+  geom_point() +
+  geom_line(aes(y = pred, color = model)) +
+  labs(title = "Local linear regression",
+       x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J",
+       color = "Regression")
+```
+
+## Smoothing lines {.scrollable}
+
+```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+dat <- ethanol %>%
+  inflate(center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= .75) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+library(gganimate)
+
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_line(aes(y = .fitted), data = fit, color = "red") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+gganimate(p, interval = .5)
+```
+
+## Smoothing lines {.scrollable}
+
+```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+spans <- c(.25, .5, .75, 1)
+
+# create loess fits, one for each span
+fits <- data_frame(span = spans) %>%
+  group_by(span) %>%
+  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
+
+# calculate weights to reproduce this with local weighted fits
+dat <- ethanol %>%
+  inflate(span = spans, center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= span) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+# create faceted plot with changing points, local linear fits, and vertical lines,
+# and constant hollow points and loess fit
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_point(shape = 1, data = ethanol, alpha = .25) +
+  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
+  facet_wrap(~span) +
+  ylim(0, 5) +
+  ggtitle("x0 = ") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+
+gganimate(p, interval = .5)
+```
+
+## Multiple smoothing lines {.scrollable}
+
+```{r mult-lines}
+library(gapminder)
+
+ggplot(data = gapminder,
+       mapping = aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", formula = y ~ splines::bs(x, df = 3)) +
+  geom_smooth(method = "loess")
+```
+
+## Multiple smoothing lines {.scrollable}
+
+```{r mult-lines-leg}
+model_colors <- RColorBrewer::brewer.pal(3, "Set1")
+model_colors
+
+ggplot(data = gapminder,
+       mapping = aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm", aes(color = "OLS", fill = "OLS")) +
+  geom_smooth(method = "lm", formula = y ~ splines::bs(x, df = 3),
+              aes(color = "Cubic Spline", fill = "Cubic Spline")) +
+  geom_smooth(method = "loess",
+              aes(color = "LOESS", fill = "LOESS")) +
+  scale_color_manual(name = "Models", values = model_colors) +
+  scale_fill_manual(name = "Models", values = model_colors) +
+  theme(legend.position = "top")
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-import}
+credit <- read_csv("data/Credit.csv") %>%
+  # remove first ID column
+  select(-X1)
+names(credit) <- stringr::str_to_lower(names(credit))   # convert column names to lowercase
+glimpse(credit)
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-scatter-matrix}
+pairs(select_if(credit, is.numeric))
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-scatter-ggpairs}
+library(GGally)
+
+ggpairs(select_if(credit, is.numeric))
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-scatter-matrix-gender}
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"))
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-scatter-smoother}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = "smooth"
+        )
+)
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r wrap}
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = wrap("smooth", alpha = .1, color = "blue")
+        )
+)
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r credit-scatter-point-smoother, message = FALSE, warning = FALSE}
+scatter_smooth <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    # make data points transparent
+    geom_point(alpha = .2) +
+    # add default smoother
+    geom_smooth(se = FALSE)
+}
+
+ggpairs(select_if(credit, is.numeric),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+
+ggpairs(credit, mapping = aes(color = gender),
+        columns = c("income", "limit", "rating", "cards", "age", "education", "balance"),
+        lower = list(
+          continuous = scatter_smooth
+        )
+)
+```
+
+## Scatterplot matricies {.scrollable}
+
+```{r diamonds-scatter-matrix, warning = FALSE, message = FALSE}
+rcfss::scorecard %>%
+  select(type:debt) %>%
+  ggpairs
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r mpg-cor}
+(mpg_lite <- select_if(mpg, is.numeric))
+
+(cormat <- mpg_lite %>%
+  cor %>%
+  round(2))
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r cormat-tidy}
+library(reshape2)
+(melted_cormat <- melt(cormat))
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r cormat-tile}
+ggplot(melted_cormat, aes(x = Var1, y = Var2, fill = value)) + 
+  geom_tile()
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r cormat-reduce}
+# Get lower triangle of the correlation matrix
+get_lower_tri<-function(cormat){
+  cormat[upper.tri(cormat)] <- NA
+  return(cormat)
+}
+
+# Get upper triangle of the correlation matrix
+get_upper_tri <- function(cormat){
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+upper_tri
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r cormat-tile-tidy}
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white") +
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1)) +
+ coord_fixed()
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r reorder-cormat}
+reorder_cormat <- function(cormat){
+  # Use correlation between variables as distance
+  dd <- as.dist((1-cormat)/2)
+  hc <- hclust(dd)
+  cormat <-cormat[hc$order, hc$order]
+}
+
+# Reorder the correlation matrix
+cormat <- reorder_cormat(cormat)
+upper_tri <- get_upper_tri(cormat)
+
+# Melt the correlation matrix
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+# Create a ggheatmap
+ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ # minimal theme
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1))+
+  coord_fixed()
+
+# Print the heatmap
+print(ggheatmap)
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r add-coef-heatmap}
+ggheatmap + 
+  geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "bottom")
+```
+
+## Heatmap of correlation coefficients {.scrollable}
+
+```{r coef-heatmap-function}
+cormat_heatmap <- function(data){
+  # generate correlation matrix
+  cormat <- round(cor(data), 2)
+  
+  # melt into a tidy table
+  get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+  }
+  
+  upper_tri <- get_upper_tri(cormat)
+  
+  # reorder matrix based on coefficient value
+  reorder_cormat <- function(cormat){
+    # Use correlation between variables as distance
+    dd <- as.dist((1-cormat)/2)
+    hc <- hclust(dd)
+    cormat <-cormat[hc$order, hc$order]
+  }
+  
+  cormat <- reorder_cormat(cormat)
+  upper_tri <- get_upper_tri(cormat)
+  
+  # Melt the correlation matrix
+  melted_cormat <- melt(upper_tri, na.rm = TRUE)
+  
+  # Create a ggheatmap
+  ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+    geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     size = 12, hjust = 1))+
+    coord_fixed()
+  
+  # add correlation values to graph
+  ggheatmap + 
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position = "bottom")
+}
+
+cormat_heatmap(select_if(mpg, is.numeric))
+cormat_heatmap(select_if(credit, is.numeric))
+cormat_heatmap(select_if(diamonds, is.numeric))
+```
+
+## Parallel coordinate plots {.scrollable}
+
+```{r pcp, echo = FALSE}
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5)
+
+# with the iris data, order the axes by overall class (Species) separation
+# using the anyClass option
+ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass")
+
+# add points to the plot, add a title, and use an alpha scalar to make the
+# lines transparent
+p <- ggparcoord(data = iris, columns = 1:4, groupColumn = 5, order = "anyClass", 
+    showPoints = TRUE, title = "Parallel Coordinate Plot for the Iris Data", 
+    alphaLines = 0.3)
+p
+
+# add some basic interactivity
+ggplotly(p)
+```
+
+## Three-dimensional plots {.scrollable}
+
+```{r add-dimensions}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+## Three-dimensional plots {.scrollable}
+
+```{r vote96-model}
+# import data
+(vote <- rcfss::mental_health)
+
+# estimate model
+vote_glm <- glm(vote96 ~ age + educ, data = vote, family = "binomial")
+tidy(vote_glm)
+
+# extract predicted probabilities
+vote_prob <- vote %>%
+  data_grid(age = 18:89, educ = 0:20) %>%
+  modelr::add_predictions(vote_glm) %>%
+  # convert predicted values to probabilities
+  mutate(prob = rcfss::logit2prob(pred))
+
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_tile() +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+
+# cleaner image using geom_raster and interpolate = TRUE
+ggplot(vote_prob, aes(age, educ, fill = prob)) +
+  geom_raster(interpolate = TRUE) +
+  scale_fill_gradient2(midpoint = .5, label = scales::percent) +
+  labs(title = "Probability of voter turnout in 1996",
+       x = "Age",
+       y = "Education (in years)",
+       fill = "Probability\nof voting")
+```
+
+## `plotly` {.scrollable}
+
+```{r 3d-vote}
+plot_ly(vote_prob, x = ~age, y = ~educ, z = ~prob) %>%
+  add_mesh()
+```
+
+## `plotly` {.scrollable}
+
+```{r 3d-credit}
+plot_ly(credit, x = ~limit, y = ~balance, z = ~income) %>%
+  add_mesh()
+```
+
+## `plotly` {.scrollable}
+
+```{r 3d-surface}
+plot_ly(z = ~volcano) %>% add_surface()
+
+volcano %>%
+  melt %>%
+  ggplot(aes(Var1, Var2, z = value)) +
+  geom_contour(aes(color = ..level..))
+```
+
+## Joint distribution of sex and happiness {.scrollable}
+
+```{r mosaic-happy, include = FALSE}
+# Mosaic plot of happiness and education
+library(productplots)
+data("happy")
+
+happy <- happy %>%
+  na.omit
+```
+
+```{r happy-sex}
+# contingency table
+library(descr)
+crosstab(happy$happy, happy$sex, prop.t = TRUE, plot = FALSE)
+```
+
+## Conditional distribution of sex given happiness {.scrollable}
+
+```{r happy-sex-cond}
+crosstab(happy$happy, happy$sex, prop.r = TRUE, plot = FALSE)
+crosstab(happy$happy, happy$sex, prop.c = TRUE, plot = FALSE)
+```
+
+## Conditional distribution of happiness given sex and marginal distribution of sex {.scrollable}
+
+```{r happy-sex-marg}
+crosstab(happy$happy, happy$sex, prop.c = TRUE, prop.r = TRUE, plot = FALSE)
+```
+
+## `graphics::mosaicplot()` {.scrollable}
+
+```{r graphics-mosaicplot}
+mosaicplot(~ sex + happy, data = happy)
+```
+
+## `vcd::mosaic()` {.scrollable}
+
+```{r vcd-mosaic}
+library(vcd)
+mosaic(~ happy + sex, happy)
+```
+
+## `productplots::prodplot()` {.scrollable}
+
+```{r productplots}
+# mosaic plot using productplots
+prodplot(happy, ~ happy + sex)
+
+# add color
+prodplot(happy, ~ happy + sex) +
+  aes(fill = happy) +
+  theme(panel.grid = element_blank())
+
+prodplot(happy, ~ happy + marital) +
+  aes(fill = happy) +
+  theme(legend.position = "none") +
+  theme(panel.grid = element_blank())
+```
+
+## `productplots::prodplot()` {.scrollable}
+
+```{r prop-barchart}
+ggplot(happy, aes(marital, fill = happy)) +
+  geom_bar(position = "fill")
+```
+
+## Dot plot for summary statistics {.scrollable}
+
+```{r oj}
+library(ISLR)
+
+OJ_sum <- OJ %>%
+  select(ends_with("MM"), ends_with("CH")) %>%
+  gather(var, value) %>%
+  group_by(var) %>%
+  summarize(mean = mean(value),
+            sd = sd(value),
+            min = min(value),
+            max = max(value),
+            n = n())
+
+# print the table
+kable(OJ_sum)
+
+# plot using a single dot plot
+ggplot(OJ_sum, aes(x = fct_reorder(var, mean), y = mean)) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1) +
+  geom_point() +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL)
+
+# dodge based on OJ brand
+OJ_sum %>%
+  separate(var, into = c("var", "brand"), -3, remove = TRUE) %>%
+  ggplot(aes(x = fct_reorder(var, mean), y = mean, color = brand)) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25,
+                 position = position_dodge(width = 0.5)) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1,
+                 position = position_dodge(width = 0.5)) +
+  geom_point(position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL,
+       color = "Brand")
+
+# facet based on OJ brand
+OJ_sum %>%
+  separate(var, into = c("var", "brand"), -3, remove = TRUE) %>%
+  ggplot(aes(x = fct_reorder(var, mean), y = mean)) +
+  facet_grid(. ~ brand) +
+  geom_linerange(aes(ymin = mean - 2 * sd,
+                      ymax = mean + 2 * sd),
+                  linetype = 2,
+                 size = .25) +
+  geom_linerange(aes(ymin = mean - sd,
+                      ymax = mean + sd),
+                  size = 1) +
+  geom_point() +
+  coord_flip() +
+  labs(x = NULL,
+       y = NULL,
+       color = "Brand")
+```
+
+## Visualizing model results
+
+* Present your findings in substantive terms
+* Show your degree of confidence
+* Show your data when you can
+
+## Extracting model contents {.scrollable}
+
+```{r load-gapminder}
+gapminder
+```
+
+## Extracting model contents {.scrollable}
+
+```{r lifeExp-by-country}
+gapminder %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+```
+
+## Extracting model contents {.scrollable}
+
+```{r lifeExp-mod}
+gapminder_mod <- lm(lifeExp ~ year, data = gapminder)
+summary(gapminder_mod)
+
+grid <- gapminder %>% 
+  data_grid(year, country) 
+grid
+
+grid <- grid %>% 
+  add_predictions(gapminder_mod) 
+grid
+
+ggplot(gapminder, aes(year, group = country)) +
+  geom_line(aes(y = lifeExp), alpha = .2) +
+  geom_line(aes(y = pred), data = grid, color = "red", size = 1)
+```
+
+## Extracting model contents {.scrollable}
+
+```{r model-str}
+str(gapminder_mod)
+```
+
+## `broom::tidy()` {.scrollable}
+
+```{r tidy}
+tidy(gapminder_mod)
+
+tidy(gapminder_mod) %>%
+  str()
+```
+
+## `broom::augment()` {.scrollable}
+
+```{r augment}
+augment(gapminder_mod) %>%
+  as_tibble()
+```
+
+## `broom::glance()` {.scrollable}
+
+```{r glance}
+glance(gapminder_mod)
+```
+
+* [Supported models](https://github.com/dgrtwo/broom)
+
+## `stargazer` {.scrollable}
+
+```{r gapminder-lm, echo = FALSE}
+tidy(gapminder_mod)
+```
+
+## `stargazer` {.scrollable}
+
+```{r stargazer-single, results = "asis"}
+library(stargazer)
+
+stargazer(gapminder_mod, type = "html")
+```
+
+## `stargazer` {.scrollable}
+
+```{r stargazer-many, results = "asis"}
+gapminder_yr <- lm(lifeExp ~ year, data = gapminder)
+gapminder_gdp <- lm(lifeExp ~ gdpPercap, data = gapminder)
+gapminder_yr_gdp <- lm(lifeExp ~ year + gdpPercap, data = gapminder)
+gapminder_gdp_year_lifeexp <- lm(gdpPercap ~ year + lifeExp, data = gapminder)
+
+stargazer(gapminder_yr, gapminder_gdp, gapminder_yr_gdp, gapminder_gdp_year_lifeexp,
+          type = "html")
+```
+
+## `stargazer` {.scrollable}
+
+```{r stargazer-custom, results = "asis"}
+stargazer(gapminder_yr, gapminder_gdp, gapminder_yr_gdp, gapminder_gdp_year_lifeexp,
+          type = "html",
+          dep.var.labels = c("Life expectancy", "GDP per capita"),
+          covariate.labels = c("Year", "GDP per capita", "Life expectancy"),
+          omit.stat = c("ser", "f"))
+```
+
+## Generate predicted values {.scrollable}
+
+```{r gap-many}
+out <- lm(formula = lifeExp ~ gdpPercap + pop + continent,
+          data = gapminder)
+summary(out)
+```
+
+## Generate predicted values {.scrollable}
+
+```{r gap-df}
+min_gdp <- min(gapminder$gdpPercap)
+max_gdp <- max(gapminder$gdpPercap)
+med_pop <- median(gapminder$pop)
+
+pred_df <- expand.grid(gdpPercap = (seq(from = min_gdp,
+                                        to = max_gdp,
+                                        length.out = 100)),
+                       pop = med_pop,
+                       continent = c("Africa", "Americas",
+                                     "Asia", "Europe", "Oceania")) %>%
+  as_tibble
+
+pred_df
+```
+
+## Generate predicted values {.scrollable}
+
+```{r add-predict}
+pred_out <- predict(object = out,
+                    newdata = pred_df,
+                    interval = "predict") %>%
+  as_tibble
+pred_out
+```
+
+## Generate predicted values {.scrollable}
+
+```{r combine-pred}
+pred_df <- bind_cols(pred_df, pred_out)
+pred_df
+```
+
+## Generate predicted values {.scrollable}
+
+```{r plot-pred}
+ggplot(data = pred_df %>%
+         filter(continent %in% c("Europe", "Africa")),
+       aes(x = gdpPercap,
+           y = fit, ymin = lwr, ymax = upr,
+           color = continent,
+           fill = continent,
+           group = continent)) +
+  geom_point(data = gapminder %>%
+               filter(continent %in% c("Europe", "Africa")),
+             aes(x = gdpPercap, y = lifeExp,
+                 color = continent),
+             alpha = 0.5,
+             inherit.aes = FALSE) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.2, color = FALSE) +
+  scale_x_log10(labels = scales::dollar)
+```
+
+## Plot marginal effects {.scrollable}
+
+```{r margins}
+library(margins)
+```
+
+```{r gss_sm}
+library(socviz)
+
+glimpse(gss_sm)
+
+# make moderates the reference category (i.e. 0)
+gss_sm$polviews_m <- relevel(gss_sm$polviews, ref = "Moderate")
+
+# build the model
+out_bo <- glm(obama ~ polviews_m + sex*race,
+              family = "binomial", data = gss_sm)
+summary(out_bo)
+```
+
+## Plot marginal effects {.scrollable}
+
+```{r ame}
+bo_m <- margins(out_bo)
+summary(bo_m)
+```
+
+## Plot marginal effects {.scrollable}
+
+```{r clean}
+bo_gg <- as_tibble(summary(bo_m))
+prefixes <- c("polviews_m", "sex")
+bo_gg$factor <- prefix_strip(bo_gg$factor, prefixes)
+bo_gg$factor <- prefix_replace(bo_gg$factor, "race", "Race: ")
+
+bo_gg %>%
+  select(factor, AME, lower, upper) 
+```
+
+```{r ame-graph}
+ggplot(data = bo_gg, aes(x = reorder(factor, AME),
+                         y = AME, ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = 0, color = "gray80") +
+  geom_pointrange() + coord_flip() +
+  labs(x = NULL, y = "Average Marginal Effect") 
+```
