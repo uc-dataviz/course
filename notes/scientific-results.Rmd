@@ -150,6 +150,46 @@ gganimate(p, interval = .5)
 
 LOESS lines are best used for datasets with fewer than 1000 observations, otherwise the time and memory usage required to compute the line increases exponentially.
 
+### Show several smoothing lines at once with a legend
+
+We can draw several smoothing lines at once on a plot by calling `geom_smooth()` multiple times. For instance, here we draw a graph with three smoothing lines:
+
+1. OLS
+1. Splines
+1. LOESS
+
+```{r mult-lines}
+library(gapminder)
+
+ggplot(data = gapminder,
+       mapping = aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", formula = y ~ splines::bs(x, df = 3)) +
+  geom_smooth(method = "loess")
+```
+
+The problem is how can we distinguish one smoothing line from another? With the `fill` and `color` aesthetics. Rather than pass in a new variable, we manually label the `fill` and `color` aesthetics with character strings inside `aes()`:
+
+```{r mult-lines-leg}
+model_colors <- RColorBrewer::brewer.pal(3, "Set1")
+model_colors
+
+ggplot(data = gapminder,
+       mapping = aes(x = log(gdpPercap), y = lifeExp)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm", aes(color = "OLS", fill = "OLS")) +
+  geom_smooth(method = "lm", formula = y ~ splines::bs(x, df = 3),
+              aes(color = "Cubic Spline", fill = "Cubic Spline")) +
+  geom_smooth(method = "loess",
+              aes(color = "LOESS", fill = "LOESS")) +
+  scale_color_manual(name = "Models", values = model_colors) +
+  scale_fill_manual(name = "Models", values = model_colors) +
+  theme(legend.position = "top")
+```
+
+By passing these in as character values, `ggplot` essentially creates a new variable for this mapping. We can then use `scale_()` functions to assign specific colors to those mappings.
+
 ## Coefficient of correlation
 
 * Produces a measure of association, known as Pearson's $r$, that gauges the direction and strength of a relationship between two continuous variables
@@ -185,7 +225,7 @@ credit <- read_csv("data/Credit.csv") %>%
   # remove first ID column
   select(-X1)
 names(credit) <- stringr::str_to_lower(names(credit))   # convert column names to lowercase
-str(credit)
+glimpse(credit)
 ```
 
 If we want to quickly assess the relationship between all of the variables (in preparation for more advanced statistical learning techniques), we could generate a matrix of scatterplots using the base `graphics` package:
@@ -514,13 +554,6 @@ ggplot(vote_prob, aes(age, educ, fill = prob)) +
        fill = "Probability\nof voting")
 ```
 
-### `persp()`
-
-
-### `plot3d`
-
-http://www.sthda.com/english/wiki/impressive-package-for-3d-and-4d-graph-r-software-and-data-visualization
-
 ### `plotly`
 
 If we wanted to represent this in true three-dimensional fashion, we could use [plotly](https://plot.ly/):
@@ -706,22 +739,270 @@ OJ_sum %>%
 
 # Model results
 
+## How to do it right
 
-## `broom`
+Designing good visualizations of models is tough because not only are you representing data, but also a specific statistical learning method used to summarize and structure the data. The more complex the model, the trickier this becomes. Not only do you have to estimate the model appropriately, you have to visually depict the results in an informative and not overly-complex manner. Some basic rules of thumb follow.
 
+### Present your findings in substantive terms
+
+Show the results in context. If you are holding other variables constant, make sure they are sensible values. To show changes in continuous variables, move meaningfully across the distribution. For discrete variables, predicted values might be presented with respect to the modal or median value in the data.
+
+Present the results in an interpretable scale. So if the modeling strategy produces log-odds, convert the estimates to probabilities so people can decipher the meaning of the results.
+
+### Show your degree of confidence
+
+Don't just focus on point estimates. Also account for your uncertainty surrounding the point estimates. Use functions such as `geom_pointrange()` and `geom_errorbar()` to visualize parameter estimates, or `geom_ribbon()` for line graphs.
+
+### Show your data when you can
+
+* Tables
+    * Parameter estimates
+    * Standard errors
+    * Model statistics
+* Visualizations
+    * Predicted values
+    * Original data points
+
+
+## Extracting model contents
+
+Recall the `gapminder` dataset, which includes measures of life expectancy over time for all countries in the world.
+
+```{r load-gapminder}
+gapminder
+```
+
+Let's say we want to try and understand how life expectancy changes over time. We could visualize the data using a line graph:
+
+```{r lifeExp-by-country}
+gapminder %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+```
+
+But this is incredibly noise. Why not estimate a simple linear model that summarizes this trend?
+
+```{r lifeExp-mod}
+gapminder_mod <- lm(lifeExp ~ year, data = gapminder)
+summary(gapminder_mod)
+
+grid <- gapminder %>% 
+  data_grid(year, country) 
+grid
+
+grid <- grid %>% 
+  add_predictions(gapminder_mod) 
+grid
+
+ggplot(gapminder, aes(year, group = country)) +
+  geom_line(aes(y = lifeExp), alpha = .2) +
+  geom_line(aes(y = pred), data = grid, color = "red", size = 1)
+```
+
+So it appears that there is a positive trend - that is, over time life expectancy is rising. But we can also see a lot of variation in that trend - some countries are doing much better than others. We'll come back to that in a bit.
+
+## Extracting model statistics
+
+Model objects are not very pretty in R. Recall the complicated data structure I mentioned above:
+
+```{r model-str}
+str(gapminder_mod)
+```
+
+In order to extract model statistics and use them in a **tidy** manner, we can use a set of functions from the `broom` package. For these functions, the input is always the model object itself, not the original data frame.
+
+### `tidy()`
+
+`tidy()` constructs a data frame that summarizes the model's statistical findings. This includes **coefficients** and **p-values** for each parameter in a regression model. Note that depending on the statistical learning method employed, the statistics stored in the columns may vary.
+
+```{r tidy}
+tidy(gapminder_mod)
+
+tidy(gapminder_mod) %>%
+  str()
+```
+
+Notice that the structure of the resulting object is a tidy data frame. Every row contains a single parameter, every column contains a single statistic, and every cell contains exactly one value.
+
+### `augment()`
+
+`augment()` adds columns to the original data that was modeled. This could include predictions, residuals, and other observation-level statistics.
+
+```{r augment}
+augment(gapminder_mod) %>%
+  as_tibble()
+```
+
+`augment()` will only return statistics to the original data used to estimate the model, so it cannot be used like `add_predictions()` to generate predictions for new data.
+
+### `glance()`
+
+`glance()` constructs a concise one-row summary of the model. This typically contains values such as $R^2$, adjusted $R^2$, and residual standard error that are computed once for the entire model.
+
+```{r glance}
+glance(gapminder_mod)
+```
+
+While `broom` may not work with every model in R, it is compatible with a wide range of common statistical models. A full list of models with which `broom` is compatible can be found on the [GitHub page for the package](https://github.com/dgrtwo/broom).
 
 ## `stargazer`
 
+`stargazer` is a package for R to print summary statistics and model results in a tabular format. It can format tables using $\LaTeX$, HTML, or ASCII text. Recall our original gapminder linear model:
 
-## Extracting model objects
+```{r gapminder-lm}
+tidy(gapminder_mod)
+```
 
+Let's print the results in a nicely formatted table:
 
-## Grouped analysis and list columns
+```{r stargazer-single, results = "asis"}
+library(stargazer)
 
+stargazer(gapminder_mod, type = "html")
+```
+
+`stargazer` also easily compiles multiple models into a single results table:
+
+```{r stargazer-many, results = "asis"}
+gapminder_yr <- lm(lifeExp ~ year, data = gapminder)
+gapminder_gdp <- lm(lifeExp ~ gdpPercap, data = gapminder)
+gapminder_yr_gdp <- lm(lifeExp ~ year + gdpPercap, data = gapminder)
+gapminder_gdp_year_lifeexp <- lm(gdpPercap ~ year + lifeExp, data = gapminder)
+
+stargazer(gapminder_yr, gapminder_gdp, gapminder_yr_gdp, gapminder_gdp_year_lifeexp,
+          type = "html")
+```
+
+All of the output is highly customizable within `stargazer` to avoid manual editing of the $\LaTeX$ or HTML code.
+
+```{r stargazer-custom, results = "asis"}
+stargazer(gapminder_yr, gapminder_gdp, gapminder_yr_gdp, gapminder_gdp_year_lifeexp,
+          type = "html",
+          dep.var.labels = c("Life expectancy", "GDP per capita"),
+          covariate.labels = c("Year", "GDP per capita", "Life expectancy"),
+          omit.stat = c("ser", "f"))
+```
+
+## Generate predicted values
+
+Use the `predict()` function in base R. For instance, let's build a multiple linear regression model of life expectancy.
+
+```{r gap-many}
+out <- lm(formula = lifeExp ~ gdpPercap + pop + continent,
+          data = gapminder)
+summary(out)
+```
+
+We can use `add_predictions()` to generate predicted values. First we need to create a synthetic dataset of the observations for which we want to predict. If we focus on GDP per capita, we could hold population at its median value and calculate predicted values for all the continents. `data_grid()` automatically expands a data frame to generate all possible combinations of values.
+
+```{r gap-df}
+min_gdp <- min(gapminder$gdpPercap)
+max_gdp <- max(gapminder$gdpPercap)
+med_pop <- median(gapminder$pop)
+
+pred_df <- expand.grid(gdpPercap = (seq(from = min_gdp,
+                                        to = max_gdp,
+                                        length.out = 100)),
+                       pop = med_pop,
+                       continent = c("Africa", "Americas",
+                                     "Asia", "Europe", "Oceania")) %>%
+  as_tibble
+
+pred_df
+```
+
+Now we can add the predictions to the data frame using `predict()`:
+
+```{r add-predict}
+pred_out <- predict(object = out,
+                    newdata = pred_df,
+                    interval = "predict") %>%
+  as_tibble
+pred_out
+```
+
+Because `pred_df` and `pred_out` correspond row for row, we can combine them back together.
+
+```{r combine-pred}
+pred_df <- bind_cols(pred_df, pred_out)
+pred_df
+```
+
+Now we have a tidy data frame we can use to plot the predict values for the ranges we specified.
+
+```{r plot-pred}
+ggplot(data = pred_df %>%
+         filter(continent %in% c("Europe", "Africa")),
+       aes(x = gdpPercap,
+           y = fit, ymin = lwr, ymax = upr,
+           color = continent,
+           fill = continent,
+           group = continent)) +
+  geom_point(data = gapminder %>%
+               filter(continent %in% c("Europe", "Africa")),
+             aes(x = gdpPercap, y = lifeExp,
+                 color = continent),
+             alpha = 0.5,
+             inherit.aes = FALSE) + 
+  geom_line() +
+  geom_ribbon(alpha = 0.2, color = FALSE) +
+  scale_x_log10(labels = scales::dollar)
+```
 
 ## Plot marginal effects
 
+Before we plotted the predicted relationship of GDP per capita and life expectancy, holding population constant at its median value. Basically, estimates of the effect of some coefficient net of the other terms in the model. **Partial** or **marginal effects** are frequently of substantive importance, especially in models with discrete outcomes. To obtain estimates of marginal effects, we can use the `margins` package.
 
+```{r margins}
+library(margins)
+```
+
+Let's look at an example of survey data from the 2012 presidential election by modeling votes for Obama as a function of political views, sex, and race, with an interaction between sex and race.
+
+```{r gss_sm}
+library(socviz)
+
+glimpse(gss_sm)
+
+# make moderates the reference category (i.e. 0)
+gss_sm$polviews_m <- relevel(gss_sm$polviews, ref = "Moderate")
+
+# build the model
+out_bo <- glm(obama ~ polviews_m + sex*race,
+              family = "binomial", data = gss_sm)
+summary(out_bo)
+```
+
+We could graph the raw parameters, but they are in the log-odds form and not directly intuitive. We can use `margins()` to calculate the marginal effects for each variable:
+
+```{r ame}
+bo_m <- margins(out_bo)
+summary(bo_m)
+```
+
+`margins` includes some built-in plotting mechanisms using base graphics. To build plots in `ggplot()`, we need to convert this summary object to a data frame and clean up the labels.
+
+```{r clean}
+bo_gg <- as_tibble(summary(bo_m))
+prefixes <- c("polviews_m", "sex")
+bo_gg$factor <- prefix_strip(bo_gg$factor, prefixes)
+bo_gg$factor <- prefix_replace(bo_gg$factor, "race", "Race: ")
+
+bo_gg %>%
+  select(factor, AME, lower, upper) 
+```
+
+And now graph using skills we already have:
+
+```{r ame-graph}
+ggplot(data = bo_gg, aes(x = reorder(factor, AME),
+                         y = AME, ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = 0, color = "gray80") +
+  geom_pointrange() + coord_flip() +
+  labs(x = NULL, y = "Average Marginal Effect") 
+```
+
+Note that as the average marginal effect, this is the average effect of each variable for all the respondents in the dataset.
 
 # Session Info {.toc-ignore}
 
