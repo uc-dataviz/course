@@ -24,8 +24,7 @@ Students are expected to have prior programming experience; this is not an intro
 |------------------|--------|
 | Visualization critique | 10 |
 | Visualization experiment | 20 |
-| Interactive graphics | 10 |
-| Information dashboard | 10 |
+| Interactive visualization | 20 |
 | Geospatial/network/text visualization | 10 |
 | Final project | 30 |
 | Participation | 10 |
@@ -56,8 +55,8 @@ Readings for the course will come primarily from the following books, as well as
 | 4. | Apr. 17 | Graphical perception and cognition | Design a visualization experiment |  |
 | 5. | Apr. 24 | Rules of thumb | Visualizing scientific results |  |
 | 6. | May 1 | Interactivity | And more interactivity | [Viz experiment](assignments/experiment.md) |
-| 7. | May 8 | Information dashboards |  | [Interactive graphics](assignments/interactivity.md) |
-| 8. | May 15 | Geospatial visualization | Network visualization | Information dashboard |
+| 7. | May 8 | And even more interactivity | Information dashboards |  |
+| 8. | May 15 | Geospatial visualization | Network visualization | [Interactive graphics](assignments/interactivity.md) |
 | 9. | May 22 | Text visualization |  |  |
 | 10. | May 29 | Present [final project](assignments/final-project.md) |  | Geospatial/network/text viz |
 |  | June 3 |  |  | Submit [final project](assignments/final-project.md) |

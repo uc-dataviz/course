@@ -1,8 +1,12 @@
 
-Assignment 3: Interactive graphics with Gapminder (or something else) (10 points)
-=================================================================================
+Assignment 3: Interactive visualization (or something else) (20 points)
+=======================================================================
 
-In this assignment, you will build an interactive visualization of data. If you have a specific dataset you want to use for the assignment (possibly the same data as your final project), **feel free to use it**. If you need a suggestion for data, keep reading.
+In this assignment, you will build an interactive visualization of data. If you have a specific dataset you want to use for the assignment (possibly the same data as your final project), **feel free to use it**. If you need a suggestion for data, keep reading. Possible formats include:
+
+-   A series of interactive visualizations generated with `plotly`, `highcharter`, etc. embedded in an RMarkdown document (a la a report) or an R Markdown website ([basic](https://rmarkdown.rstudio.com/rmarkdown_websites.html) or [`blogdown`](https://bookdown.org/yihui/blogdown/) format)
+-   A `shiny` application
+-   An information dashboard built using `flexdashboard`
 
 Gapminder
 ---------
@@ -93,9 +97,13 @@ In addition to the visualization and accompanying narrative, write an approximat
 Submission details
 ------------------
 
-[Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/a/2A0OFLSL) Submit your visualization and analysis as a single R Markdown document rendered using the `html_document` output format. If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io) and include a link to it in your submission. Include your design explanation in a separate document.
+[Create your assignment repo through GitHub Classrooms.](https://classroom.github.com/a/2A0OFLSL) Your writeup of the visualization should be submitted as a single Markdown file. Your visualization should be in an appropriate foramt.
 
-Your submission is due by **11:00am on Tuesday, May 8th**.
+-   If it's a single document, submit as an R Markdown document knitted using the `html_document` output format.
+-   If it's a website, deploy the website using a platform such as [GitHub Pages](https://pages.github.com/) or [Netlify](https://www.netlify.com/). Include the source code within the repository and put a link in the `README.md` to the live web site.
+-   If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io). Include the source code within the repository and put a link in the `README.md` to the live application.
+
+Your submission is due by **11:00am on Tuesday, May 15th**.
 
 [1] Though with far less detail
 
