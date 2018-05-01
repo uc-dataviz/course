@@ -17,7 +17,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 
 * Identify common structures and features of interactivity
 * Review several examples of interactive visualizations
-* Introduce `htmlwidgets`, `plotly`, and `highcharter` for generating interactive graphics in R
+* Introduce `htmlwidgets`, `plotly`, `highcharter`, and `shiny` for generating interactive graphics in R
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
@@ -173,23 +173,103 @@ To build these types of graphs, we could shift entirely to an interactive graphi
 * D3 visualizations are typically meant for presenting visualizations in their final form, not quickly rendering exploratory graphs, so there is a lot of unnecessary code-writing involved.
     * Think about how `ggplot()` makes many default assumptions when you write code to generate a graph. Normally the defaults work correctly, but you can always override them if necessary. With D3 and other JavaScript libraries, you cannot rely on these defaults.
 
-## `htmlwidgets`
+# `htmlwidgets`
 
 `htmlwidgets` is a framework for creating R bindings to JavaScript libraries. In essence, packages built on this framework take the R code that you write, process it, and convert it to the appropriate JavaScript code. From here, you can view the resulting graph in RStudio like an ordinary plot, embed it within an R Markdown document, or save it as a standalone `.html` page to share with others or post online.
 
 Some of the packages we will explore this week are built using `htmlwidgets`; others use their own approach to bind R functions onto JavaScript libraries.
 
-## `plotly`
+# `plotly`
 
-[Plotly](https://plot.ly/) is an online analytics and data visualization tool built using Python, JavaScript, and D3. They offer a commercial product for designing graphics via a point-and-click interface online, but have developed open-source packages for generating plotly graphs ([plotly.js](https://plot.ly/javascript/)), as well as API libraries for generating plotly graphs in [R](https://plot.ly/r/).
+[Plotly](https://plot.ly/) is an online analytics and data visualization tool built using Python, JavaScript, and D3. They offer a commercial product for designing graphics via a point-and-click interface online, but have developed open-source packages for generating plotly graphs ([plotly.js](https://plot.ly/javascript/)), as well as API libraries for generating plotly graphs in [R](https://plot.ly/r/). The open-source JavaScript library is published under the MIT license.
 
-### `ggplotly()`
+## Generating `plot_ly()` objects
+
+A plotly visualization is composed of one or more **trace(s)** (similar to a layer in `ggplot2`). `plot_ly()` objects can be built as piped operations if the object contains multiple traces, or a single call to `plot_ly()` if the object is relatively simple. These trace functions follow a `add_()` naming pattern. By default, `plot_ly()` assumes you want to draw a scatterplot.
+
+### Scatterplot
+
+```{r plotly-scatter}
+library(plotly)
+
+# basic scatterplot
+plot_ly(data = mpg, x = ~displ, y = ~hwy,
+        type = "scatter")
+
+# alternative form
+plot_ly(data = mpg, x = ~displ, y = ~hwy) %>%
+  add_markers()
+```
+
+#### Add color
+
+```{r plotly-color}
+plot_ly(data = mpg, x = ~displ, y = ~hwy, color = ~class,
+        type = "scatter")
+```
+
+#### Change the color palette
+
+```{r plotly-palette}
+plot_ly(data = mpg, x = ~displ, y = ~hwy, color = ~class,
+        type = "scatter",
+        colors = "Accent")
+```
+
+#### Draw multiple plots together
+
+```{r plotly-mult}
+subplot(
+  plot_ly(mpg, x = ~cty, y = ~hwy, name = "default",
+          type = "scatter"),
+  plot_ly(mpg, x = ~cty, y = ~hwy) %>% 
+    add_markers(alpha = 0.2, name = "alpha"),
+  plot_ly(mpg, x = ~cty, y = ~hwy) %>% 
+    add_markers(symbol = I(1), name = "hollow")
+)
+```
+
+* `add_markers()` - defines the appearance of the data points
+
+#### Add a smoothing line
+
+```{r plotly-smooth}
+plot_ly(mtcars, x = ~disp, color = I("black")) %>%
+  add_markers(y = ~mpg, text = rownames(mtcars), showlegend = FALSE) %>%
+  add_lines(y = ~fitted(loess(mpg ~ disp)),
+            line = list(color = '#07A4B5'),
+            name = "Loess Smoother", showlegend = TRUE)
+```
+
+* `add_lines()` - defines the line to be drawn. Here we have to generate it manually.
+
+### Histogram
+
+```{r plotly-barplot}
+plot_ly(diamonds, x = ~price,
+        type = "histogram")
+```
+
+### Bar chart
+
+```{r plotly-manual-count}
+p1 <- plot_ly(diamonds, x = ~cut) %>%
+  add_histogram()
+
+p2 <- diamonds %>%
+  dplyr::count(cut) %>%
+  plot_ly(x = ~cut, y = ~n) %>% 
+  add_bars()
+
+subplot(p1, p2) %>%
+  hide_legend()
+```
+
+## `ggplotly()`
 
 `ggplot2` can be readily converted into interactive graphics in `plotly` through the use of `ggplotly()`:
 
 ```{r ggplotly-scatter}
-library(plotly)
-
 # basic scatterplot
 p <- ggplot(mpg, aes(displ, hwy)) +
   geom_point()
@@ -214,32 +294,7 @@ p <- ggplot(mpg, aes(displ, hwy)) +
 ggplotly(p)
 ```
 
-```{r bubble}
-# dahl bubbleplot
-dahl <- read_dta("data/LittleDahl.dta")
-dahl_mod <-lm(nulls ~ age + tenure + unified, data = dahl)
-
-dahl_augment <- dahl %>%
-  mutate(hat = hatvalues(dahl_mod),
-         student = rstudent(dahl_mod),
-         cooksd = cooks.distance(dahl_mod))
-
-# use size
-p <- ggplot(dahl_augment, aes(hat, student)) +
-  geom_hline(yintercept = 0, linetype = 2) +
-  geom_point(aes(size = cooksd,
-                 text = str_c(Congress, "Session of Congress", sep = " ")),
-             shape = 1) +
-  scale_size_continuous(range = c(1, 20)) +
-  labs(title = "Regression diagnostics for Dahl model",
-       x = "Leverage",
-       y = "Studentized residual") +
-  theme(legend.position = "none")
-
-ggplotly(p)
-```
-
-#### Modifying `ggplotly()` objects
+### Modifying `ggplotly()` objects
 
 ```{r ggplotly-str}
 str(plotly_build(p), max.level = 2)
@@ -247,7 +302,7 @@ str(plotly_build(p), max.level = 2)
 
 `ggplotly()` stores all the components of the graph in a list object in R, which you can directly access using `plotly_build()`. To modify components of the `ggplotly()` object, "simply" modify the appropriate element in `plotly_build()`. Let's use the OTC tax widget as an example, converting it into a non-Shiny object.^[In fact this is the exact trouble I went through when building the app. It's easier to work on the graph portion in a static environment first, before incorporating the Shiny components.]
 
-```{r otc}
+```{r otc, eval = FALSE}
 library(tidyverse)
 library(stringr)
 library(plotly)
@@ -328,12 +383,18 @@ p$x$data[[3]]$text <- str_replace_all(p$x$data[[3]]$text,
 p
 ```
 
-## `highcharter`
+## Additional references
+
+* [`plotly` for R](https://plotly-book.cpsievert.me/) - online book providing a more narrative introduction to `plotly` for R
+* [`plotly` for R cheat sheet](https://images.plot.ly/plotly-documentation/images/r_cheat_sheet.pdf)
+
+# `highcharter`
 
 * Based on `highcharts` JavaScript library for interactive graphics
 * Free for non-commercial use
 * Paid license required for commercial and government usage
 
+> We will return to this next week.
 
 # `shiny`
 
