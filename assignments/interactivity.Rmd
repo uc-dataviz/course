@@ -74,4 +74,4 @@ In addition to the visualization and accompanying narrative, write an approximat
 * If it's a website, deploy the website using a platform such as [GitHub Pages](https://pages.github.com/) or [Netlify](https://www.netlify.com/). Include the source code within the repository and put a link in the `README.md` to the live web site.
 * If you build a Shiny app, deploy it on [shinyapps.io](http://www.shinyapps.io). Include the source code within the repository and put a link in the `README.md` to the live application.
 
-Your submission is due by **11:00am on Tuesday, May 15th**.
+Your submission is due by ~~**11:00am on Tuesday, May 15th**~~ **11:59pm on Friday, May 18th**.
