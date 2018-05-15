@@ -99,14 +99,14 @@ All readings are required unless otherwise noted. Adjustments can be made throug
 1. Interactivity
     * [Plotly R library](https://plot.ly/r/)
     * [`htmlwidgets`](http://www.htmlwidgets.org/)
-    * [`flexdashboard`](http://rmarkdown.rstudio.com/flexdashboard/)
     * [Shiny by RStudio](https://shiny.rstudio.com/)
     * [Building Shiny Apps](http://cfss.uchicago.edu/shiny001_abc.html)
-1. Information dashboards
-1. Geospatial visualization/Network visualization
-    * TA Ch 10
-    * [Cartographers for social equality](https://www.youtube.com/watch?v=vVX-PrBRtTY)
+1. ~~Interactivity/information dashboards~~
+1. Information dashboards/Network visualization
+    * [`flexdashboard`](http://rmarkdown.rstudio.com/flexdashboard/)
     * Munzner ch 9
     * [Andris, Clio, et al. "The rise of partisanship and super-cooperators in the US House of Representatives." *PloS one* 10.4 (2015): e0123507.](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0123507)
-1. Text visualization
+1. Geospatial visualization/text visualization
+    * TA Ch 10
+    * [Cartographers for social equality](https://www.youtube.com/watch?v=vVX-PrBRtTY)
 1. Final project presentations
