@@ -1,0 +1,443 @@
+---
+title: "CFSS Learning Profiles"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    theme: readable
+    source_code: embed
+runtime: shiny
+---
+
+```{r global, include = FALSE}
+library(tidyverse)
+library(gradereportr)
+library(flexdashboard)
+library(tidytext)
+library(wordcloud2)
+library(knitr)
+library(shiny)
+library(plotly)
+
+# setup default theme
+theme_set(theme_minimal())
+
+# pick default palette for color brewer
+pal <- "Dark2"
+
+# get grade db
+evals_db <- read_rds("data/example-db.Rds")
+
+# get most recent hw id
+max_hw_id <- max(evals_db$pr$hw_id)
+```
+
+Individual assignments
+===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r shiny-inputs-assignment}
+# which student to view
+roster <- with(evals_db$roster, user)
+names(roster) <- with(evals_db$roster, str_c(first_name, last_name, sep =" "))
+
+# student info
+selectInput("user2", "Student", choices = roster)
+
+# which assignment to view
+numericInput("hw_id", "Homework assignment",
+             value = max_hw_id,
+             min = 1,
+             max = 10)
+```
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+```{r value-box-color}
+# function to determine color of value box
+value_box_color <- function(score, pal){
+  # generate color palette
+  pal <- RColorBrewer::brewer.pal(3, pal) %>%
+    rev
+  
+  # rubric elements test
+  if(is.factor(score)){
+    if(score == "Excellent"){
+      return(pal[[1]])
+    } else if(score == "Satisfactory"){
+      return(pal[[2]])
+    } else if(score == "Needs work") {
+      return(pal[[3]])
+    }
+  }
+  
+  # peer evals test
+  if(is.numeric(score)){
+    if(score >= 2){
+      return(pal[[1]])
+    } else if(score == 1){
+      return(pal[[2]])
+    } else if(score == 0) {
+      return(pal[[3]])
+    }
+  }
+}
+```
+
+```{r rubric-elements}
+# retrieve individual rubric scores for student for assignment
+items <- reactive({
+  evals_db$items %>%
+    filter(user == selected$user,
+           hw_id == input$hw_id) %>%
+    mutate(score = factor(score_num,
+                          levels = -1:1,
+                          labels = c("Needs work", "Satisfactory",
+                                     "Excellent"))) %>%
+    select(topic, score) %>%
+    spread(topic, score)
+})
+```
+
+### Coding style
+
+```{r code-style}
+renderValueBox({
+  valueBox(items()$`Coding style`,
+           caption = "Coding style",
+           icon = "fa-list",
+           color = value_box_color(items()$`Coding style`, pal))
+})
+```
+
+
+### Coding strategy
+
+```{r code-strat}
+renderValueBox({
+  valueBox(items()$`Coding strategy`,
+           caption = "Coding strategy",
+           icon = "fa-list",
+           color = value_box_color(items()$`Coding strategy`, pal))
+  
+})
+```
+
+### Presentation
+
+```{r presentation}
+renderValueBox({
+  valueBox(items()$`Presentation`,
+           caption = "Presentation",
+           icon = "fa-list",
+           color = value_box_color(items()$`Presentation`, pal))
+})
+```
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+### Achievement, creativity
+
+```{r achievement}
+renderValueBox({
+  valueBox(items()$`Achievement, creativity`,
+           caption = "Achievement, creativity",
+           icon = "fa-list",
+           color = value_box_color(items()$`Achievement, creativity`, pal))
+})
+```
+
+### Ease of access
+
+```{r ease-of-access}
+renderValueBox({
+  valueBox(items()$`Ease of access`,
+           caption = "Ease of access",
+           icon = "fa-list",
+           color = value_box_color(items()$`Ease of access`, pal))
+})
+```
+
+### Peer evaluations
+
+```{r peer-eval}
+peer_evals <- reactive({
+  evals_db$peer %>%
+    filter(user == selected$user,
+           hw_id == input$hw_id) %>%
+    .$n
+})
+
+renderValueBox({
+  valueBox(peer_evals(),
+           caption = "Peer evaluations completed",
+           icon = "fa-pencil-square-o",
+           color = value_box_color(peer_evals(), pal))
+})
+```
+
+Column {data-width=700}
+-----------------------------------------------------------------------
+
+### Distribution of rubric elements
+
+```{r rubric-dist-assignment}
+plotOutput("rubricDistPlot", height = "100%")
+
+output$rubricDistPlot <- renderPlot({
+  evals_db$items %>%
+    filter(hw_id == input$hw_id) %>%
+    mutate(topic = factor(topic,
+                          levels = c("Coding style", "Coding strategy",
+                                     "Presentation", "Achievement, creativity",
+                                     "Ease of access"),
+                          labels = c("Coding style", "Coding strategy",
+                                     "Presentation", "Achievement",
+                                     "Ease of access")),
+           score = factor(score_num,
+                          levels = -1:1,
+                          labels = c("Needs work", "Satisfactory",
+                                     "Excellent"))) %>%
+    ggplot(aes(forcats::fct_rev(topic), fill = score)) +
+    geom_bar(position = "fill") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_fill_brewer(palette = pal, guide = guide_legend(reverse = TRUE)) +
+    labs(x = NULL,
+         y = "Percentage of evaluations",
+         fill = "Evaluation") +
+    coord_flip() +
+    theme_minimal(base_size = 16) +
+    theme(legend.position = "bottom")
+})
+```
+
+### Most frequent comments
+
+```{r pr-body-comments}
+wordcloud2Output("prBodyWordcloudPlot", height = "100%")
+
+output$prBodyWordcloudPlot <- renderWordcloud2({
+  evals_db$pr %>%
+    filter(hw_id == input$hw_id) %>%
+    unnest_tokens(word, body_pr) %>%
+    anti_join(stop_words) %>%
+    count(user, word, sort = TRUE) %>%
+    bind_tf_idf(word, user, n) %>%
+    group_by(word) %>%
+    summarize(tf_idf = mean(tf_idf)) %>%
+    arrange(-tf_idf) %>%
+    slice(1:75) %>%
+    rename(freq = tf_idf) %>%
+    wordcloud2(size = 1)
+})
+```
+
+Cumulative term
+===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r shiny-inputs-cumulative}
+selectInput("user1", "Student", choices = roster)
+
+selected <- reactiveValues(user = NULL)
+
+observeEvent(input$user1, selected$user <- (input$user1))
+observeEvent(input$user2, selected$user <- (input$user2))
+
+observeEvent(selected$user, updateSelectInput(session, "user1", selected = selected$user))
+observeEvent(selected$user, updateSelectInput(session, "user2", selected = selected$user))
+```
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Learning progress
+
+```{r cum-evals}
+plotlyOutput("cumEvalsPlot", height = "100%")
+
+output$cumEvalsPlot <- renderPlotly({
+  pr_roster <- left_join(evals_db$pr, evals_db$roster) %>%
+    mutate(full_name = str_c(first_name, last_name, sep = " "))
+  
+  cum_evals <- ggplot(pr_roster, aes(x = hw_id, y = cum_overall,
+                                     group = full_name,
+                                     text = full_name)) +
+    geom_line(alpha = .15) +
+    geom_line(data = pr_roster %>%
+                filter(user == selected$user),
+              size = 1) +
+    scale_x_continuous(limits = c(1, max_hw_id),
+                       breaks = c(1:max_hw_id)) +
+    scale_y_continuous(limits = c(0 - (5 * max_hw_id),
+                                  0 + (5 * max_hw_id)),
+                       breaks = c(0 - (5 * max_hw_id),
+                                  0,
+                                  0 + (5 * max_hw_id)),
+                       labels = c("Needs\nimprovement",
+                                  "Satisfactory",
+                                  "Excellent")) +
+    labs(x = "Assignment",
+         y = "Cumulative evaluation") +
+    theme(legend.position = "none",
+          panel.grid.minor = element_blank()) +
+    theme_minimal(base_size = 14)
+  
+  p <- ggplotly(cum_evals,
+                tooltip = c("x", "y", "text")) %>%
+    plotly_build()
+  
+  # change hover value labels
+  p$x$data[[1]]$text <- str_replace_all(p$x$data[[1]]$text,
+                                        pattern = "~hw_id", "Assignment")
+  p$x$data[[1]]$text <- str_replace_all(p$x$data[[1]]$text,
+                                        pattern = "~cum_overall", "Cumulative score")
+  # p$x$data[[1]]$text <- str_replace_all(p$x$data[[1]]$text,
+  #                                       pattern = 'str_c\\(first_name, last_name, sep = " "\\)',
+  #                                       "Student")
+  
+  p$x$data[[2]]$text <- str_replace_all(p$x$data[[2]]$text,
+                                        pattern = "~hw_id:", "Assignment")
+  p$x$data[[2]]$text <- str_replace_all(p$x$data[[2]]$text,
+                                        pattern = "~cum_overall", "Cumulative score")
+  # p$x$data[[2]]$text <- str_replace_all(p$x$data[[2]]$text,
+  #                                       pattern = 'str_c\\(first_name, last_name, sep = " "\\)',
+  #                                       "Student")
+  
+  p
+})
+```
+
+Column
+-----------------------------------------------------------------------
+
+### Distribution of rubric elements
+
+```{r eval-breakdown}
+plotOutput("evalBreakdownPlot", height = "100%")
+
+output$evalBreakdownPlot <- renderPlot({
+  evals_db$items %>%
+    mutate(topic = factor(topic,
+                          levels = c("Coding style", "Coding strategy",
+                                     "Presentation", "Achievement, creativity",
+                                     "Ease of access"),
+                          labels = c("Coding style", "Coding strategy",
+                                     "Presentation", "Achievement",
+                                     "Ease of access")),
+           score = factor(score_num,
+                          levels = -1:1,
+                          labels = c("Needs work", "Satisfactory",
+                                     "Excellent"))) %>%
+    ggplot(aes(forcats::fct_rev(topic), fill = score)) +
+    geom_bar(position = "fill") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_fill_brewer(palette = pal, guide = guide_legend(reverse = TRUE)) +
+    labs(x = NULL,
+         y = "Percentage of evaluations",
+         fill = "Evaluation") +
+    coord_flip() +
+    theme_minimal(base_size = 16) +
+    theme(legend.position = "bottom")
+})
+```
+
+### Distribution of assignment evaluations
+
+```{r dist-eval}
+plotOutput("distEvalPlot", height = "100%")
+
+output$distEvalPlot <- renderPlot({
+  evals_db$pr %>%
+    ggplot(aes(factor(hw_id), overall)) +
+    geom_boxplot() +
+    scale_y_continuous(limits = c(-5, NA),
+                       breaks = c(-5, 0, 5),
+                       labels = c("Needs\nimprovement",
+                                  "Satisfactory",
+                                  "Excellent")) +
+    labs(x = "Assignment",
+         y = "Cumulative evaluation") +
+    theme_minimal(base_size = 16)
+})
+```
+
+Evaluator statistics
+===================================== 
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r shiny-inputs-evaluator}
+# which assignment to view
+numericInput("hw_id_eval", "Homework assignment",
+             value = max_hw_id,
+             min = 1,
+             max = 10)
+```
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Cumulative distribution of rubric elements
+
+```{r eval-stats-cum}
+plotOutput("evaluatorsCumPlot", height = "100%")
+
+output$evaluatorsCumPlot <- renderPlot({
+  evals_db$items %>%
+    mutate(topic = factor(topic, levels = c("Coding style", "Coding strategy",
+                                            "Presentation", "Achievement, creativity",
+                                            "Ease of access")),
+           score = factor(score_num,
+                          levels = -1:1,
+                          labels = c("Needs work", "Satisfactory",
+                                     "Excellent")),
+           evaluator = factor(evaluator)) %>%
+    ggplot(aes(evaluator, fill = score)) +
+    geom_bar(position = "fill") +
+    facet_wrap(~ topic, nrow = 1) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(title = "By evaluator",
+         x = "Evaluator",
+         y = "Percentage of scores",
+         fill = "Score") +
+    theme_minimal(base_size = 18)
+})
+```
+
+Row {data-height=400}
+-----------------------------------------------------------------------
+
+### Distribution of rubric elements
+
+```{r eval-stats-per-assign}
+plotOutput("evaluatorsDistPlot", height = "100%")
+
+output$evaluatorsDistPlot <- renderPlot({
+  evals_db$items %>%
+    filter(hw_id == input$hw_id_eval) %>%
+    mutate(topic = factor(topic, levels = c("Coding style", "Coding strategy",
+                                            "Presentation", "Achievement, creativity",
+                                            "Ease of access")),
+           score = factor(score_num,
+                          levels = -1:1,
+                          labels = c("Needs work", "Satisfactory",
+                                     "Excellent")),
+           evaluator = factor(evaluator)) %>%
+    ggplot(aes(evaluator, fill = score)) +
+    geom_bar(position = "fill") +
+    facet_wrap(~ topic, nrow = 1) +
+    scale_y_continuous(labels = scales::percent) +
+    labs(title = "By evaluator",
+         x = "Evaluator",
+         y = "Percentage of scores",
+         fill = "Score") +
+    theme_minimal(base_size = 18)
+})
+```
