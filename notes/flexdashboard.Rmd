@@ -1,0 +1,108 @@
+---
+title: "`flexdashboard`"
+output:
+  html_document:
+    highlight: pygments
+    theme: readable
+    toc: yes
+    toc_float: yes
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(forcats)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# `flexdashboard`
+
+* Use R Markdown to publish a group of related data visualizations as an **information dashboard**
+* Supports wide range of components, both static and interactive
+* Flexible layouts and auto-resizing (similar to Shiny)
+* Can be both static and interactive
+* Allows for storyboard layouts
+
+## Major layouts
+
+> [See examples here.](https://rmarkdown.rstudio.com/flexdashboard/layouts.html)
+
+* Columns/rows
+* Scrolling layouts
+* Tabsets
+* Multiple pages
+* Storyboards
+
+* Auto resizing for small/mobile screens
+
+## Components
+
+> [See examples here.](https://rmarkdown.rstudio.com/flexdashboard/using.html#components)
+
+* `htmlwidgets`
+* R graphs
+* Tabular data
+* Value boxes
+* Gauges
+* Navigation bar
+* Adding text annotations
+
+## Appearance
+
+* Defined by themes
+* Large selection of core themes
+* Can define custom themes using CSS
+
+## Examples of static dashboards
+
+* [`ggplotly`: `ggplot2` geoms](https://beta.rstudioconnect.com/jjallaire/htmlwidgets-ggplotly-geoms/)
+* [Storyboard: `htmlwidgets` showcase](https://beta.rstudioconnect.com/jjallaire/htmlwidgets-showcase-storyboard/)
+
+# Shiny `flexdashboards`
+
+* `runtime: shiny`
+* Allows users to change underlying parameters and see the results immediately
+* Need to be run on a Shiny server (no longer just a standalone HTML file)
+
+## Difference from `Shiny`
+
+* Uses an R Markdown interface to design the application (no longer functions nested in functions nested in functions)
+* Far more control over the layout
+
+## Comparison of apps
+
+* [Dating age rule in pure Shiny](https://bensoltoff.shinyapps.io/cfss-age-rule/)
+* [Dating age rule in `flexdashboard` + Shiny](https://bensoltoff.shinyapps.io/age-rule-flexdashboard/)
+* [Source code](https://github.com/bensoltoff/age-rule)
+
+# Difference from `shinydashboard`
+
+* [`shinydashboard`](https://rstudio.github.io/shinydashboard/index.html)
+* Requires Shiny server
+* Allows easier creation of dashboard layouts
+* Doesn't allow "static interactivity" a la `flexdashboard`
+* Uses more familiar coding scheme for Shiny
+* `shinydashboard` came before `flexdashboard`
+* Both are under active development, though `flexdashboard` receives more attention
+
+# Examples of Shiny `flexdashboard`
+
+* [Shiny: Neighborhood diversity](https://walkerke.shinyapps.io/neighborhood_diversity/)
+* CFSS grade report
+
+# Session Info {.toc-ignore}
+
+```{r cache = FALSE}
+devtools::session_info()
+```
