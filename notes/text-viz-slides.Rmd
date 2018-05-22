@@ -1,0 +1,225 @@
+---
+title: "Text visualization"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE, echo = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(stringr)
+library(modelr)
+library(forcats)
+library(tidytext)
+library(rtweet)
+library(wordcloud)
+library(scales)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Basic workflow for text analysis
+
+* Obtain your text sources
+* Extract documents and move into a corpus
+* Transformation
+* Extract features
+* Perform analysis
+
+## Obtain your text sources
+
+* Web sites
+    * Twitter
+* Databases
+* PDF documents
+* Digital scans of printed materials
+
+## Extract documents and move into a corpus
+
+* Corpus
+* Character string
+
+## Transformation
+
+* Tagging segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
+* Standard text processing
+    * Converting to lower case
+    * Removing punctuation
+    * Removing numbers
+    * Removing stopwords
+    * Removing domain-specific stopwords
+    * Stemming
+
+## Extract features
+
+* Quantify your measures
+* Bag-of-words model
+* Term-document matrix
+    * Each row is a document
+    * Each column is a term
+    * Each cell represents the frequency of the term appearing in the document
+* Missing context
+
+## Perform analysis
+
+* Word frequency
+* Collocation
+* Dictionary tagging
+* Document classification
+* Corpora comparison
+* Topic modeling
+
+## Wordclouds {.scrollable}
+
+```{r wordcloud-rstats}
+library(wordcloud)
+
+# get tweets
+rt <- search_tweets(
+  q = "#rstats",
+  n = 3000,
+  include_rts = FALSE
+)
+rt
+
+# tokenize
+rstats_token <- rt %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stop_words$word)
+glimpse(rstats_token)
+
+# plot
+rstats_token %>%
+  count(word) %>%
+  filter(word != "#rstats") %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+## Wordclouds {.scrollable}
+
+```{r wordcloud-pope}
+# get tweets
+pope <- get_timelines("Pontifex",
+                      n = 3200,
+                      include_rts = FALSE)
+
+# tokenize
+pope_token <- pope %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stop_words$word)
+glimpse(pope_token)
+
+# plot
+pope_token %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+## Comparison cloud {.scrollable}
+
+```{r wordcloud-pope-trump}
+library(reshape2)
+
+# get fresh trump tweets
+trump <- get_timelines("realdonaldtrump",
+                      n = 3200,
+                      include_rts = FALSE)
+
+# tokenize
+trump_token <- trump %>%
+  unnest_tokens(word, text, token = "tweets") %>%
+  filter(!word %in% stop_words$word)
+
+bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
+  count(word, person) %>%
+  acast(word ~ person, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 100, colors = c("blue", "red"))
+```
+
+## N-gram viewers
+
+* N-gram
+* [Google Books Ngram Viewer](https://books.google.com/ngrams)
+    * [Calendar of Meaningful Dates](https://www.xkcd.com/1140/)
+* [How The Internet* Talks](https://projects.fivethirtyeight.com/reddit-ngram/?keyword=triggered.safe_space.sjw.snowflake&start=20071015&end=20161231&smoothing=10)
+
+## Geospatial visualization
+
+* [Which Curse Words Are Popular In Your State? Find Out From These Maps.](http://www.huffingtonpost.com/entry/which-curse-words-are-popular-in-your-state_us_55a80662e4b04740a3df54b8)
+* [Hate Map](http://users.humboldt.edu/mstephens/hate/hate_map.html)
+* [Soda vs. Pop with Twitter](http://blog.echen.me/2012/07/06/soda-vs-pop-with-twitter/)
+
+## Network analysis with text
+
+* Use text features to identify edges between nodes in a network
+* [How every #GameOfThrones episode has been discussed on Twitter](https://interactive.twitter.com/game-of-thrones/#?episode=1)
+
+## Sentiment analysis
+
+> I am happy
+
+## Dictionaries
+
+```{r}
+get_sentiments("bing")
+```
+
+## Dictionaries
+
+```{r}
+get_sentiments("afinn")
+```
+
+## Dictionaries
+
+```{r}
+get_sentiments("nrc")
+```
+
+## Dictionaries
+
+```{r}
+get_sentiments("nrc") %>%
+  count(sentiment)
+```
+
+## Measuring overall sentiment {.scrollable}
+
+```{r}
+library(janeaustenr)
+
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text,
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+janeaustensentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
+        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+        facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+
+## Exploring content of Donald Trump's Twitter timeline
+
+* [Text analysis of Trump's tweets confirms he writes only the (angrier) Android half](http://varianceexplained.org/r/trump-tweets/)
+* [Trump's Android and iPhone tweets, one year later](http://varianceexplained.org/r/trump-followup/)
