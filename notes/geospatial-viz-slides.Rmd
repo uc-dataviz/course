@@ -1,0 +1,706 @@
+---
+title: "Geospatial visualization"
+author: |
+  | MACS 40700
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, include = FALSE}
+library(tidyverse)
+library(stringr)
+library(forcats)
+library(ggmap)
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
+```
+
+## Geospatial visualization
+
+* History
+* [Google Maps](https://www.google.com/maps)
+* Major components
+    * Scale
+    * Projection
+    * Symbols
+    
+## Map boundaries
+
+* Layer process
+* Fill in with:
+    * Points
+    * Symbols
+    * Fills (choropleth)
+
+## Storing map boundaries
+
+* Geographic information system (GIS)
+* Specialized software
+* GIS in R
+
+## `maps`
+
+* Basic boundary files
+* The world
+* United States
+    * Continental USA
+    * States
+    * Counties
+* France
+* Italy
+* New Zealand
+
+## `map_data()`
+
+```{r maps}
+library(maps)
+
+map_data("state") %>%
+  as_tibble()
+```
+
+## `map_data()` {.scrollable}
+
+```{r group}
+library(gapminder)
+
+# no group aesthetic
+ggplot(gapminder, aes(year, lifeExp)) +
+  geom_line()
+
+# with grouping by country
+ggplot(gapminder, aes(year, lifeExp, group = country)) +
+  geom_line()
+```
+
+## `map_data()` {.scrollable}
+
+```{r michigan}
+map("state", "michigan")
+```
+
+## Shapefiles
+
+* `.shp` stores the geographic coordinates of the geographic features
+* `.dbf` stores data associated with the geographic features
+* `.prj` stores information about the projection of the coordinates in the shapefile
+
+## Shapefiles
+
+```{r readshapepoly}
+library(rgdal)
+
+usa <- readOGR("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
+str(usa, max.level = 2)
+```
+
+## Shapefiles
+
+```{r states-convert}
+usa %>%
+  fortify() %>%
+  head()
+```
+
+## Shapefiles
+
+```{r at-data}
+usa@data %>%
+  as_tibble
+```
+
+## `fortify()` {.scrollable}
+
+```{r fortify-id}
+# state name
+usa %>%
+  fortify(region = "NAME") %>%
+  head
+
+# FIPS code
+usa %>%
+  fortify(region = "STATEFP") %>%
+  head
+
+# keep it all
+(usa2 <- usa %>%
+  fortify(region = "NAME") %>%
+  as_tibble %>%
+  left_join(usa@data, by = c("id" = "NAME")))
+```
+
+## Simple features
+
+* Standard of how to represent real-world objects on a computer
+* Emphasizes spatial geometry
+* Widely implemented in commercial software
+* `sf` package
+
+## What is a feature?
+
+* A thing or an object in the real world
+* Frequently consist of other objects
+* Features have a geometry describing where on Earth the feature is located
+* They have attributes, which describe other properties of the feature
+
+## Dimensions
+
+* Geometries composed of points
+* Coordinates in 2-, 3- or 4-dimensional space
+* X and Y coordinates
+* Z coordinate
+* M coordinate
+
+## Simple feature geometry types
+
+| type | description                                        |
+| ---- | -------------------------------------------------- |
+| `POINT` | zero-dimensional geometry containing a single point |
+| `LINESTRING` | sequence of points connected by straight, non-self intersecting line pieces; one-dimensional geometry |
+| `POLYGON` | geometry with a positive area (two-dimensional); sequence of points form a closed, non-self intersecting ring; the first ring denotes the exterior ring, zero or more subsequent rings denote holes in this exterior ring |
+| `MULTIPOINT` | set of points; a MULTIPOINT is simple if no two Points in the MULTIPOINT are equal |
+| `MULTILINESTRING` | set of linestrings |
+| `MULTIPOLYGON` | set of polygons |
+| `GEOMETRYCOLLECTION` | set of geometries of any type except GEOMETRYCOLLECTION |
+
+## Simple features in R
+
+* `sf` stores simple features as basic R data structures (lists, matrix, vectors, etc.)
+* Data frame storage
+* One row per feature
+* Geometries and list columns
+* The three classes used to represent simple features
+    * `sf`
+    * `sfc`
+    * `sfg`
+
+## Example: North Carolina
+
+```{r nc-import}
+library(sf)
+nc <- st_read(system.file("shape/nc.shp", package="sf"))
+```
+
+## Example: North Carolina
+
+```{r nc-class}
+class(nc)
+```
+
+## Example: North Carolina
+
+```{r nc-column}
+attr(nc, "sf_column")
+```
+
+## Example: North Carolina
+
+```{r nc-rows}
+print(nc[9:15], n = 3)
+```
+
+## Plotting boundaries with `maps` {.scrollable}
+
+```{r maps-plot}
+# map of the world
+map()
+
+# usa boundaries
+map("usa")
+map("state")
+
+# county map of illinois
+map("county", "illinois")
+```
+
+## Plotting boundaries with `ggplot2` {.scrollable}
+
+```{r usa-bound}
+usa <- map_data("usa") %>%
+  as_tibble
+usa
+```
+
+## Simple black map {.scrollable}
+
+```{r usa-map}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group))
+```
+
+## Simple black map {.scrollable}
+
+```{r coord-fixed}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group)) +
+  coord_fixed()
+```
+
+## Simple black map {.scrollable}
+
+```{r coord-fixed-13}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group)) +
+  coord_fixed(1.3)
+```
+
+## Change the colors {.scrollable}
+
+```{r fill-color}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group),
+               fill = NA, color = "red") + 
+  coord_fixed(1.3)
+
+gg1 <- ggplot() + 
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group),
+               fill = "violet", color = "blue") + 
+  coord_fixed(1.3)
+gg1
+```
+
+## Always remember to use the group aesthetic {.scrollable}
+
+```{r no-group}
+ggplot() + 
+  geom_polygon(data = usa, aes(x = long, y = lat),
+               fill = "violet", color = "blue") + 
+  coord_fixed(1.3)
+```
+
+## State maps
+
+```{r states}
+states <- map_data("state") %>%
+  as_tibble()
+states
+```
+
+## State maps {.scrollable}
+
+```{r states-no-fill}
+ggplot(data = states) + 
+  geom_polygon(aes(x = long, y = lat, group = group), color = "white") + 
+  coord_fixed(1.3)
+```
+
+## State maps {.scrollable}
+
+```{r states-fill}
+ggplot(data = states) + 
+  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + 
+  coord_fixed(1.3) +
+  # turn off color legend
+  theme(legend.position = "none")
+```
+
+## Plot a subset of states {.scrollable}
+
+```{r midwest}
+midwest <- subset(states, region %in% c("illinois", "indiana", "iowa",
+                                        "kansas", "michigan", "minnesota",
+                                        "missouri", "nebraska", "north dakota",
+                                        "ohio", "south dakota", "wisconsin"))
+
+ggplot(data = midwest) + 
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "palegreen", color = "black") + 
+  coord_fixed(1.3)
+```
+
+## But what about Alaska and Hawaii?
+
+```{r all-50, echo = FALSE}
+library(maptools)
+library(rgeos)
+library(rgdal)
+
+#state shape file from
+# http://www.arcgis.com/home/item.html?id=f7f805eb65eb4ab787a0a3e1116ca7e5
+loc <- file.path(tempdir(), "stats_dat")
+unzip(system.file("extdata", "states_21basic.zip", package = "fiftystater"),
+      exdir = loc)
+fifty_states_sp <- readOGR(dsn = loc, layer = "states", verbose = FALSE)
+
+fifty_states_sp %>%
+  fortify(region = "STATE_NAME") %>%
+  mutate(id = tolower(id)) %>%
+  ggplot(mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## `fiftystater` {.scrollable}
+
+```{r fiftystater}
+library(fiftystater)
+
+data("fifty_states")
+fifty_states %>%
+  as_tibble
+
+ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## From a shapefile
+
+```{r usa2-str}
+glimpse(usa2)
+```
+
+## From a shapefile {.scrollable}
+
+```{r usa2-all}
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## From a shapefile {.scrollable}
+
+```{r usa2-filter}
+usa2 <- usa2 %>%
+  filter(id != "Alaska", id != "Hawaii", id != "Puerto Rico")
+
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## An `sf` object
+
+```{r nc-str}
+glimpse(nc)
+```
+
+## `geom_sf()` {.scrollable}
+
+```{r sf-plot}
+ggplot() +
+  geom_sf(data = nc)
+```
+
+## `ggmap` {.scrollable}
+
+```{r ggmap}
+library(ggmap)
+```
+
+```{r google-maps}
+get_googlemap("Saieh Hall For Economics, East 58th Street, Chicago, IL", zoom = 10) %>%
+  ggmap()
+```
+
+## `leaflet` {.scrollable}
+
+> [Leaflet for R](https://rstudio.github.io/leaflet/)
+
+## Map projections
+
+* [Cartographers for social equality](https://www.youtube.com/watch?v=vVX-PrBRtTY)
+
+## Changing map projections {.scrollable}
+
+```{r projections}
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map() +
+  ggtitle("Mercator projection (default)")
+
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  ggtitle("Albers equal-area projection")
+
+ggplot(data = map_data("world"), mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map(projection = "mollweide", xlim = c(-180, 180)) +
+  ggtitle("Mollweide projection")
+```
+
+## Points
+
+```{r nycflights}
+library(nycflights13)
+airports
+```
+
+## Points {.scrollable}
+
+```{r scatter}
+ggplot(airports, aes(lon, lat)) +
+  geom_point()
+```
+
+## Points {.scrollable}
+
+```{r flights-usa}
+ggplot() + 
+  coord_map() + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Points {.scrollable}
+
+```{r crop}
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Points {.scrollable}
+
+```{r crop-proj}
+ggplot() + 
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50,
+            xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Symbols {.scrollable}
+
+```{r airport-alt}
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "white") +
+  geom_point(data = airports, aes(x = lon, y = lat, size = alt),
+             fill = "grey", color = "black", alpha = .2) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Symbols {.scrollable}
+
+```{r airport-dest}
+airports_n <- flights %>%
+  count(dest) %>%
+  left_join(airports, by = c("dest" = "faa"))
+
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "white") +
+  geom_point(data = airports_n, aes(x = lon, y = lat, size = n),
+             fill = "grey", color = "black", alpha = .2) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Drawing choropleth maps {.scrollable}
+
+```{r county-shp}
+usa <- readOGR("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
+
+usa2 <- usa %>%
+  fortify(region = "GEOID") %>%
+  as_tibble %>%
+  left_join(usa@data, by = c("id" = "GEOID")) %>%
+  # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
+  filter(!(STATEFP %in% c("02", "15", "72")))
+
+counties <- readOGR("data/census_bureau/cb_2013_us_county_20m/cb_2013_us_county_20m.shp")
+
+counties2 <- counties %>%
+  fortify(region = "GEOID") %>%
+  as_tibble %>%
+  left_join(counties@data, by = c("id" = "GEOID")) %>%
+  # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
+  filter(!(STATEFP %in% c("02", "15", "72")))
+
+ggplot(counties2, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map()
+```
+
+## Drawing choropleth maps {.scrollable}
+
+```{r import-foreign}
+(fb_state <- read_csv("data/census_bureau/ACS_13_5YR_B05012_state/ACS_13_5YR_B05012.csv") %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+
+(fb_county <- read_csv("data/census_bureau/ACS_13_5YR_B05012_county/ACS_13_5YR_B05012.csv") %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+```
+
+## Joining the data to regions {.scrollable}
+
+```{r geom-map-state}
+ggplot(fb_state, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat)
+```
+
+## Joining the data to regions {.scrollable}
+
+```{r geom-map-state-neat}
+ggplot(fb_state, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  scale_fill_continuous(labels = scales::percent) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## Joining the data to regions {.scrollable}
+
+```{r geom-map-county}
+ggplot(fb_county, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  scale_fill_continuous(labels = scales::percent) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## `sf` {.scrollable}
+
+```{r nc-fill}
+ggplot() +
+  geom_sf(data = nc, aes(fill = BIR74))
+```
+
+## `sf` {.scrollable}
+
+```{r nc-facet}
+(nc2 <- nc %>%
+  select(SID74, SID79, geometry) %>%
+  gather(VAR, SID, -geometry))
+
+ggplot() +
+  geom_sf(data = nc2, aes(fill = SID)) +
+  facet_wrap(~ VAR, ncol = 1)
+```
+
+## Selecting color palettes
+
+```{r color-wheel, echo = FALSE}
+# generate simulated data points
+sim_points <- data_frame(x = factor(1:6))
+
+plots <- purrr::map(1:6, ~ ggplot(sim_points[1:.x, ], aes(x, x, color = x)) +
+  geom_point(size = 5) +
+    ggtitle(paste(.x, "color")) +
+  theme(legend.position = "none"))
+
+gridExtra::marrangeGrob(plots, nrow = 2, ncol = 3, top = NULL)
+```
+
+## RColorBrewer
+
+> [Color Brewer](http://colorbrewer2.org/)
+
+## Sequential {.scrollable}
+
+```{r cb-seq}
+fb_county %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  scale_fill_brewer(palette = "BuGn")
+
+fb_county %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  scale_fill_brewer(palette = "YlGn")
+
+fb_county %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  scale_fill_brewer(palette = "Blues")
+```
+
+## Qualitative {.scrollable}
+
+```{r qual}
+state_data <- data_frame(name = state.name,
+                         region = state.region,
+                         subregion = state.division,
+                         abb = state.abb) %>%
+  bind_cols(as_tibble(state.x77)) %>%
+  # get id variable into data frame
+  left_join(usa2 %>%
+              select(id, NAME) %>%
+              distinct,
+            by = c("name" = "NAME")) %>%
+  # remove Alaska and Hawaii
+  na.omit
+
+# set region base plot
+region_p <- ggplot(state_data, aes(map_id = id)) +
+  geom_map(aes(fill = region), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  labs(fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+region_p
+
+# try different color brewers
+region_p +
+  scale_fill_brewer(palette = "Paired")
+
+region_p +
+  scale_fill_brewer(palette = "Dark2")
+
+region_p +
+  scale_fill_brewer(palette = "Pastel2")
+
+# set subregion base plot
+subregion_p <- ggplot(state_data, aes(map_id = id)) +
+  geom_map(aes(fill = subregion), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  labs(fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+subregion_p
+
+subregion_p +
+  scale_fill_brewer(palette = "Paired")
+
+subregion_p +
+  scale_fill_brewer(palette = "Set1")
+
+subregion_p +
+  scale_fill_brewer(palette = "Pastel1")
+```
