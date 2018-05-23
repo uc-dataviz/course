@@ -56,9 +56,9 @@ Readings for the course will come primarily from the following books, as well as
 | 5. | Apr. 24 | Rules of thumb | Visualizing scientific results |  |
 | 6. | May 1 | Interactivity | And more interactivity | [Viz experiment](assignments/experiment.md) |
 | 7. | May 8 | ~~And even more interactivity~~ | ~~Information dashboards~~ |  |
-| 8. | May 15 | And even more interactivity | Network visualization | [Interactive graphics (due May 18)](assignments/interactivity.md) |
-| 9. | May 22 | Geospatial visualization | Text visualization |  |
-| 10. | May 29 | Present [final project](assignments/final-project.md) |  | Geospatial/network/text viz |
+| 8. | May 15 | And even more interactivity | Network visualization |  |
+| 9. | May 22 | Geospatial visualization | Text visualization | [Interactive graphics](assignments/interactivity.md) |
+| 10. | May 29 | Present [final project](assignments/final-project.md) |  | [Geospatial/network/text viz](assignments/geowxt.md) |
 |  | June 3 |  |  | Submit [final project](assignments/final-project.md) |
 
 ## References and Readings
